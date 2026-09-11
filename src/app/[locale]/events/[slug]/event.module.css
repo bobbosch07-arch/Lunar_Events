@@ -1,0 +1,222 @@
+.hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: min(64vh, 620px);
+  margin-top: -92px;
+  padding-top: 92px;
+  background: var(--navy-950);
+  overflow: hidden;
+}
+
+.heroGrund {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(110% 80% at 78% 12%, rgba(198, 161, 91, 0.24), transparent 56%),
+    linear-gradient(168deg, #142a44 0%, #0b1728 48%, #07111f 100%);
+}
+
+.heroBild {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.heroSchleier {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    0deg,
+    rgba(7, 17, 31, 0.94) 0%,
+    rgba(7, 17, 31, 0.62) 40%,
+    rgba(7, 17, 31, 0.2) 100%
+  );
+}
+
+.heroInhalt {
+  position: relative;
+  width: 100%;
+  padding-block: var(--space-16) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-hero);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+  color: var(--text-on-dark);
+  max-width: 18ch;
+}
+
+.untertitel {
+  font-size: var(--fs-body-l);
+  color: var(--text-on-dark-muted);
+  max-width: 48ch;
+}
+
+.eckdaten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  align-items: center;
+  font-size: var(--fs-body-s);
+  color: var(--text-on-dark);
+  margin-top: var(--space-2);
+}
+
+.eckpunkt {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.eckTrenner {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--gold-400);
+}
+
+.heroKnopf {
+  margin-top: var(--space-4);
+}
+
+/* ---------- Informationen ---------- */
+
+.spalten {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.absatz {
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-weit);
+  color: var(--auf-grund-2);
+  max-width: var(--breite-text);
+}
+
+.infoliste {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--linie);
+}
+
+.infozeile {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: var(--space-4);
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--linie);
+  font-size: var(--fs-body-s);
+}
+
+.infoName {
+  color: var(--auf-grund-3);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  padding-top: 2px;
+}
+
+.infoWert {
+  color: var(--auf-grund);
+}
+
+/* ---------- Abendkasse ---------- */
+
+.abendkasse {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-6) var(--space-10);
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund-2);
+}
+
+.akSpalte {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.akLabel {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+.akWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+.akWeich {
+  font-family: var(--font-body);
+  font-weight: var(--fw-medium);
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+}
+
+.akTrenner {
+  width: 1px;
+  align-self: stretch;
+  background: var(--linie);
+}
+
+.akFuss {
+  flex-basis: 100%;
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-3);
+  line-height: var(--lh-body);
+}
+
+.abschnittKopf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.vergangen {
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund-2);
+  color: var(--auf-grund-2);
+}
+
+@media (max-width: 900px) {
+  .spalten {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
+  .hero {
+    margin-top: -72px;
+    padding-top: 72px;
+    min-height: min(60vh, 480px);
+  }
+}

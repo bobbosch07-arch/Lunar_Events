@@ -7,10 +7,14 @@
 
 begin;
 
-create extension if not exists "pgcrypto";
 -- E-Mail-Adressen vergleichen sich ohne Ruecksicht auf Gross- und
 -- Kleinschreibung; sonst waeren Max@… und max@… zwei Kunden.
 create extension if not exists "citext";
+
+-- Kein pgcrypto: Supabase legt Erweiterungen im Schema "extensions" ab,
+-- das beim Migrationslauf nicht im Suchpfad steht — gen_random_bytes()
+-- waere dort nicht auffindbar. gen_random_uuid() steht seit Postgres 13
+-- im Systemkatalog und ist damit immer da.
 
 -- ---------- Aufzaehlungen ----------
 do $$
@@ -244,7 +248,7 @@ create index if not exists vip_anfragen_status_idx on vip_anfragen (status, erst
 create table if not exists newsletter (
   email       citext primary key,
   bestaetigt  boolean not null default false,
-  token       text not null default encode(gen_random_bytes(24), 'hex'),
+  token       text not null default replace(gen_random_uuid()::text, '-', ''),
   erstellt_am timestamptz not null default now()
 );
 

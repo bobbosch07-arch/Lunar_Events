@@ -1,0 +1,25 @@
+.kopf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.anzahl {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-3);
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.leer {
+  margin-top: var(--space-12);
+  padding-bottom: var(--space-16);
+  color: var(--auf-grund-2);
+  max-width: 44ch;
+}

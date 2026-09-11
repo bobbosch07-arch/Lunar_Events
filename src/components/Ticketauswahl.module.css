@@ -1,0 +1,253 @@
+.liste {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---------- Eine Phase ---------- */
+
+.phase {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--space-4) var(--space-6);
+  align-items: center;
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+  transition:
+    border-color var(--dur-normal) var(--ease),
+    background-color var(--dur-normal) var(--ease);
+}
+
+/* Gewählt trägt Rahmen UND Goldkante UND Häkchen — Gold allein wäre
+   für Farbenblinde kein Merkmal. */
+.gewaehlt {
+  border-color: var(--navy-900);
+  box-shadow: inset 3px 0 0 var(--gold-500);
+  background: var(--grund-2);
+}
+
+.aus {
+  background: var(--grund-2);
+  border-style: dashed;
+}
+
+.aus .name,
+.aus .preis {
+  color: var(--auf-grund-3);
+  text-decoration: line-through;
+}
+
+.vip {
+  border-color: var(--border-gold);
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.kopf {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund);
+}
+
+.zustand {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+/* Echte Knappheit wird benannt, aber nicht angeschrien. */
+.knapp {
+  color: var(--warning);
+}
+
+.beschreibung {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+  max-width: 52ch;
+}
+
+.leistungen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  list-style: none;
+  margin-top: var(--space-1);
+}
+
+.leistung {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+}
+
+.haken {
+  color: var(--akzent-text);
+  flex: none;
+}
+
+.rechts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  justify-self: end;
+}
+
+.preisfeld {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.preis {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+.gebuehr {
+  font-size: var(--fs-caption);
+  color: var(--auf-grund-3);
+}
+
+/* ---------- Mengenwähler ---------- */
+
+.menge {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.mengeKnopf {
+  width: var(--tap);
+  height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--auf-grund);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: background-color var(--dur-schnell) var(--ease);
+}
+
+.mengeKnopf:hover:not(:disabled) {
+  background: var(--grund-3);
+}
+
+.mengeKnopf:disabled {
+  color: var(--auf-grund-3);
+  cursor: not-allowed;
+}
+
+.mengeWert {
+  min-width: 40px;
+  text-align: center;
+  /* Bewusst die Textschrift, nicht Syne: deren Null hat keinen Strich und
+     liest sich in einem Bedienelement wie ein kleines o. */
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+/* ---------- Summenleiste ---------- */
+
+.summe {
+  position: sticky;
+  bottom: 0;
+  z-index: var(--z-haftend);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-5);
+  flex-wrap: wrap;
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+  box-shadow: var(--schatten-hoch);
+}
+
+.summeLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.summeZeile {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.summeLabel {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+.summeWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+.summeDetail {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+}
+
+.leerHinweis {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-3);
+}
+
+@media (max-width: 700px) {
+  .phase {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .rechts {
+    justify-self: stretch;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .summe {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .summe > :global(a),
+  .summe > :global(button) {
+    width: 100%;
+  }
+}

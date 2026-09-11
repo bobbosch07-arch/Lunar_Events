@@ -21,7 +21,7 @@ declare
 begin
   lauf := nextval('bestellnummer_seq');
   return 'LUN-' || lauf::text || '-' ||
-         upper(substr(encode(gen_random_bytes(2), 'hex'), 1, 2));
+         upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 2));
 end;
 $$;
 

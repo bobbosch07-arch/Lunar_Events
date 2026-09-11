@@ -1,0 +1,42 @@
+.leiste {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+}
+
+.punkt {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 10px 18px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+  transition:
+    border-color var(--dur-normal) var(--ease),
+    color var(--dur-normal) var(--ease),
+    background-color var(--dur-normal) var(--ease);
+}
+
+.punkt:hover {
+  border-color: var(--border-gold);
+  color: var(--akzent-text);
+}
+
+/* Ausgewählt trägt Fläche und Gewicht, nicht nur Goldton. */
+.aktiv {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: var(--ivory-50);
+  font-weight: var(--fw-bold);
+}
+
+.aktiv:hover {
+  background: var(--navy-700);
+  border-color: var(--navy-700);
+  color: var(--ivory-50);
+}
