@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
+import { BildFeld } from "./BildFeld";
 import { speichereEvent, type EventEingabe } from "@/app/aktionen/event-speichern";
 import css from "./EventFormular.module.css";
 
@@ -34,6 +35,9 @@ export type EventStand = {
   einlass: string;
   ende: string;
   ortId: string;
+  bildPfad: string;
+  bildAlt: string;
+  bildFokus: string;
   mindestalter: string;
   dresscode: string;
   abendkasse: boolean;
@@ -117,6 +121,9 @@ export function EventFormular({
       ende: stand.ende || null,
       ort_id: stand.ortId || null,
       neuer_ort: stand.ortId ? null : neuerOrt,
+      bild_pfad: stand.bildPfad || null,
+      bild_alt: stand.bildAlt || null,
+      bild_fokus: stand.bildFokus || null,
       mindestalter: stand.mindestalter ? Number(stand.mindestalter) : null,
       dresscode: stand.dresscode || null,
       abendkasse: stand.abendkasse,
@@ -361,6 +368,24 @@ export function EventFormular({
             </>
           ) : null}
         </div>
+      </section>
+
+      {/* ---------- Bild ---------- */}
+      <section className={css.gruppe}>
+        <h2 className={css.gruppenTitel}>Bild</h2>
+        <BildFeld
+          pfad={stand.bildPfad}
+          alt={stand.bildAlt}
+          fokus={stand.bildFokus}
+          aendern={({ pfad, alt, fokus }) =>
+            setStand((v) => ({ ...v, bildPfad: pfad, bildAlt: alt, bildFokus: fokus }))
+          }
+        />
+        <p className={css.hinweis}>
+          Ohne Bild zeigt die Seite eine dunkle Verlaufsfläche. Das sieht
+          ordentlich aus, verkauft aber nichts — laut Briefing trägt die
+          Fotografie die halbe Gestaltung.
+        </p>
       </section>
 
       {/* ---------- Einlassregeln ---------- */}

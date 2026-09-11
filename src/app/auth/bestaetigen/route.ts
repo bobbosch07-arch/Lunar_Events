@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { SUPABASE_URL, SUPABASE_OEFFENTLICH } from "@/lib/supabase/umgebung";
 
 export const dynamic = "force-dynamic";
 
@@ -26,8 +27,8 @@ export async function GET(anfrage: NextRequest) {
 
   const store = await cookies();
   const db = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    SUPABASE_URL!,
+    SUPABASE_OEFFENTLICH!,
     {
       cookies: {
         getAll() {

@@ -1,13 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import {
+  SUPABASE_URL,
+  SUPABASE_OEFFENTLICH,
+  SUPABASE_GEHEIM,
+  zugangVorhanden,
+} from "./umgebung";
 
-const URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const PUBLIC_KEY = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+const URL = SUPABASE_URL;
+const PUBLIC_KEY = SUPABASE_OEFFENTLICH;
 
 /** Ist überhaupt eine Datenbank hinterlegt? */
 export function datenbankVerbunden(): boolean {
-  return Boolean(URL && PUBLIC_KEY);
+  return zugangVorhanden();
 }
 
 /**
@@ -42,7 +48,7 @@ export async function serverClient() {
  * Gastkaufs, Aufräumläufe. Niemals in einer Client-Komponente importieren.
  */
 export function dienstClient() {
-  const schluessel = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const schluessel = SUPABASE_GEHEIM;
   if (!schluessel) {
     throw new Error(
       "SUPABASE_SERVICE_ROLE_KEY fehlt — ohne ihn können Zahlungen nicht bestätigt werden.",

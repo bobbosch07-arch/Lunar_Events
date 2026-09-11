@@ -123,8 +123,9 @@ async function ausDatenbank<T>(
     if (ersatzErlaubt()) return ersatz();
     console.error(
       `[events] ${was}: keine Supabase-Zugangsdaten gesetzt. ` +
-        `NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ` +
-        `in der Hosting-Umgebung eintragen und neu ausliefern.`,
+        `NEXT_PUBLIC_SUPABASE_URL und den oeffentlichen Schluessel eintragen ` +
+        `(PUBLISHABLE_KEY oder ANON_KEY) und neu ausliefern — ` +
+        `NEXT_PUBLIC_-Werte werden beim Bauen eingesetzt. Stand: /api/status`,
     );
     return leer();
   }

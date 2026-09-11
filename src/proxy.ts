@@ -2,6 +2,7 @@ import createMiddleware from "next-intl/middleware";
 import { createServerClient } from "@supabase/ssr";
 import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
+import { SUPABASE_URL, SUPABASE_OEFFENTLICH } from "./lib/supabase/umgebung";
 
 const sprache = createMiddleware(routing);
 
@@ -20,8 +21,8 @@ const sprache = createMiddleware(routing);
 export default async function proxy(anfrage: NextRequest) {
   const antwort = sprache(anfrage);
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const schluessel = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  const url = SUPABASE_URL;
+  const schluessel = SUPABASE_OEFFENTLICH;
   if (!url || !schluessel) return antwort;
 
   const db = createServerClient(url, schluessel, {

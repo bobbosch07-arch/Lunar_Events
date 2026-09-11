@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
+import { gefundeneNamen } from "@/lib/supabase/umgebung";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,12 @@ export async function GET() {
         erreichbar: datenbankFehler === null && verbunden,
         fehler: datenbankFehler,
         veroeffentlichteEvents: events,
-        dienstschluessel: Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY),
+        dienstschluessel: Boolean(
+          process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.SUPABASE_SECRET_KEY,
+        ),
+        // Welche Variablennamen gefunden wurden — hilft, wenn in der
+        // Hosting-Umgebung ein alter Name eingetragen ist.
+        gefundeneNamen: gefundeneNamen(),
       },
       zahlung: {
         stripe: schluesselArt(process.env.STRIPE_SECRET_KEY, "sk_test_"),

@@ -1,0 +1,120 @@
+.feld {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--space-5);
+  align-items: start;
+}
+
+.vorschau {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: linear-gradient(158deg, #16304c, #0b1728 62%, #07111f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bild {
+  object-fit: cover;
+}
+
+.leer {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.steuerung {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.dateifeld {
+  display: none;
+}
+
+.knopf {
+  min-height: 40px;
+  padding: 9px 18px;
+  border: 1px solid var(--navy-900);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--navy-900);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+  cursor: pointer;
+}
+
+.knopf:hover:not(:disabled) {
+  background: var(--navy-900);
+  color: var(--ivory-50);
+}
+
+.knopf:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.entfernen {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.entfernen:hover {
+  color: var(--error);
+}
+
+.zeile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.eingabe {
+  min-height: 40px;
+  padding: 9px 11px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+}
+
+.hinweis {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.fehler {
+  font-size: var(--fs-body-s);
+  color: var(--error);
+  line-height: var(--lh-body);
+}
+
+@media (max-width: 760px) {
+  .feld {
+    grid-template-columns: 1fr;
+  }
+}

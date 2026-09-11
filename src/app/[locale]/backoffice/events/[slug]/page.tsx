@@ -37,8 +37,8 @@ async function Inhalt({ slug }: { slug: string }) {
     .from("events")
     .select(
       `id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
-       beginn, einlass, ende, ort_id, mindestalter, dresscode, abendkasse,
-       abendkasse_hinweis, featured,
+       beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus,
+       mindestalter, dresscode, abendkasse, abendkasse_hinweis, featured,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv)`,
     )
@@ -79,6 +79,9 @@ async function Inhalt({ slug }: { slug: string }) {
     einlass: event.einlass ? utcNachBerlinFeld(event.einlass as string) : "",
     ende: event.ende ? utcNachBerlinFeld(event.ende as string) : "",
     ortId: (event.ort_id as string) ?? "",
+    bildPfad: (event.bild_pfad as string | null) ?? "",
+    bildAlt: (event.bild_alt as string | null) ?? "",
+    bildFokus: (event.bild_fokus as string | null) ?? "center",
     mindestalter:
       event.mindestalter === null ? "" : String(event.mindestalter),
     dresscode: (event.dresscode as string | null) ?? "",

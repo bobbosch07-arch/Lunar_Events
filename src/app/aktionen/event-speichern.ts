@@ -32,6 +32,9 @@ export type EventEingabe = {
   ende: string | null;
   ort_id: string | null;
   neuer_ort: { name: string; stadt: string; strasse: string; plz: string } | null;
+  bild_pfad: string | null;
+  bild_alt: string | null;
+  bild_fokus: string | null;
   mindestalter: number | null;
   dresscode: string | null;
   abendkasse: boolean;
@@ -94,6 +97,9 @@ export async function speichereEvent(
     einlass: eingabe.einlass ? berlinNachUtc(eingabe.einlass) : null,
     ende: eingabe.ende ? berlinNachUtc(eingabe.ende) : null,
     ort_id: ortId,
+    bild_pfad: eingabe.bild_pfad || null,
+    bild_alt: eingabe.bild_alt?.trim() || null,
+    bild_fokus: eingabe.bild_fokus || null,
     mindestalter: eingabe.mindestalter,
     dresscode: eingabe.dresscode?.trim() || null,
     abendkasse: eingabe.abendkasse,

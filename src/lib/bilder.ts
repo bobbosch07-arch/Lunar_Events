@@ -3,7 +3,9 @@
  * wird nur der Pfad — die vollstaendige Adresse entsteht erst hier, damit
  * ein Umzug des Speichers nicht jede Zeile in der Datenbank anfasst.
  */
-const BASIS = process.env.NEXT_PUBLIC_SUPABASE_URL;
+import { SUPABASE_URL } from "./supabase/umgebung";
+
+const BASIS = SUPABASE_URL;
 
 export function bildUrl(pfad: string): string {
   // Schon vollstaendig (z. B. ein Platzhalter aus /public)
