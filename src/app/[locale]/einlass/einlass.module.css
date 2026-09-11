@@ -1,0 +1,32 @@
+.tor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-10);
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: var(--space-8) var(--space-5);
+  background: var(--navy-950);
+}
+
+.abweisung {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 42ch;
+  text-align: center;
+  color: var(--text-on-dark);
+}
+
+.abweisungTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  letter-spacing: var(--ls-display);
+}
+
+.abweisungText {
+  color: var(--text-on-dark-muted);
+  line-height: var(--lh-body);
+}
