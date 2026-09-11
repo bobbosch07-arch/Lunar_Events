@@ -90,7 +90,15 @@ export function CheckoutFluss(props: Props) {
       neu.email = t("schritt2");
     }
     setFehler(neu);
-    return Object.keys(neu).length === 0;
+
+    if (Object.keys(neu).length > 0) {
+      const erstes = (["vorname", "nachname", "email"] as const).find(
+        (f) => f in neu,
+      );
+      if (erstes) document.getElementById(erstes)?.focus();
+      return false;
+    }
+    return true;
   }
 
   async function zurZahlung() {
@@ -424,6 +432,9 @@ function Feld({
         id={name}
         name={name}
         type={typ}
+        // E-Mail-Adressen und Namen unterkringelt die Rechtschreibprüfung
+        // sinnlos rot.
+        spellCheck={false}
         value={wert}
         autoComplete={autoComplete}
         aria-invalid={fehler ? true : undefined}

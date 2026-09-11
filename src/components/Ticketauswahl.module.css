@@ -189,6 +189,8 @@
   flex-wrap: wrap;
   margin-top: var(--space-6);
   padding: var(--space-5) var(--space-6);
+  /* Auf Geräten mit Home-Indikator läge die Leiste sonst darunter. */
+  padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
   border: 1px solid var(--linie);
   border-radius: var(--radius-lg);
   background: var(--grund);

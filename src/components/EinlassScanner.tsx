@@ -346,7 +346,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
             className={css.codefeld}
             value={getippt}
             onChange={(e) => setGetippt(e.target.value)}
-            placeholder="Code eintippen"
+            placeholder="Code eintippen…"
             autoCapitalize="characters"
             autoComplete="off"
             spellCheck={false}

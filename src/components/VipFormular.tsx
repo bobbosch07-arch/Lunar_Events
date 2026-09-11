@@ -72,7 +72,13 @@ export function VipFormular({ events, vorauswahl }: Props) {
     if (!Number.isInteger(gaeste) || gaeste < 1) neu.gaeste = true;
 
     setFehler(neu);
-    if (Object.keys(neu).length > 0) return;
+    if (Object.keys(neu).length > 0) {
+      // Wer absendet und nichts passiert sieht, sucht selbst — auf dem
+      // Handy scrollt er dafür womöglich am Fehler vorbei.
+      const erstes = ["name", "email", "gaeste"].find((f) => f in neu);
+      if (erstes) document.getElementById(`vip-${erstes}`)?.focus();
+      return;
+    }
 
     setLaeuft(true);
     setStoerung(null);
@@ -136,6 +142,7 @@ export function VipFormular({ events, vorauswahl }: Props) {
           <input
             id="vip-email"
             type="email"
+            spellCheck={false}
             className={`${css.eingabe} ${fehler.email ? css.fehlerhaft : ""}`}
             value={felder.email}
             autoComplete="email"

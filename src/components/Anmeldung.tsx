@@ -70,6 +70,7 @@ export function Anmeldung({ weiter }: { weiter?: string }) {
           id="anmelde-email"
           type="email"
           autoComplete="email"
+          spellCheck={false}
           className={`${css.eingabe} ${fehler ? css.fehlerhaft : ""}`}
           value={email}
           aria-invalid={fehler ? true : undefined}

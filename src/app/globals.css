@@ -90,6 +90,18 @@ button {
   cursor: pointer;
 }
 
+/* Auf Touchgeräten wartet der Browser sonst ~300 ms auf einen möglichen
+   Doppeltipp, bevor er den Klick durchlässt. */
+button,
+a,
+label,
+select,
+summary,
+[role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(198, 161, 91, 0.18);
+}
+
 ul,
 ol {
   margin: 0;

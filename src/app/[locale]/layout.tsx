@@ -56,6 +56,16 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * Die Farbe der Browserleiste auf dem Handy. Ivory, weil die Seite hell
+ * beginnt — eine dunkle Leiste über hellem Inhalt sieht aus wie ein
+ * Ladefehler.
+ */
+export const viewport = {
+  themeColor: "#fcfbf8",
+  colorScheme: "light",
+};
+
 export default async function RootLayout({
   children,
   params,
