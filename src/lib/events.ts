@@ -6,10 +6,11 @@ import { phasenZustand } from "./typen";
 /**
  * Eine Stelle, an der Events herkommen.
  *
- * Steht die Datenbank noch nicht (Tabellen fehlen), liefert sie die
- * Beispielwelt und sagt es im Log deutlich. Eine *leere* Datenbank ist
- * dagegen eine echte Antwort — dann bleibt die Liste leer, statt
- * Beispieldaten vorzugaukeln, die niemand verkaufen kann.
+ * In der Entwicklung springt die Beispielwelt ein, solange keine Datenbank
+ * erreichbar ist. **In Produktion nie** — siehe `ersatzErlaubt()` weiter
+ * unten. Eine *leere* Datenbank ist ohnehin immer eine echte Antwort:
+ * dann bleibt die Liste leer, statt etwas vorzugaukeln, das niemand
+ * verkaufen kann.
  */
 
 const AUSWAHL = `
@@ -99,26 +100,47 @@ function baueEvent(z: Zeile): Veranstaltung {
   };
 }
 
+/**
+ * Im Betrieb gibt es keine Beispieldaten.
+ *
+ * Ein stiller Rückfall hat die öffentliche Seite schon einmal erfundene
+ * Events anbieten lassen, weil in der Hosting-Umgebung die Zugangsdaten
+ * fehlten — niemandem fiel es auf, die Seite sah ja gut aus. Wer in
+ * Produktion keine Datenbank hat, zeigt lieber nichts.
+ */
+function ersatzErlaubt(): boolean {
+  return process.env.NODE_ENV !== "production";
+}
+
 async function ausDatenbank<T>(
   was: string,
   abfrage: () => Promise<{ data: unknown; error: { code?: string; message?: string } | null }>,
   ersatz: () => T,
+  leer: () => T,
   abbilden: (zeilen: Zeile[]) => T,
 ): Promise<T> {
-  if (!datenbankVerbunden()) return ersatz();
+  if (!datenbankVerbunden()) {
+    if (ersatzErlaubt()) return ersatz();
+    console.error(
+      `[events] ${was}: keine Supabase-Zugangsdaten gesetzt. ` +
+        `NEXT_PUBLIC_SUPABASE_URL und NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ` +
+        `in der Hosting-Umgebung eintragen und neu ausliefern.`,
+    );
+    return leer();
+  }
 
   const { data, error } = await abfrage();
 
   if (tabelleFehlt(error)) {
-    console.warn(
-      `[events] ${was}: Tabellen fehlen — es laufen Beispieldaten. ` +
+    console.error(
+      `[events] ${was}: Tabellen fehlen. ` +
         `Migrationen aus supabase/migrations/ einspielen.`,
     );
-    return ersatz();
+    return ersatzErlaubt() ? ersatz() : leer();
   }
   if (error) {
     console.error(`[events] ${was} fehlgeschlagen:`, error.message);
-    return ersatz();
+    return ersatzErlaubt() ? ersatz() : leer();
   }
 
   return abbilden((data as Zeile[]) ?? []);
@@ -142,6 +164,7 @@ export async function holeKommendeEvents(): Promise<Veranstaltung[]> {
       BEISPIEL_EVENTS.filter(
         (e) => e.status === "veroeffentlicht" && e.beginn > jetzt,
       ).sort((a, b) => a.beginn.localeCompare(b.beginn)),
+    () => [],
     (zeilen) => zeilen.map(baueEvent),
   );
 }
@@ -162,6 +185,7 @@ export async function holeEvent(slug: string): Promise<Veranstaltung | null> {
       return db.from("events").select(AUSWAHL).eq("slug", slug).limit(1);
     },
     () => BEISPIEL_EVENTS.find((e) => e.slug === slug) ?? null,
+    () => null,
     (zeilen) => (zeilen.length > 0 ? baueEvent(zeilen[0]) : null),
   );
 }
@@ -178,6 +202,7 @@ export async function holePhasen(eventId: string): Promise<Phase[]> {
         .order("position", { ascending: true });
     },
     () => beispielPhasen(eventId).sort((a, b) => a.position - b.position),
+    () => [],
     (zeilen) => zeilen.map(bauePhase),
   );
 }
@@ -193,6 +218,7 @@ export async function holeEventSlugs(): Promise<string[]> {
       BEISPIEL_EVENTS.filter((e) => e.status === "veroeffentlicht").map(
         (e) => e.slug,
       ),
+    () => [],
     (zeilen) => zeilen.map((z) => z.slug as string),
   );
 }
