@@ -1,0 +1,397 @@
+/* Der Checkout hat bewusst kein Seitenmenü: hier gibt es genau einen
+   Weg, und der geht nach vorne. */
+
+.rahmen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ivory-50);
+}
+
+.kopf {
+  border-bottom: 1px solid var(--border-light);
+  background: var(--ivory-50);
+}
+
+.kopfReihe {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  min-height: 84px;
+}
+
+.schritte {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  list-style: none;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-10);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.schritt {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.schrittNr {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Erledigt und aktuell unterscheiden sich in Farbe UND Gewicht —
+   Gold allein wäre kein verlässliches Merkmal. */
+.schrittAktiv {
+  color: var(--text-primary);
+  font-weight: var(--fw-bold);
+}
+
+.schrittFertig {
+  color: var(--gold-500);
+}
+
+.inhalt {
+  flex: 1;
+  padding-block: var(--space-12) var(--space-20);
+}
+
+.spalten {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.haupt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  letter-spacing: var(--ls-heading);
+}
+
+/* ---------- Formular ---------- */
+
+.felder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.feld {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.feldBreit {
+  grid-column: 1 / -1;
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.eingabe {
+  min-height: var(--tap);
+  padding: 12px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--ivory-50);
+  color: var(--text-primary);
+  font-size: var(--fs-body);
+  transition: border-color var(--dur-normal) var(--ease);
+}
+
+.eingabe:hover {
+  border-color: var(--linie-stark);
+}
+
+.eingabe:focus {
+  border-color: var(--navy-900);
+  outline: 2px solid var(--gold-400);
+  outline-offset: 1px;
+}
+
+.eingabeFehler {
+  border-color: var(--error);
+}
+
+.hinweis {
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+}
+
+.fehlertext {
+  font-size: var(--fs-body-s);
+  color: var(--error);
+}
+
+/* ---------- Zustimmungen ---------- */
+
+.zustimmungen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding-top: var(--space-2);
+}
+
+.zustimmung {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.zustimmung input {
+  margin-top: 3px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--navy-900);
+  flex: none;
+}
+
+.zustimmung a {
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-gold);
+}
+
+/* ---------- Zusammenfassung ---------- */
+
+.zusammenfassung {
+  position: sticky;
+  top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--ivory-100);
+}
+
+.zfEvent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.zfTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+.zfDetail {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+.zfPosten {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.zfZeile {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--fs-body-s);
+}
+
+.zfName {
+  color: var(--text-primary);
+}
+
+.zfMenge {
+  color: var(--text-muted);
+}
+
+.zfWert {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.zfTrenner {
+  height: 1px;
+  background: var(--border-light);
+}
+
+.zfSumme {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.zfSummeLabel {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.zfSummeWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+}
+
+.zfAendern {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-gold);
+  align-self: flex-start;
+  padding-bottom: 2px;
+}
+
+/* ---------- Uhr ---------- */
+
+.uhr {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.uhrKnapp {
+  color: var(--warning);
+  font-weight: var(--fw-medium);
+}
+
+/* ---------- Zahlung ---------- */
+
+.zahlarten {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.zahlart {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--ivory-50);
+  cursor: pointer;
+}
+
+.zahlartGewaehlt {
+  border-color: var(--navy-900);
+  box-shadow: inset 3px 0 0 var(--gold-500);
+  background: var(--ivory-100);
+}
+
+.zahlartAus {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.zahlart input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--navy-900);
+}
+
+.zahlartName {
+  font-weight: var(--fw-medium);
+}
+
+.zahlartNotiz {
+  margin-left: auto;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.testhinweis {
+  padding: var(--space-4) var(--space-5);
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--warning-weich);
+  color: var(--text-secondary);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.knoepfe {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+}
+
+.stoerung {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  background: var(--error-weich);
+  color: var(--error);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.sicher {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .spalten {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+  .zusammenfassung {
+    position: static;
+    order: -1;
+  }
+  .felder {
+    grid-template-columns: 1fr;
+  }
+  .kopfReihe {
+    min-height: 68px;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding-block: var(--space-3);
+  }
+  .schritte {
+    gap: var(--space-4);
+  }
+}

@@ -1,0 +1,134 @@
+.rahmen {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ivory-50);
+}
+
+.kopf {
+  border-bottom: 1px solid var(--border-light);
+  padding-block: var(--space-5);
+}
+
+.inhalt {
+  flex: 1;
+  padding-block: var(--space-16) var(--space-20);
+}
+
+/* Der Erfolg bekommt Platz. Ein Kauf ist der Moment, in dem sich die
+   Marke bedanken darf — aber ohne Konfetti. */
+.jubel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  max-width: 62ch;
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+}
+
+.event {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  text-transform: uppercase;
+  color: var(--text-primary);
+  margin-top: var(--space-4);
+}
+
+.wann {
+  font-size: var(--fs-body-l);
+  color: var(--text-secondary);
+}
+
+.mail {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-muted);
+  margin-top: var(--space-3);
+}
+
+.belegdaten {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-10);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-light);
+  width: 100%;
+}
+
+.belegdaten div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.belegdaten dt {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.belegdaten dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  color: var(--text-primary);
+}
+
+.tab {
+  font-variant-numeric: tabular-nums;
+}
+
+.tickets {
+  margin-top: var(--space-16);
+}
+
+.ticketRaster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-6);
+}
+
+.walletHinweis {
+  margin-top: var(--space-5);
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+  max-width: 56ch;
+}
+
+.weiter {
+  margin-top: var(--space-16);
+}
+
+@media (max-width: 600px) {
+  .ticketRaster {
+    grid-template-columns: 1fr;
+  }
+  .belegdaten {
+    gap: var(--space-6);
+  }
+}
+
+/* Kein Versand eingerichtet: das ist eine Warnung, kein Beiwerk. */
+.mailFehlt {
+  margin-top: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-md);
+  background: var(--warning-weich);
+  color: var(--text-primary);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  max-width: 60ch;
+}

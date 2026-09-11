@@ -106,25 +106,60 @@ Fehler niemandem, die Person am Gerät muss sofort sehen, was los ist.
 Bestellungen sind über die Zugriffsregeln **nicht** lesbar; die
 Bestätigungsseite läuft serverseitig mit dem Dienstschlüssel.
 
+## Was noch nicht existiert — und wo das sichtbar wird
+
+Zwei Dinge werden dem Gast auf der Bestätigungsseite **nicht** versprochen,
+solange sie nicht eingerichtet sind, weil das sonst eine Lüge wäre:
+
+- **Mailversand** (`RESEND_API_KEY`). Ohne ihn steht dort ausdrücklich,
+  dass diese Seite gerade die einzige Stelle mit den Tickets ist.
+- **Wallet-Pässe** (`APPLE_WALLET_TEAM_ID` / `GOOGLE_WALLET_ISSUER_ID`).
+  Ohne sie verschwindet der Wallet-Hinweis.
+
+Genauso der **Testkauf**: `schliesseTestkaufAb()` schließt eine Bestellung
+ohne Zahlung ab (Zahlungsart `frei`) und **verweigert den Dienst**, sobald
+`STRIPE_SECRET_KEY` oder `PAYPAL_CLIENT_SECRET` gesetzt sind. Der Weg
+verschwindet also von selbst, wenn echtes Geld fließen kann — er muss
+nicht zurückgebaut werden.
+
+Dieses Muster bitte beibehalten: Wer eine Zusage macht, prüft vorher, ob
+sie eingelöst werden kann.
+
 ## Stand
 
 Fertig: Design-Tokens, Logo-Varianten, i18n-Gerüst, Kopf- und Fußzeile,
-Event-Karte, VIP-Sektion, Startseite, Datenbankschema mit Zugriffsregeln
-und Verkaufslogik.
+Event-Karte, VIP-Sektion, Startseite, Eventliste mit Filter, Eventdetail
+mit Ticketauswahl, Checkout in vier Schritten, Bestätigungsseite mit
+digitalen Tickets (QR serverseitig als SVG), Datenbankschema mit
+Zugriffsregeln und Verkaufslogik, Testwelt (`scripts/testdaten.mjs`).
+
+Der Kaufweg ist **durchgespielt**: Auswahl → Kasse → Reservierung →
+Abschluss → Tickets. Die Kontingente zählen dabei korrekt hoch.
 
 Offen, in dieser Reihenfolge sinnvoll:
 
-1. **Supabase-Projekt anlegen** und Migrationen einspielen. Danach
-   `src/lib/events.ts` auf echte Abfragen umstellen.
-2. **Eventdetail** mit Ticketauswahl (Phasen, Abendkasse-Block).
-3. **Checkout** in vier Schritten, Stripe + PayPal.
-4. **Konto und „Meine Tickets"** (Anmeldung per Magic Link).
+1. **Stripe und PayPal einhängen.** Beides, nicht eines. Der Testweg
+   verschwindet automatisch.
+2. **Mailversand** (Resend o. ä.) mit Ticket-PDF oder -Link.
+3. **Konto und „Meine Tickets"** (Anmeldung per Magic Link). Aktuell führt
+   der Link in der Kopfzeile ins Leere.
+4. **VIP-Anfrageformular.** Tabelle und Zugriffsregeln stehen schon.
 5. **Wallet-Pässe**: Apple (.pkpass, braucht Apple-Developer-Zertifikat)
    und Google Wallet (Service Account). Samsung liest Google-Pässe.
 6. **Einlass-Scanner** als PWA, offline-fähig — im Clubkeller gibt es kein
-   Netz. Muss Codes lokal puffern und später abgleichen.
+   Netz. Muss Codes lokal puffern und später abgleichen. `entwerte_ticket()`
+   steht bereits.
 7. **Backoffice**: Events anlegen, Verkaufszahlen, VIP-Anfragen.
-8. Rechtstexte (AGB, Datenschutz, Impressum), Consent, Tracking.
+8. **Aufräumlauf für abgelaufene Reservierungen.**
+   `raeume_reservierungen_auf()` existiert, wird aber von niemandem
+   gerufen — solange gibt keine verfallene Reservierung ihr Kontingent
+   zurück. Als geplanter Auftrag (pg_cron) oder beim Laden eines Events.
+9. Rechtstexte (AGB, Datenschutz, Impressum), Consent, Tracking.
+
+Alle Seiten rendern derzeit **dynamisch**, weil sie Restkontingente
+anzeigen. Für Startseite und Eventliste wäre ein kurzes `revalidate`
+denkbar; das Eventdetail sollte dynamisch bleiben, sonst zeigt es
+veraltete Restmengen.
 
 Noch nicht entschieden: echte Eventfotos (aktuell Verlaufsflächen als
 Platzhalter — sie tragen später die halbe Gestaltung), Domain,

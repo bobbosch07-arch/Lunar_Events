@@ -141,7 +141,8 @@
     "ticketsAnzeigen": "Tickets anzeigen",
     "bestellnummer": "Bestellnummer",
     "mailHinweis": "Die Tickets sind unterwegs an {email}. Nichts angekommen? Schau im Spam nach oder melde dich bei uns.",
-    "walletHinweis": "Leg die Tickets in deine Wallet, dann hast du sie am Einlass sofort zur Hand."
+    "walletHinweis": "Leg die Tickets in deine Wallet, dann hast du sie am Einlass sofort zur Hand.",
+    "mailFehltNoch": "Es gibt noch keinen Mailversand — diese Seite ist gerade die einzige Stelle mit deinen Tickets. Mach dir einen Screenshot oder lass den Tab offen, bis der Versand eingerichtet ist."
   },
   "ticket": {
     "titel": "Meine Tickets",

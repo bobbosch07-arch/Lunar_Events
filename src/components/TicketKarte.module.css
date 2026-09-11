@@ -1,0 +1,138 @@
+.ticket {
+  display: flex;
+  flex-direction: column;
+  background: var(--navy-900);
+  color: var(--text-on-dark);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.vip {
+  border-color: var(--border-gold);
+}
+
+.kopf {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.typ {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  padding: 4px 9px;
+  white-space: nowrap;
+}
+
+.typVip {
+  color: var(--gold-300);
+  border-color: var(--border-gold);
+}
+
+.koerper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-6) var(--space-5) var(--space-5);
+}
+
+.event {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
+}
+
+.daten {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4) var(--space-5);
+}
+
+.datenfeld {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.datenName {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+}
+
+.datenWert {
+  font-size: var(--fs-body-s);
+  font-weight: var(--fw-medium);
+  overflow-wrap: anywhere;
+}
+
+/* Die gestrichelte Kante ist der einzige Anklang an ein Papierticket —
+   mehr Skeuomorphismus verträgt die Marke nicht. */
+.fuss {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  margin-top: auto;
+  padding: var(--space-5);
+  border-top: 1px dashed var(--border-dark);
+}
+
+.code {
+  flex: none;
+  background: var(--ivory-50);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  line-height: 0;
+}
+
+.code svg {
+  display: block;
+  width: 112px;
+  height: 112px;
+}
+
+/* Ohne min-width:0 dehnt der Ticketcode die Spalte, und zwei Karten
+   nebeneinander brechen den Text unterschiedlich um. */
+.fusstext {
+  flex: 1;
+  min-width: 0;
+}
+
+.hinweis {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+}
+
+.nummer {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  color: var(--text-on-dark-muted);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--space-2);
+  overflow-wrap: anywhere;
+}
+
+/* Ein entwertetes Ticket muss auf einen Blick erkennbar sein — am Einlass
+   zählt eine Sekunde. Deshalb Fläche, Text und Opazität, nicht nur Farbe. */
+.entwertet {
+  opacity: 0.6;
+}
+
+.entwertetMarke {
+  background: var(--error);
+  color: var(--ivory-50);
+  border-color: transparent;
+}

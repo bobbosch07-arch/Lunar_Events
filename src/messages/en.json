@@ -141,7 +141,8 @@
     "ticketsAnzeigen": "View tickets",
     "bestellnummer": "Order number",
     "mailHinweis": "Your tickets are on their way to {email}. Nothing there? Check spam or get in touch.",
-    "walletHinweis": "Add the tickets to your wallet and they're ready at the door."
+    "walletHinweis": "Add the tickets to your wallet and they're ready at the door.",
+    "mailFehltNoch": "Email delivery isn't set up yet — this page is currently the only place your tickets exist. Take a screenshot or keep the tab open until delivery is live."
   },
   "ticket": {
     "titel": "My tickets",
