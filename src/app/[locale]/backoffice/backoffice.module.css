@@ -1,0 +1,265 @@
+/* Das Backoffice folgt bewusst nicht der Markenoptik (Briefing 32).
+   Hier zaehlen Dichte, Lesbarkeit und Tempo — nicht Atmosphaere. */
+
+.rahmen {
+  min-height: 100vh;
+  background: var(--ivory-100);
+}
+
+.kopf {
+  background: var(--navy-950);
+  color: var(--text-on-dark);
+  padding-block: var(--space-4);
+}
+
+.kopfReihe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.marke {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+}
+
+.reiter {
+  display: flex;
+  gap: var(--space-1);
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.reiter a {
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-s);
+  color: var(--text-on-dark-muted);
+  transition: background-color var(--dur-schnell) var(--ease), color var(--dur-schnell) var(--ease);
+}
+
+.reiter a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-on-dark);
+}
+
+.reiterAktiv {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text-on-dark) !important;
+  font-weight: var(--fw-medium);
+}
+
+.inhalt {
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.seitentitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  letter-spacing: var(--ls-heading);
+  margin-bottom: var(--space-6);
+}
+
+.zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+/* ---------- Kennzahlen ---------- */
+
+.kennzahlen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-10);
+}
+
+.kachel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  background: var(--ivory-50);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.kachelName {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.kachelWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.kachelZusatz {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+/* ---------- Tabelle ---------- */
+
+.tabellenfeld {
+  overflow-x: auto;
+  background: var(--ivory-50);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+
+.tabelle {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-s);
+  white-space: nowrap;
+}
+
+.tabelle th {
+  text-align: left;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: var(--fw-medium);
+  padding: var(--space-4) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  background: var(--ivory-100);
+  position: sticky;
+  top: 0;
+}
+
+.tabelle td {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-primary);
+  vertical-align: top;
+}
+
+.tabelle tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabelle tbody tr:hover {
+  background: var(--ivory-100);
+}
+
+.zahl {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.haupt {
+  font-weight: var(--fw-medium);
+}
+
+.nebensache {
+  color: var(--text-muted);
+  font-size: var(--fs-caption);
+  white-space: normal;
+}
+
+/* ---------- Marken ---------- */
+
+.marke_ {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.gut {
+  background: var(--success-weich);
+  color: var(--success);
+  border-color: rgba(47, 107, 79, 0.3);
+}
+.warte {
+  background: var(--warning-weich);
+  color: var(--warning);
+  border-color: rgba(154, 116, 31, 0.3);
+}
+.schlecht {
+  background: var(--error-weich);
+  color: var(--error);
+  border-color: rgba(166, 64, 64, 0.3);
+}
+.neutral {
+  background: var(--ivory-200);
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+/* ---------- Fortschritt ---------- */
+
+.balken {
+  display: block;
+  width: 120px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ivory-200);
+  overflow: hidden;
+}
+
+.balkenFuellung {
+  display: block;
+  height: 100%;
+  background: var(--navy-700);
+}
+
+.balkenVoll {
+  background: var(--success);
+}
+
+.leer {
+  padding: var(--space-12) var(--space-6);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.notiz {
+  margin-top: var(--space-5);
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+  line-height: var(--lh-body);
+  max-width: 70ch;
+}
+
+.tor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-height: 100vh;
+  padding: var(--space-8) var(--space-5);
+  background: var(--navy-950);
+}
+
+.torText {
+  max-width: 42ch;
+  text-align: center;
+  color: var(--text-on-dark-muted);
+  line-height: var(--lh-body);
+}

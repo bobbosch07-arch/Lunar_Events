@@ -1,0 +1,108 @@
+import type { Metadata } from "next";
+import { getFormatter, setRequestLocale } from "next-intl/server";
+import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Aufraeumknopf } from "@/components/Aufraeumknopf";
+import { holeBestellungen } from "@/lib/backoffice";
+import { preisText } from "@/lib/format";
+import css from "../backoffice.module.css";
+
+export const metadata: Metadata = {
+  title: "Bestellungen",
+  robots: { index: false, follow: false },
+};
+
+function marke(status: string) {
+  if (status === "bezahlt") return css.gut;
+  if (status === "offen") return css.warte;
+  if (status === "abgelaufen") return css.neutral;
+  return css.schlecht;
+}
+
+export default async function Bestellungen({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  return (
+    <BackofficeRahmen
+      aktiv="/backoffice/bestellungen"
+      titel="Bestellungen"
+      kopfzusatz={<Aufraeumknopf />}
+    >
+      <Inhalt locale={locale} />
+    </BackofficeRahmen>
+  );
+}
+
+async function Inhalt({ locale }: { locale: string }) {
+  const [bestellungen, f] = await Promise.all([
+    holeBestellungen(150),
+    getFormatter(),
+  ]);
+
+  return (
+    <>
+      <div className={css.tabellenfeld}>
+        <table className={css.tabelle}>
+          <thead>
+            <tr>
+              <th>Nummer</th>
+              <th>Event</th>
+              <th>Kunde</th>
+              <th className={css.zahl}>Tickets</th>
+              <th className={css.zahl}>Betrag</th>
+              <th>Zahlung</th>
+              <th>Wann</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bestellungen.length === 0 ? (
+              <tr>
+                <td colSpan={8} className={css.leer}>
+                  Noch keine Bestellungen.
+                </td>
+              </tr>
+            ) : (
+              bestellungen.map((b) => (
+                <tr key={b.id}>
+                  <td className={css.haupt}>{b.nummer}</td>
+                  <td>{b.event}</td>
+                  <td>
+                    {b.kunde}
+                    <div className={css.nebensache}>
+                      <a href={`mailto:${b.email}`}>{b.email}</a>
+                    </div>
+                  </td>
+                  <td className={css.zahl}>{b.tickets}</td>
+                  <td className={css.zahl}>{preisText(b.gesamtCent, locale)}</td>
+                  <td className={css.nebensache}>
+                    {b.zahlungsart === "frei" ? "Testkauf" : (b.zahlungsart ?? "—")}
+                  </td>
+                  <td className={css.nebensache}>
+                    {f.dateTime(new Date(b.erstelltAm), "kurz")}
+                  </td>
+                  <td>
+                    <span className={`${css.marke_} ${marke(b.status)}`}>
+                      {b.status}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <p className={css.notiz}>
+        „Offen" heißt reserviert, aber nicht bezahlt — diese Tickets blockieren
+        Kontingent, bis die Frist abläuft. „Abgelaufen" heißt, die Frist ist
+        vorbei und das Kontingent wurde zurückgegeben. Zeigt die Liste viele
+        offene Bestellungen mit alten Zeitstempeln, fehlt der Aufräumlauf.
+      </p>
+    </>
+  );
+}
