@@ -5,7 +5,10 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
-import { holeEigeneBestellung } from "@/app/aktionen/bestellung";
+import {
+  holeEigeneBestellung,
+  stelleZahlungSicher,
+} from "@/app/aktionen/bestellung";
 import { dienstClient } from "@/lib/supabase/server";
 import { preisText } from "@/lib/format";
 import css from "./bestaetigung.module.css";
@@ -27,6 +30,10 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
 
   const { b } = await searchParams;
   if (!b) notFound();
+
+  // Der Gast ist oft schneller zurück als der Webhook. Bevor wir etwas
+  // anzeigen, fragen wir im Zweifel selbst bei Stripe nach.
+  await stelleZahlungSicher(b);
 
   // Der Nachweis steckt im Cookie. Ohne ihn gibt es hier nichts zu sehen —
   // auch nicht mit der richtigen Bestellnummer.

@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { CheckoutFluss, type Posten } from "@/components/CheckoutFluss";
 import { holeEvent, holePhasen } from "@/lib/events";
 import { phasenZustand } from "@/lib/typen";
+import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
@@ -74,6 +75,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   // statt eine leere Kasse zu zeigen.
   if (posten.length === 0) redirect(`/events/${event.slug}#tickets`);
 
+  const stripeAktiv = stripeEingerichtet();
   const testmodus =
     !process.env.STRIPE_SECRET_KEY && !process.env.PAYPAL_CLIENT_SECRET;
 
@@ -100,6 +102,8 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
             posten={posten}
             testmodus={testmodus}
+            stripeAktiv={stripeAktiv}
+            rueckkehrBasis={eigeneAdresse()}
           />
         </div>
       </main>

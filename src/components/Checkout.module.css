@@ -395,3 +395,11 @@
     gap: var(--space-4);
   }
 }
+
+/* Das Stripe-Formular bekommt denselben Rhythmus wie der Rest der Seite;
+   sein Innenleben gestaltet Stripe selbst ueber "appearance". */
+.zahlform {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}

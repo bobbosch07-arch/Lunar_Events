@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
+import { stripe, stripeEingerichtet } from "@/lib/stripe";
 
 /**
  * Der Kauf läuft über zwei Schritte, und beide gehören auf den Server:
@@ -152,4 +153,43 @@ export async function holeEigeneBestellung(bestellungId: string) {
     .single();
 
   return data;
+}
+
+/**
+ * Fängt das Wettrennen zwischen Rückleitung und Webhook ab.
+ *
+ * Stripe schickt den Gast sofort zurück, der Webhook braucht manchmal ein
+ * paar Sekunden länger. Ohne das hier stünde auf der Bestätigungsseite
+ * "keine Tickets", obwohl bezahlt wurde. Also fragen wir im Zweifel selbst
+ * bei Stripe nach. `bestaetige_zahlung` ist mehrfach aufrufbar — wenn der
+ * Webhook kurz darauf doch noch kommt, entstehen keine zweiten Tickets.
+ */
+export async function stelleZahlungSicher(bestellungId: string): Promise<void> {
+  if (!stripeEingerichtet()) return;
+
+  const db = dienstClient();
+  const { data: bestellung } = await db
+    .from("bestellungen")
+    .select("status, zahlung_ref")
+    .eq("id", bestellungId)
+    .single();
+
+  if (!bestellung || bestellung.status !== "offen") return;
+
+  const referenz = bestellung.zahlung_ref as string | null;
+  if (!referenz?.startsWith("pi_")) return;
+
+  try {
+    const absicht = await stripe().paymentIntents.retrieve(referenz);
+    if (absicht.status !== "succeeded") return;
+
+    const { error } = await db.rpc("bestaetige_zahlung", {
+      p_bestellung_id: bestellungId,
+      p_zahlungsart: "stripe",
+      p_referenz: absicht.id,
+    });
+    if (error) console.error("[zahlung] Nachtrag fehlgeschlagen:", error.message);
+  } catch (fehler) {
+    console.error("[zahlung] Stripe nicht erreichbar:", (fehler as Error).message);
+  }
 }

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
+import { StripeZahlung } from "./StripeZahlung";
 import { preisText } from "@/lib/format";
 import {
   reserviereBestellung,
@@ -29,6 +30,10 @@ type Props = {
   posten: Posten[];
   /** Solange keine Zahlungsanbieter eingerichtet sind, gibt es den Testweg. */
   testmodus: boolean;
+  /** Stripe hat Schlüssel — dann wird echt gezahlt. */
+  stripeAktiv: boolean;
+  /** Absolute Adresse, zu der Stripe nach der Zahlung zurückschickt. */
+  rueckkehrBasis: string;
 };
 
 type Formular = {
@@ -235,28 +240,8 @@ export function CheckoutFluss(props: Props) {
             <h1 className={css.titel}>{t("zahlungsart")}</h1>
             <Uhr bis={bestellung.bis} />
 
-            <div className={css.zahlarten}>
-              <label className={`${css.zahlart} ${css.zahlartAus}`}>
-                <input type="radio" name="zahlart" disabled />
-                <span className={css.zahlartName}>{t("karte")}</span>
-                <span className={css.zahlartNotiz}>Stripe folgt</span>
-              </label>
-              <label className={`${css.zahlart} ${css.zahlartAus}`}>
-                <input type="radio" name="zahlart" disabled />
-                <span className={css.zahlartName}>{t("paypal")}</span>
-                <span className={css.zahlartNotiz}>PayPal folgt</span>
-              </label>
-            </div>
-
-            {props.testmodus ? (
-              <p className={css.testhinweis}>
-                Es ist noch kein Zahlungsanbieter eingerichtet. Der Kauf lässt
-                sich hier ohne Zahlung abschließen, damit der Ablauf geprüft
-                werden kann. Sobald Stripe oder PayPal Schlüssel haben,
-                verschwindet dieser Weg von selbst.
-              </p>
-            ) : null}
-
+            {/* Die Zustimmungen stehen vor dem Zahlformular: erst
+                zustimmen, dann zahlen — nicht andersherum. */}
             <div className={css.zustimmungen}>
               <label className={css.zustimmung}>
                 <input
@@ -279,17 +264,32 @@ export function CheckoutFluss(props: Props) {
               </label>
             </div>
 
-            {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
-
-            <div className={css.knoepfe}>
-              <Knopf
-                onClick={kaufen}
-                disabled={!agb || !widerruf || laeuft || !props.testmodus}
-                groesse="gross"
-              >
-                {laeuft ? "…" : t("jetztKaufen")}
-              </Knopf>
-            </div>
+            {props.stripeAktiv ? (
+              <StripeZahlung
+                bestellungId={bestellung.id}
+                rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
+                freigegeben={agb && widerruf}
+              />
+            ) : (
+              <>
+                <p className={css.testhinweis}>
+                  Es ist noch kein Zahlungsanbieter eingerichtet. Der Kauf lässt
+                  sich hier ohne Zahlung abschließen, damit der Ablauf geprüft
+                  werden kann. Sobald Stripe oder PayPal Schlüssel haben,
+                  verschwindet dieser Weg von selbst.
+                </p>
+                {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
+                <div className={css.knoepfe}>
+                  <Knopf
+                    onClick={kaufen}
+                    disabled={!agb || !widerruf || laeuft || !props.testmodus}
+                    groesse="gross"
+                  >
+                    {laeuft ? "…" : t("jetztKaufen")}
+                  </Knopf>
+                </div>
+              </>
+            )}
 
             <p className={css.hinweis}>
               {t("bestellnummer")}: <strong>{bestellung.nummer}</strong>
