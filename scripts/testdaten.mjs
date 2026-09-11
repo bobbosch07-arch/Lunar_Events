@@ -145,8 +145,31 @@ async function weg() {
   const { data: events } = await db.from("events").select("id, slug").like("slug", `${PRAEFIX}%`);
   const ids = (events ?? []).map((e) => e.id);
   if (ids.length > 0) {
+    // Reihenfolge zaehlt: events haengt an bestellungen mit "on delete
+    // restrict". Wer zuerst das Event loeschen will, kommt nach dem ersten
+    // Testkauf nicht mehr weiter.
+    const { data: bestellungen } = await db
+      .from("bestellungen").select("id, kunde_id").in("event_id", ids);
+    const bIds = (bestellungen ?? []).map((b) => b.id);
+
+    if (bIds.length > 0) {
+      await db.from("tickets").delete().in("bestellung_id", bIds);
+      await db.from("bestellpositionen").delete().in("bestellung_id", bIds);
+      await db.from("bestellungen").delete().in("id", bIds);
+
+      // Kunden nur entfernen, wenn keine andere Bestellung mehr an ihnen haengt.
+      for (const kundeId of new Set((bestellungen ?? []).map((b) => b.kunde_id))) {
+        const { count } = await db
+          .from("bestellungen").select("id", { count: "exact", head: true })
+          .eq("kunde_id", kundeId);
+        if (!count) await db.from("kunden").delete().eq("id", kundeId);
+      }
+    }
+
+    await db.from("vip_anfragen").delete().in("event_id", ids);
     await db.from("phasen").delete().in("event_id", ids);
     await db.from("events").delete().in("id", ids);
+    console.log(`Dabei entfernt: ${bIds.length} Bestellungen samt Tickets.`);
   }
   // Orte nur loeschen, wenn kein Event mehr daran haengt.
   for (const o of ORTE) {
