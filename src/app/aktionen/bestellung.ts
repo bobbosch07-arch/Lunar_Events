@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
 import { stripe, stripeEingerichtet } from "@/lib/stripe";
+import { verschickeTickets } from "./ticketmail";
 
 /**
  * Der Kauf läuft über zwei Schritte, und beide gehören auf den Server:
@@ -125,6 +126,8 @@ export async function schliesseTestkaufAb(
 
   if (error) return { ok: false, fehler: error.message };
 
+  await verschickeTickets(bestellungId);
+
   const { data } = await db
     .from("bestellungen")
     .select("nummer")
@@ -144,7 +147,7 @@ export async function holeEigeneBestellung(bestellungId: string) {
     .from("bestellungen")
     .select(
       `id, nummer, status, summe_cent, gebuehr_cent, gesamt_cent, bezahlt_am,
-       reserviert_bis,
+       reserviert_bis, zugangstoken,
        kunde:kunden(email, vorname, nachname),
        positionen:bestellpositionen(phase_name, menge, einzelpreis_cent, gebuehr_cent),
        event:events(slug, titel, beginn, ort:orte(name, stadt))`,
@@ -189,6 +192,7 @@ export async function stelleZahlungSicher(bestellungId: string): Promise<void> {
       p_referenz: absicht.id,
     });
     if (error) console.error("[zahlung] Nachtrag fehlgeschlagen:", error.message);
+    else await verschickeTickets(bestellungId);
   } catch (fehler) {
     console.error("[zahlung] Stripe nicht erreichbar:", (fehler as Error).message);
   }

@@ -11,6 +11,7 @@ import {
 } from "@/app/aktionen/bestellung";
 import { dienstClient } from "@/lib/supabase/server";
 import { preisText } from "@/lib/format";
+import { eigeneAdresse } from "@/lib/stripe";
 import css from "./bestaetigung.module.css";
 
 type Props = {
@@ -64,6 +65,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
   const walletEingerichtet = Boolean(
     process.env.APPLE_WALLET_TEAM_ID || process.env.GOOGLE_WALLET_ISSUER_ID,
   );
+  const ticketAdresse = `${eigeneAdresse()}/tickets/${bestellung.zugangstoken as string}`;
   const wann = f.dateTime(new Date(event.beginn), "mitZeit");
   const ort = `${event.ort.name}, ${event.ort.stadt}`;
 
@@ -104,7 +106,11 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
             {versandEingerichtet ? (
               <p className={css.mail}>{t("mailHinweis", { email: kunde.email })}</p>
             ) : (
-              <p className={css.mailFehlt}>{t("mailFehltNoch")}</p>
+              <p className={css.mailFehlt}>
+                Es gibt noch keinen Mailversand. Speichere dir den Ticketlink
+                unten — über ihn kommst du jederzeit an deine Tickets, auch
+                ohne Konto.
+              </p>
             )}
 
             <dl className={css.belegdaten}>
@@ -138,7 +144,19 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
             </section>
           ) : null}
 
+          <div className={css.ticketlink}>
+            <span className={css.linkLabel}>Dein dauerhafter Ticketlink</span>
+            <code className={css.linkWert}>{ticketAdresse}</code>
+            <p className={css.linkHinweis}>
+              Speichere ihn dir. Wer den Link hat, kommt rein — gib ihn nur an
+              Leute weiter, denen du vertraust.
+            </p>
+          </div>
+
           <div className={css.weiter}>
+            <Knopf href={`/tickets/${bestellung.zugangstoken as string}`}>
+              Tickets öffnen
+            </Knopf>
             <Knopf href="/events" stil="linie">
               Weitere Events
             </Knopf>

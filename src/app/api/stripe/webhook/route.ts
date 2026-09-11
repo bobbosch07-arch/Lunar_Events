@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { dienstClient } from "@/lib/supabase/server";
+import { verschickeTickets } from "@/app/aktionen/ticketmail";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,10 @@ export async function POST(anfrage: Request) {
         // denn die Zahlung ist echt und die Tickets fehlen noch.
         return NextResponse.json({ fehler: error.message }, { status: 500 });
       }
+
+      // Der Versand darf die Quittung an Stripe nicht aufhalten: die
+      // Tickets existieren, auch wenn keine Mail rausgeht.
+      await verschickeTickets(bestellungId);
       break;
     }
 

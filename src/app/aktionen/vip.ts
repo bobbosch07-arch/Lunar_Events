@@ -1,6 +1,7 @@
 "use server";
 
 import { dienstClient } from "@/lib/supabase/server";
+import { meldeVipAnfrage, versandEingerichtet } from "@/lib/mail";
 
 export type VipEingabe = {
   name: string;
@@ -42,6 +43,10 @@ export async function sendeVipAnfrage(eingabe: VipEingabe): Promise<VipErgebnis>
   }
 
   const db = dienstClient();
+  const { data: eventTitel } = eingabe.eventId
+    ? await db.from("events").select("titel").eq("id", eingabe.eventId).maybeSingle()
+    : { data: null };
+
   const { error } = await db.from("vip_anfragen").insert({
     event_id: eingabe.eventId,
     name,
@@ -59,9 +64,21 @@ export async function sendeVipAnfrage(eingabe: VipEingabe): Promise<VipErgebnis>
     return { ok: false, fehler: "unbekannt" };
   }
 
-  // Ohne Mailversand landet die Anfrage still in der Datenbank. Damit sie
-  // nicht übersehen wird, steht sie wenigstens im Protokoll.
-  if (!process.env.RESEND_API_KEY) {
+  if (versandEingerichtet()) {
+    // Der Versand darf die Antwort an den Gast nicht aufhalten und schon
+    // gar nicht scheitern lassen — die Anfrage steht bereits.
+    await meldeVipAnfrage({
+      name,
+      email,
+      telefon: eingabe.telefon.trim() || null,
+      gaeste: eingabe.gaeste,
+      event: (eventTitel?.titel as string | undefined) ?? null,
+      paket: eingabe.paket,
+      nachricht: eingabe.nachricht.trim() || null,
+    });
+  } else {
+    // Ohne Mailversand landet die Anfrage still in der Datenbank. Damit sie
+    // nicht übersehen wird, steht sie wenigstens im Protokoll.
     console.warn(
       `[vip] Neue Anfrage von ${name} <${email}> — kein Mailversand eingerichtet, ` +
         `nachsehen in der Tabelle vip_anfragen.`,

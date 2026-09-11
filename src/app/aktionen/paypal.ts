@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
 import { erstelleBestellung, bucheAb, leseBestellung } from "@/lib/paypal";
+import { verschickeTickets } from "./ticketmail";
 
 const COOKIE = "lunar_bestellung";
 
@@ -113,6 +114,8 @@ export async function paypalAbschliessen(
       );
       return { ok: false, fehler: "bestaetigung" };
     }
+
+    await verschickeTickets(bestellungId);
 
     const { data } = await db
       .from("bestellungen")

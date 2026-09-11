@@ -1,0 +1,106 @@
+/* Dunkel wie die Tickets selbst: Diese Seite wird am Einlass geöffnet,
+   im Halbdunkel, mit hochgedrehter Helligkeit. */
+.rahmen {
+  min-height: 100vh;
+  background: var(--navy-950);
+  color: var(--text-on-dark);
+}
+
+.kopf {
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.inhalt {
+  padding-block: var(--space-10) var(--space-16);
+}
+
+.kopfzeile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-bottom: var(--space-8);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+  color: var(--text-on-dark);
+  margin-top: var(--space-2);
+}
+
+.wann {
+  font-size: var(--fs-body-l);
+  color: var(--text-on-dark);
+  margin-top: var(--space-2);
+}
+
+.ort,
+.einlass {
+  font-size: var(--fs-body-s);
+  color: var(--text-on-dark-muted);
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-5);
+}
+
+.abgesagt,
+.hinweisBand {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.abgesagt {
+  border: 1px solid var(--error);
+  background: rgba(166, 64, 64, 0.18);
+  color: #f3c9c9;
+}
+
+.hinweisBand {
+  border: 1px solid var(--border-dark);
+  color: var(--text-on-dark-muted);
+}
+
+.fuss {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-top: var(--space-10);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--border-dark);
+}
+
+.warnung {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+  max-width: 62ch;
+}
+
+.warnung strong {
+  color: var(--gold-300);
+}
+
+.nummer {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  color: var(--text-on-dark-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) {
+  .raster {
+    grid-template-columns: 1fr;
+  }
+}

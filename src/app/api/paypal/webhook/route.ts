@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dienstClient } from "@/lib/supabase/server";
+import { verschickeTickets } from "@/app/aktionen/ticketmail";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +98,7 @@ export async function POST(anfrage: Request) {
         console.error("[paypal] Bestätigung fehlgeschlagen:", error.message);
         return NextResponse.json({ fehler: error.message }, { status: 500 });
       }
+      await verschickeTickets(bestellungId);
       break;
     }
 
