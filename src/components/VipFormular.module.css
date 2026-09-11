@@ -1,0 +1,139 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.felder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+}
+
+.feld {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.breit {
+  grid-column: 1 / -1;
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+}
+
+.pflicht::after {
+  content: " *";
+  color: var(--akzent-text);
+}
+
+.eingabe,
+.auswahl,
+.textfeld {
+  min-height: var(--tap);
+  padding: 12px 14px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
+  background: var(--grund);
+  color: var(--auf-grund);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  transition: border-color var(--dur-normal) var(--ease);
+}
+
+.textfeld {
+  min-height: 120px;
+  resize: vertical;
+  line-height: var(--lh-body);
+}
+
+.eingabe:hover,
+.auswahl:hover,
+.textfeld:hover {
+  border-color: var(--linie-stark);
+}
+
+.eingabe:focus,
+.auswahl:focus,
+.textfeld:focus {
+  border-color: var(--navy-900);
+}
+
+.fehlerhaft {
+  border-color: var(--error);
+}
+
+.hinweis {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-3);
+}
+
+.fehlertext {
+  font-size: var(--fs-body-s);
+  color: var(--error);
+}
+
+/* Die Honigfalle steht im Fluss, ist aber für Menschen unsichtbar und für
+   Screenreader ausgenommen. display:none würden manche Bots erkennen. */
+.falle {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.fuss {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.stoerung {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  background: var(--error-weich);
+  color: var(--error);
+  font-size: var(--fs-body-s);
+}
+
+/* ---------- Dank ---------- */
+
+.dank {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+  padding: var(--space-12) var(--space-10);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  background: var(--grund-2);
+}
+
+.dankTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  letter-spacing: var(--ls-display);
+  color: var(--auf-grund);
+}
+
+.dankText {
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-weit);
+  color: var(--auf-grund-2);
+  max-width: 46ch;
+}
+
+@media (max-width: 700px) {
+  .felder {
+    grid-template-columns: 1fr;
+  }
+}

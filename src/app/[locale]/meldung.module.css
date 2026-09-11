@@ -1,0 +1,57 @@
+.flaeche {
+  display: flex;
+  align-items: center;
+  min-height: 62vh;
+  padding-block: var(--abschnitt);
+  background: var(--ivory-50);
+}
+
+.mitte {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  max-width: 56ch;
+}
+
+/* Die Zahl ist Dekor, kein Inhalt — deshalb groß, leise und für
+   Screenreader ausgenommen. */
+.zahl {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: clamp(4rem, 14vw, 9rem);
+  line-height: 0.9;
+  letter-spacing: var(--ls-display);
+  color: var(--ivory-200);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: var(--space-2);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--text-primary);
+}
+
+.text {
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-weit);
+  color: var(--text-secondary);
+}
+
+.knoepfe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+}
+
+.kennung {
+  margin-top: var(--space-6);
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}

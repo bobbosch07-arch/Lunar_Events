@@ -1,0 +1,70 @@
+import type { Metadata } from "next";
+import { setRequestLocale } from "next-intl/server";
+import { Textseite, Block, Absatz, Angaben, Luecke } from "@/components/Textseite";
+import { Knopf } from "@/components/Knopf";
+
+export const metadata: Metadata = {
+  title: "Kontakt",
+  description: "So erreichst du Lunar Events.",
+};
+
+export default async function Kontakt({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
+  return (
+    <Textseite
+      titel="Kontakt"
+      vorspann="Wir antworten meist am selben Tag."
+      warnung={{
+        titel: "Adressen einrichten",
+        text: "Die genannten E-Mail-Adressen müssen existieren und gelesen werden, bevor die Seite öffentlich geht. Eine Kontaktseite, auf der niemand antwortet, schadet mehr als keine.",
+      }}
+    >
+      <Block titel="Worum geht es?">
+        <Angaben
+          zeilen={[
+            [
+              "Tickets",
+              <>
+                Bestellung nicht angekommen, Frage zum Einlass:{" "}
+                <a href="mailto:tickets@lunar-events.de">
+                  tickets@lunar-events.de
+                </a>
+                . Halte deine Bestellnummer bereit, das geht schneller.
+              </>,
+            ],
+            [
+              "VIP",
+              <>
+                Tisch, Bottle Service, Gruppen ab vier Personen — dafür gibt es
+                ein eigenes Formular, das alles abfragt, was wir brauchen.
+              </>,
+            ],
+            [
+              "Presse & Booking",
+              <a key="p" href="mailto:kontakt@lunar-events.de">
+                kontakt@lunar-events.de
+              </a>,
+            ],
+            ["Telefon", <Luecke key="t">Nummer und Erreichbarkeit</Luecke>],
+          ]}
+        />
+      </Block>
+
+      <Block titel="VIP anfragen">
+        <Absatz>
+          Für Tische und Gruppen ist das Anfrageformular der schnellste Weg —
+          wir melden uns innerhalb von 24 Stunden.
+        </Absatz>
+        <Knopf href="/vip" stil="gold">
+          VIP anfragen
+        </Knopf>
+      </Block>
+    </Textseite>
+  );
+}
