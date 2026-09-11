@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
@@ -40,10 +40,13 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   setRequestLocale(locale);
 
   const { event: slug, p } = await searchParams;
-  if (!slug) notFound();
+  // Wer hier ohne Auswahl landet, hat sich verlaufen oder einen alten Link
+  // geöffnet. Eine 404 wäre technisch richtig und trotzdem unfreundlich —
+  // die Eventliste ist das, was diese Person sucht.
+  if (!slug) redirect("/events");
 
   const event = await holeEvent(slug);
-  if (!event || event.status !== "veroeffentlicht") notFound();
+  if (!event || event.status !== "veroeffentlicht") redirect("/events");
 
   const [phasen, t, f] = await Promise.all([
     holePhasen(event.id),

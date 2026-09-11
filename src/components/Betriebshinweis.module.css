@@ -1,0 +1,19 @@
+/* Bewusst nicht in der Markenoptik: Das ist eine Betriebsmeldung und
+   soll wie eine aussehen, damit sie niemand für Gestaltung hält. */
+.band {
+  position: relative;
+  z-index: var(--z-meldung);
+  padding: 10px var(--rand-seite);
+  background: var(--warning);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+  line-height: 1.5;
+  text-align: center;
+}
+
+.band a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

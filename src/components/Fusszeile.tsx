@@ -1,6 +1,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "./Logo";
+import { Newsletter } from "./Newsletter";
 import css from "./Fusszeile.module.css";
 
 const INSTAGRAM = "https://instagram.com/lunar.events";
@@ -19,6 +20,7 @@ export function Fusszeile() {
             <p className={css.markeSatz}>
               Ausgewählte Nächte in Frankfurt, Mannheim und Stuttgart.
             </p>
+            <Newsletter />
           </div>
 
           <div className={css.spalten}>

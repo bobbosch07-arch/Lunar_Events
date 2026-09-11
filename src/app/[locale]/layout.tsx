@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
+import { Betriebshinweis } from "@/components/Betriebshinweis";
 import "../globals.css";
 
 /**
@@ -71,7 +72,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} className={`${syne.variable} ${dmSans.variable}`}>
       <body>
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <Betriebshinweis />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

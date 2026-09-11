@@ -1,0 +1,91 @@
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 340px;
+}
+
+.titel {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-eyebrow);
+  text-transform: uppercase;
+  color: var(--gold-400);
+  margin-bottom: var(--space-2);
+}
+
+.text {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+}
+
+.zeile {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.eingabe {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 11px 13px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+  transition: border-color var(--dur-normal) var(--ease);
+}
+
+.eingabe::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.eingabe:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.eingabe:focus {
+  border-color: var(--border-gold);
+}
+
+.knopf {
+  min-height: var(--tap);
+  padding: 11px 18px;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--gold-300);
+  font-family: var(--font-body);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-normal) var(--ease),
+    color var(--dur-normal) var(--ease);
+}
+
+.knopf:hover:not(:disabled) {
+  background: var(--gold-500);
+  color: var(--navy-950);
+}
+
+.knopf:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.danke {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--gold-300);
+}
+
+.fehler {
+  font-size: var(--fs-body-s);
+  color: #e59a9a;
+}
