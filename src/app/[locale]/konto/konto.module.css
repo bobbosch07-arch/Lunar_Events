@@ -1,0 +1,94 @@
+.anmeldebereich {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  align-items: flex-start;
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.stoerung {
+  max-width: 460px;
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-md);
+  background: var(--warning-weich);
+  color: var(--text-primary);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.uebersicht {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+}
+
+.kopf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.adresse {
+  color: var(--auf-grund-2);
+}
+
+.kacheln {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-5);
+}
+
+.kachel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+}
+
+.kachelTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-heading);
+}
+
+.kachelText {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--auf-grund-2);
+  flex: 1;
+}
+
+.abmelden {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--linie);
+}
+
+.abmeldenKnopf {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+  cursor: pointer;
+  transition: color var(--dur-normal) var(--ease);
+}
+
+.abmeldenKnopf:hover {
+  color: var(--error);
+}

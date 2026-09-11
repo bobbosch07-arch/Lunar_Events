@@ -1,0 +1,70 @@
+.anmeldebereich {
+  display: flex;
+  padding-block: var(--space-8) var(--space-16);
+}
+
+.kopf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-10);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+}
+
+.gruppe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-bottom: var(--space-16);
+}
+
+.gruppenTitel {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+  font-family: var(--font-body);
+  font-weight: var(--fw-medium);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--linie);
+}
+
+/* Vergangenes tritt zurück, verschwindet aber nicht: manchmal braucht man
+   den Beleg noch. */
+.vergangen {
+  opacity: 0.72;
+}
+
+.raster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: var(--space-6);
+}
+
+.leer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  padding-block: var(--space-10) var(--space-16);
+  max-width: 46ch;
+}
+
+.leerText {
+  font-size: var(--fs-body-l);
+  line-height: var(--lh-weit);
+  color: var(--auf-grund-2);
+}
+
+@media (max-width: 600px) {
+  .raster {
+    grid-template-columns: 1fr;
+  }
+}

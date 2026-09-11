@@ -1,0 +1,90 @@
+.karte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  align-items: flex-start;
+  width: 100%;
+  max-width: 460px;
+  padding: clamp(var(--space-6), 4vw, var(--space-10));
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+  box-shadow: var(--schatten-karte);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--auf-grund);
+}
+
+.text {
+  line-height: var(--lh-body);
+  color: var(--auf-grund-2);
+}
+
+.feld {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+}
+
+.eingabe {
+  min-height: var(--tap);
+  padding: 12px 14px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
+  background: var(--grund);
+  color: var(--auf-grund);
+  font-size: var(--fs-body);
+  transition: border-color var(--dur-normal) var(--ease);
+}
+
+.eingabe:hover {
+  border-color: var(--linie-stark);
+}
+
+.eingabe:focus {
+  border-color: var(--navy-900);
+}
+
+.fehlerhaft {
+  border-color: var(--error);
+}
+
+.hinweis {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-3);
+  line-height: var(--lh-body);
+}
+
+.fehlertext {
+  font-size: var(--fs-body-s);
+  color: var(--error);
+}
+
+.nochmal {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+  border-bottom: 1px solid var(--border-gold);
+  cursor: pointer;
+}
+
+.nochmal:hover {
+  color: var(--akzent-text);
+}
