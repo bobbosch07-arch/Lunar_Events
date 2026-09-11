@@ -25,7 +25,19 @@ es vor allem anderen.
 npm run dev      # Entwicklung auf :3000
 npm run build    # prüft auch die Typen
 npm run lint
+
+npx supabase db push          # Migrationen einspielen (braucht SUPABASE_ACCESS_TOKEN)
+node scripts/testdaten.mjs    # Testwelt anlegen, --weg entfernt sie
+node scripts/mitarbeiter.mjs  # Personal auflisten/anlegen
+node scripts/zahlung-testen.mjs    # Stripe-Kauf ohne Browser durchspielen
+node scripts/einlass-testen.mjs    # Entwerten mit echter Anmeldung
+node scripts/backoffice-testen.mjs # Zugriffsregeln fürs Backoffice
 ```
+
+**`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
+Datenbank, Stripe, Mailversand, gefundene Variablennamen. Entstanden,
+nachdem die öffentliche Seite eine Weile Beispieldaten zeigte, weil in
+Vercel die Zugangsdaten fehlten. Von außen sah alles normal aus.
 
 Die Vorschau im Browser-Pane greift auf `.claude/launch.json` manchmal die
 falsche Konfiguration — dann `npm run dev` im Hintergrund starten und die
@@ -106,6 +118,53 @@ Fehler niemandem, die Person am Gerät muss sofort sehen, was los ist.
 Bestellungen sind über die Zugriffsregeln **nicht** lesbar; die
 Bestätigungsseite läuft serverseitig mit dem Dienstschlüssel.
 
+## Zahlung
+
+**Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
+Der Browser kann behaupten, was er will — er lässt sich manipulieren, er
+stürzt ab, der Gast schließt den Tab. Der Webhook kommt trotzdem. Die
+Signatur wird gegen den **rohen** Text geprüft, nicht gegen geparstes
+JSON.
+
+Weil der Gast oft schneller zurück ist als die Meldung, fragt die
+Bestätigungsseite zusätzlich selbst bei Stripe nach
+(`stelleZahlungSicher`). Doppelt bestätigen ist gefahrlos, weil
+`bestaetige_zahlung` mehrfach aufrufbar ist.
+
+**Der Betrag kommt immer aus der Datenbank**, nie aus dem Browser. Pro
+Bestellung entsteht nur ein Zahlungsvorgang, auch beim Neuladen —
+sonst stünden zwei offene Zahlungen für eine Bestellung in Stripe.
+
+Getestet wird ohne Browser (`scripts/zahlung-testen.mjs`): Das
+Zahlformular liegt in einem Stripe-iframe, in den sich von außen keine
+Testkarte tippen lässt. Der iframe ist Stripes Code; unsere Seite ist
+das, was geprüft werden muss.
+
+## Einlass
+
+**Der Scanner läuft auch ohne Netz.** Er lädt vorab **Prüfsummen** der
+gültigen Ticketcodes — bewusst nicht die Codes selbst: So kann das Gerät
+sagen „dieser Code gehört zu diesem Event", aber aus einem verlorenen
+Telefon lassen sich keine Tickets herstellen. Entwertungen werden
+gepuffert und nachgereicht.
+
+**Die Rolle steht in der Datenbank, nicht im Token.** Wer entzogen wird,
+kommt sofort nicht mehr durch, ohne dass eine Sitzung ablaufen muss.
+
+Personal legt `scripts/mitarbeiter.mjs` an — es gibt bewusst keine
+Oberfläche dafür. Wer Personal anlegen darf, bestimmt, wer an die Kasse
+kommt.
+
+## Umgebungsvariablen
+
+**Beide Namen für den öffentlichen Supabase-Schlüssel werden akzeptiert**
+(`PUBLISHABLE_KEY` und der ältere `ANON_KEY`) — siehe
+`src/lib/supabase/umgebung.ts`. Das ist kein Schlendrian, sondern die
+Lehre aus einem echten Ausfall.
+
+**`NEXT_PUBLIC_`-Werte werden beim Bauen eingesetzt, nicht beim
+Ausführen.** Wer sie in Vercel nachträgt, muss neu ausliefern.
+
 ## Was noch nicht existiert — und wo das sichtbar wird
 
 Zwei Dinge werden dem Gast auf der Bestätigungsseite **nicht** versprochen,
@@ -127,40 +186,45 @@ sie eingelöst werden kann.
 
 ## Stand
 
-Fertig: Design-Tokens, Logo-Varianten, i18n-Gerüst, Kopf- und Fußzeile,
-Event-Karte, VIP-Sektion, Startseite, Eventliste mit Filter, Eventdetail
-mit Ticketauswahl, Checkout in vier Schritten, Bestätigungsseite mit
-digitalen Tickets (QR serverseitig als SVG), Datenbankschema mit
-Zugriffsregeln und Verkaufslogik, Testwelt (`scripts/testdaten.mjs`).
+Fertig und geprüft:
 
-Der Kaufweg ist **durchgespielt**: Auswahl → Kasse → Reservierung →
-Abschluss → Tickets. Die Kontingente zählen dabei korrekt hoch.
+- Design-Tokens, Logo-Varianten, i18n-Gerüst
+- Startseite, Eventliste mit Filter, Eventdetail mit Ticketauswahl
+- Checkout in vier Schritten mit **Stripe** (Testschlüssel), Bestätigung
+  mit digitalen Tickets (QR serverseitig als SVG)
+- Konto und „Meine Tickets" per Anmeldelink; Gastkäufe werden über die
+  bestätigte E-Mail zugeordnet (Trigger in 0004)
+- VIP-Anfrageformular mit Honigfalle statt Captcha
+- Einlass-Scanner, offline-fähig
+- Backoffice: Kennzahlen, Event-Editor mit Bild-Upload, Bestellungen,
+  VIP-Anfragen
+- About, Kontakt, FAQ, AGB, Datenschutz, Impressum, eigene 404- und
+  Fehlerseite
+- Sitemap, robots, Vorschaubilder für geteilte Links
+- Abgelaufene Reservierungen werden alle fünf Minuten freigegeben (pg_cron)
 
-Offen, in dieser Reihenfolge sinnvoll:
+Offen:
 
-1. **Stripe und PayPal einhängen.** Beides, nicht eines. Der Testweg
-   verschwindet automatisch.
-2. **Mailversand** (Resend o. ä.) mit Ticket-PDF oder -Link.
-3. **Konto und „Meine Tickets"** (Anmeldung per Magic Link). Aktuell führt
-   der Link in der Kopfzeile ins Leere.
-4. **VIP-Anfrageformular.** Tabelle und Zugriffsregeln stehen schon.
-5. **Wallet-Pässe**: Apple (.pkpass, braucht Apple-Developer-Zertifikat)
-   und Google Wallet (Service Account). Samsung liest Google-Pässe.
-6. **Einlass-Scanner** als PWA, offline-fähig — im Clubkeller gibt es kein
-   Netz. Muss Codes lokal puffern und später abgleichen. `entwerte_ticket()`
-   steht bereits.
-7. **Backoffice**: Events anlegen, Verkaufszahlen, VIP-Anfragen.
-8. **Aufräumlauf für abgelaufene Reservierungen.**
-   `raeume_reservierungen_auf()` existiert, wird aber von niemandem
-   gerufen — solange gibt keine verfallene Reservierung ihr Kontingent
-   zurück. Als geplanter Auftrag (pg_cron) oder beim Laden eines Events.
-9. Rechtstexte (AGB, Datenschutz, Impressum), Consent, Tracking.
+1. **PayPal** — Zugangsdaten fehlen noch. Stripe ist eingehängt, PayPal
+   gehört daneben, nicht statt.
+2. **Mailversand** (`RESEND_API_KEY`). Ohne ihn sagt die
+   Bestätigungsseite ausdrücklich, dass die Seite die einzige Stelle mit
+   den Tickets ist — und niemand erfährt von neuen VIP-Anfragen außer
+   durchs Backoffice.
+3. **Wallet-Pässe**: Apple (.pkpass, braucht Zertifikat) und Google
+   Wallet (Service Account). Samsung liest Google-Pässe.
+4. **Echte Eventfotos.** Der Upload steht, die Bilder fehlen. Laut
+   Briefing tragen sie die halbe Gestaltung.
+5. **Firmendaten** für Impressum, AGB und Datenschutz — die Lücken sind
+   in den Seiten sichtbar markiert. Rechtstexte müssen anwaltlich geprüft
+   werden.
+6. **Tracking und Consent** (Briefing 32). Noch nichts eingebaut; sobald
+   es kommt, braucht es einen Einwilligungsdialog.
+7. **Newsletter** — Tabelle steht, Formular fehlt.
+8. Stripe-Konto freischalten lassen. Ticketverkauf gilt als erhöhtes
+   Risiko; mit Sicherheitseinbehalt und verzögerter Auszahlung rechnen.
 
-Alle Seiten rendern derzeit **dynamisch**, weil sie Restkontingente
-anzeigen. Für Startseite und Eventliste wäre ein kurzes `revalidate`
-denkbar; das Eventdetail sollte dynamisch bleiben, sonst zeigt es
-veraltete Restmengen.
-
-Noch nicht entschieden: echte Eventfotos (aktuell Verlaufsflächen als
-Platzhalter — sie tragen später die halbe Gestaltung), Domain,
-Firmendaten fürs Impressum, Stripe- und PayPal-Konten.
+Alle Seiten rendern **dynamisch**, weil sie Restkontingente anzeigen.
+Für Startseite und Eventliste wäre ein kurzes `revalidate` denkbar; das
+Eventdetail sollte dynamisch bleiben, sonst zeigt es veraltete
+Restmengen.
