@@ -1,14 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
+import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
 import { phasenZustand, zeigeRest, type Phase } from "@/lib/typen";
 import css from "./Ticketauswahl.module.css";
 
 type Props = {
+  eventId: string;
   eventSlug: string;
   phasen: Phase[];
 };
@@ -17,11 +19,15 @@ type Props = {
  *  Gruppenanfrage — die läuft über VIP. */
 const MAX_JE_PHASE = 10;
 
-export function Ticketauswahl({ eventSlug, phasen }: Props) {
+export function Ticketauswahl(props: Props) {
+  const { eventSlug, phasen } = props;
   const t = useTranslations("event");
   const locale = useLocale();
   const router = useRouter();
   const [auswahl, setAuswahl] = useState<Record<string, number>>({});
+  // Nur die erste Wahl zählt: Wer zwischen zwei Phasen hin- und
+  // herklickt, ist trotzdem ein Interessent, nicht fünf.
+  const gezaehlt = useRef(false);
 
   const zustaende = useMemo(
     () => new Map(phasen.map((p) => [p.id, phasenZustand(p)])),
@@ -45,6 +51,11 @@ export function Ticketauswahl({ eventSlug, phasen }: Props) {
     const zustand = zustaende.get(phase.id);
     const rest = zustand?.art === "kaufbar" ? zustand.rest : null;
     const obergrenze = Math.min(MAX_JE_PHASE, rest ?? MAX_JE_PHASE);
+
+    if (richtung === 1 && !gezaehlt.current) {
+      gezaehlt.current = true;
+      zaehle("ticket_gewaehlt", props.eventId);
+    }
 
     setAuswahl((alt) => {
       const jetzt = alt[phase.id] ?? 0;

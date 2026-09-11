@@ -218,3 +218,67 @@ export async function holeVipAnfragen(): Promise<VipZeile[]> {
     event: (a.event as unknown as { titel: string } | null)?.titel ?? null,
   }));
 }
+
+export type AuswertungZeile = {
+  eventId: string;
+  titel: string;
+  gesehen: number;
+  gewaehlt: number;
+  kasse: number;
+  gekauft: number;
+};
+
+/**
+ * Wie viele von denen, die ein Event ansehen, kaufen am Ende?
+ *
+ * Die Zahlen stammen aus `ereignisse` — ohne Personenbezug, ohne
+ * Cookie. Deshalb sind es Aufrufe, keine Besucher: Wer zweimal
+ * hinschaut, zählt zweimal. Für Verhältnisse reicht das, für die
+ * Aussage "wie viele verschiedene Leute" nicht.
+ */
+export async function holeAuswertung(tage = 90): Promise<AuswertungZeile[]> {
+  const db = await serverClient();
+  const { data, error } = await db.rpc("auswertung_je_event", { p_tage: tage });
+
+  if (error || !data) {
+    console.error("[backoffice] Auswertung fehlgeschlagen:", error?.message);
+    return [];
+  }
+
+  return (data as Array<Record<string, unknown>>)
+    .map((z) => ({
+      eventId: z.event_id as string,
+      titel: z.titel as string,
+      gesehen: Number(z.gesehen ?? 0),
+      gewaehlt: Number(z.gewaehlt ?? 0),
+      kasse: Number(z.kasse ?? 0),
+      gekauft: Number(z.gekauft ?? 0),
+    }))
+    .filter((z) => z.gesehen > 0 || z.gekauft > 0);
+}
+
+export type Herkunft = { quelle: string; anzahl: number };
+
+export async function holeHerkunft(tage = 30): Promise<Herkunft[]> {
+  const db = await serverClient();
+  const seit = new Date(Date.now() - tage * 86400000).toISOString();
+
+  const { data, error } = await db
+    .from("ereignisse")
+    .select("quelle")
+    .eq("art", "event_gesehen")
+    .gt("stunde", seit);
+
+  if (error || !data) return [];
+
+  const gezaehlt = new Map<string, number>();
+  for (const z of data) {
+    const q = (z.quelle as string) ?? "direkt";
+    gezaehlt.set(q, (gezaehlt.get(q) ?? 0) + 1);
+  }
+
+  return [...gezaehlt.entries()]
+    .map(([quelle, anzahl]) => ({ quelle, anzahl }))
+    .sort((a, b) => b.anzahl - a.anzahl)
+    .slice(0, 8);
+}

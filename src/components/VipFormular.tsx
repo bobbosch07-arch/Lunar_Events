@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Knopf } from "./Knopf";
+import { zaehle } from "./Zaehler";
 import { sendeVipAnfrage } from "@/app/aktionen/vip";
 import css from "./VipFormular.module.css";
 
@@ -99,6 +100,7 @@ export function VipFormular({ events, vorauswahl }: Props) {
     setLaeuft(false);
 
     if (ergebnis.ok) {
+      zaehle("vip_angefragt", felder.eventId || null);
       setGesendet(true);
       return;
     }

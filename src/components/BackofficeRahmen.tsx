@@ -11,6 +11,7 @@ const ZIELE = [
   { href: "/backoffice/events", name: "Events" },
   { href: "/backoffice/bestellungen", name: "Bestellungen" },
   { href: "/backoffice/vip", name: "VIP" },
+  { href: "/backoffice/auswertung", name: "Auswertung" },
 ] as const;
 
 export type Rolle = "admin" | "team" | "einlass";

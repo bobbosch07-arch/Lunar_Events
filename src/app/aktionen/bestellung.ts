@@ -147,7 +147,7 @@ export async function holeEigeneBestellung(bestellungId: string) {
     .from("bestellungen")
     .select(
       `id, nummer, status, summe_cent, gebuehr_cent, gesamt_cent, bezahlt_am,
-       reserviert_bis, zugangstoken,
+       reserviert_bis, zugangstoken, event_id,
        kunde:kunden(email, vorname, nachname),
        positionen:bestellpositionen(phase_name, menge, einzelpreis_cent, gebuehr_cent),
        event:events(slug, titel, beginn, ort:orte(name, stadt))`,

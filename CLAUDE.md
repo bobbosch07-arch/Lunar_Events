@@ -155,6 +155,23 @@ Personal legt `scripts/mitarbeiter.mjs` an — es gibt bewusst keine
 Oberfläche dafür. Wer Personal anlegen darf, bestimmt, wer an die Kasse
 kommt.
 
+## Auswertung
+
+**Gezählt wird ohne Personenbezug** — keine IP, keine Kennung, kein
+Cookie, Zeitstempel auf die Stunde gerundet (`ereignisse`,
+Migration 0009). Deshalb braucht die Auswertung keinen
+Einwilligungsdialog.
+
+Der Preis dafür steht auch auf der Seite: Das sind **Aufrufe, keine
+Besucher**. Wer zweimal hinschaut, zählt zweimal. Für „welches Event
+zieht besser?" reicht das, für „wie viele verschiedene Leute?" nicht.
+Wer das später braucht, kommt um einen Einwilligungsdialog nicht herum.
+
+Gemeldet wird über `sendBeacon` (`src/components/Zaehler.tsx`), damit
+ein Seitenwechsel die Meldung nicht abschneidet. Bots werden am
+User-Agent grob aussortiert — sie sehen Seiten an und kaufen nie, was
+die Quote sonst verzerrt.
+
 ## Umgebungsvariablen
 
 **Beide Namen für den öffentlichen Supabase-Schlüssel werden akzeptiert**
@@ -218,9 +235,8 @@ Offen:
 5. **Firmendaten** für Impressum, AGB und Datenschutz — die Lücken sind
    in den Seiten sichtbar markiert. Rechtstexte müssen anwaltlich geprüft
    werden.
-6. **Tracking und Consent** (Briefing 32). Noch nichts eingebaut; sobald
-   es kommt, braucht es einen Einwilligungsdialog.
-7. **Newsletter** — Tabelle steht, Formular fehlt.
+6. **Newsletter-Bestätigung** (Double Opt-in). Das Formular steht,
+   verschickt wird bis dahin nichts.
 8. Stripe-Konto freischalten lassen. Ticketverkauf gilt als erhöhtes
    Risiko; mit Sicherheitseinbehalt und verzögerter Auszahlung rechnen.
 

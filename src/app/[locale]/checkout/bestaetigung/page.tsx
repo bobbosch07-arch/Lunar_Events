@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
+import { Zaehler } from "@/components/Zaehler";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
 import {
   holeEigeneBestellung,
@@ -65,6 +66,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
   const walletEingerichtet = Boolean(
     process.env.APPLE_WALLET_TEAM_ID || process.env.GOOGLE_WALLET_ISSUER_ID,
   );
+  const eventId = (bestellung as unknown as { event_id?: string }).event_id ?? null;
   const ticketAdresse = `${eigeneAdresse()}/tickets/${bestellung.zugangstoken as string}`;
   const wann = f.dateTime(new Date(event.beginn), "mitZeit");
   const ort = `${event.ort.name}, ${event.ort.stadt}`;
@@ -84,6 +86,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
 
   return (
     <div className={css.rahmen}>
+      <Zaehler art="kauf_abgeschlossen" eventId={eventId} />
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">

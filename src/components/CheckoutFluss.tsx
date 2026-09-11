@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { StripeZahlung } from "./StripeZahlung";
+import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
 import { preisText } from "@/lib/format";
 import {
@@ -137,6 +138,7 @@ export function CheckoutFluss(props: Props) {
       nummer: ergebnis.nummer,
       bis: ergebnis.reserviert_bis,
     });
+    zaehle("daten_erfasst", props.eventId);
     setSchritt(3);
   }
 
@@ -159,6 +161,7 @@ export function CheckoutFluss(props: Props) {
 
   return (
     <>
+      <Zaehler art="kasse_begonnen" eventId={props.eventId} />
       <ol className={css.schritte}>
         {schritte.map((name, i) => {
           const nr = i + 1;

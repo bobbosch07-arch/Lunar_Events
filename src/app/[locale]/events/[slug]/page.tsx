@@ -7,6 +7,7 @@ import { Fusszeile } from "@/components/Fusszeile";
 import { VipSektion } from "@/components/VipSektion";
 import { Ticketauswahl } from "@/components/Ticketauswahl";
 import { Knopf } from "@/components/Knopf";
+import { Zaehler } from "@/components/Zaehler";
 import { holeEvent, holePhasen } from "@/lib/events";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
@@ -85,6 +86,7 @@ export default async function EventSeite({ params }: Props) {
         Zum Inhalt springen
       </a>
       <Kopfzeile ueberHero />
+      <Zaehler art="event_gesehen" eventId={event.id} />
 
       <main id="inhalt">
         <section className={css.hero} data-grund="tief">
@@ -177,7 +179,11 @@ export default async function EventSeite({ params }: Props) {
               <p className={css.vergangen}>{t("vergangen")}</p>
             ) : (
               <>
-                <Ticketauswahl eventSlug={event.slug} phasen={phasen} />
+                <Ticketauswahl
+                  eventId={event.id}
+                  eventSlug={event.slug}
+                  phasen={phasen}
+                />
 
                 <div className={css.abendkasse}>
                   {event.abendkasse ? (
