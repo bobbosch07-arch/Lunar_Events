@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
-import { gefundeneNamen } from "@/lib/supabase/umgebung";
+import { gefundeneNamen, verwandteNamen } from "@/lib/supabase/umgebung";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +69,9 @@ export async function GET() {
         serverZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         jetzt: new Date().toISOString(),
       },
+      // Nur die Namen, nie die Werte. Zeigt, ob ein Schlüssel unter einer
+      // unerwarteten Bezeichnung in der Umgebung steht.
+      gesetzteVariablen: verwandteNamen(),
     },
     { headers: { "cache-control": "no-store" } },
   );

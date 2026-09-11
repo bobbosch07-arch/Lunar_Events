@@ -28,6 +28,17 @@ export function zugangVorhanden(): boolean {
   return Boolean(SUPABASE_URL && SUPABASE_OEFFENTLICH);
 }
 
+/**
+ * Alle gesetzten Variablennamen, die nach Supabase oder Stripe aussehen —
+ * ohne Werte. Wenn in der Hosting-Umgebung ein Schlüssel unter einem
+ * unerwarteten Namen steht, sieht man es nur so.
+ */
+export function verwandteNamen(): string[] {
+  return Object.keys(process.env)
+    .filter((name) => /SUPABASE|STRIPE|PAYPAL|RESEND|WALLET/i.test(name))
+    .sort();
+}
+
 /** Welcher Name wurde tatsächlich gefunden? Nur der Name, nie der Wert. */
 export function gefundeneNamen() {
   return {
