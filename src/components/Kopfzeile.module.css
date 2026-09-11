@@ -1,0 +1,193 @@
+.kopf {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-kopf);
+  transition:
+    background-color var(--dur-langsam) var(--ease),
+    border-color var(--dur-langsam) var(--ease);
+  border-bottom: 1px solid transparent;
+}
+
+/* Ruht ueber einem dunklen Hero, bis gescrollt wird. */
+.ueberHero {
+  background: transparent;
+  border-bottom-color: transparent;
+}
+
+.fest,
+.ueberHero.gescrollt {
+  background: var(--ivory-50);
+  border-bottom-color: var(--border-light);
+}
+
+.ueberHero.gescrollt {
+  /* Nach dem Scrollen liegt der Kopf auf Ivory — die Farben kippen mit. */
+  --auf-grund: var(--text-primary);
+  --auf-grund-2: var(--text-secondary);
+  --linie: var(--border-light);
+  --akzent-text: var(--gold-500);
+}
+
+.reihe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 92px;
+}
+
+.markeLink {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+
+.mitte {
+  display: flex;
+  gap: var(--space-6);
+}
+
+.rechts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  margin-left: auto;
+}
+
+.punkt {
+  position: relative;
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+  padding-block: var(--space-3);
+  transition: color var(--dur-normal) var(--ease);
+}
+
+.punkt::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 1px;
+  background: var(--gold-500);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-normal) var(--ease-aus);
+}
+
+.punkt:hover {
+  color: var(--akzent-text);
+}
+
+.punkt:hover::after {
+  transform: scaleX(1);
+}
+
+/* Die aktive Seite traegt Linie UND kraeftigere Farbe — Gold allein waere
+   fuer Farbenblinde kein Merkmal (Briefing 26). */
+.aktiv {
+  color: var(--auf-grund);
+  font-weight: var(--fw-bold);
+}
+
+.aktiv::after {
+  transform: scaleX(1);
+}
+
+/* ---------- Mobil ---------- */
+
+.menuKnopf {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+  align-items: center;
+  width: var(--tap);
+  height: var(--tap);
+  margin-right: calc(var(--space-3) * -1);
+  background: transparent;
+  border: 0;
+}
+
+.menuKnopf span {
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: var(--auf-grund);
+  transition: transform var(--dur-normal) var(--ease-aus), opacity var(--dur-schnell) var(--ease);
+}
+
+.offen .balken1 {
+  transform: translateY(3px) rotate(45deg);
+}
+.offen .balken2 {
+  opacity: 0;
+}
+.offen .balken3 {
+  transform: translateY(-3px) rotate(-45deg);
+}
+
+.schublade {
+  display: none;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4) 0 var(--space-8);
+  border-top: 1px solid var(--linie);
+}
+
+.schubladePunkt {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  font-weight: var(--fw-display);
+  letter-spacing: var(--ls-heading);
+  color: var(--auf-grund);
+  padding-block: var(--space-3);
+}
+
+.schubladeTrenner {
+  height: 1px;
+  background: var(--linie);
+  margin-block: var(--space-4);
+}
+
+.sprachen {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+.spracheAktiv {
+  color: var(--auf-grund);
+  font-weight: var(--fw-bold);
+}
+
+@media (max-width: 900px) {
+  .reihe {
+    min-height: 72px;
+    gap: var(--space-4);
+  }
+  .mitte {
+    display: none;
+  }
+  .rechts .punkt {
+    display: none;
+  }
+  /* Der Weg zu den eigenen Tickets bleibt sichtbar — er darf nie hinter
+     das Menue rutschen (Briefing 20). */
+  .rechts .ticketPunkt {
+    display: block;
+    font-size: var(--fs-caption);
+  }
+  .menuKnopf {
+    display: flex;
+  }
+  .schubladeOffen {
+    display: flex;
+  }
+}

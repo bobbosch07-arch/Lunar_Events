@@ -1,0 +1,193 @@
+/* ============================================================
+   LUNAR EVENTS — Design-Tokens
+   Richtung 03 "Contemporary Nightlife": Syne + DM Sans.
+
+   Jede sichtbare Entscheidung steht hier. Komponenten greifen
+   ausschliesslich auf diese Variablen zu — keine eigenen Farben,
+   keine eigenen Schriftgrade, keine eigenen Radien.
+   ============================================================ */
+
+:root {
+  color-scheme: light;
+
+  /* ---------- Markenfarben (Briefing, unveraenderlich) ---------- */
+  --ivory-50: #fcfbf8;
+  --ivory-100: #f7f5f0;
+  --ivory-200: #eeeae1;
+
+  --navy-950: #07111f;
+  --navy-900: #0b1728;
+  --navy-800: #102238;
+  --navy-700: #172e48;
+
+  --gold-500: #c6a15b;
+  --gold-400: #d4b873;
+  --gold-300: #e4ce98;
+  --gold-200: #efe0b8;
+
+  /* ---------- Text ---------- */
+  --text-primary: #101418;
+  --text-secondary: #5e6268;
+  --text-muted: #858990;
+  --text-on-dark: #f8f7f3;
+  --text-on-dark-muted: #b9bec6;
+
+  /* ---------- Linien ---------- */
+  --border-light: #e4e0d7;
+  --border-dark: rgba(255, 255, 255, 0.14);
+  --border-gold: rgba(198, 161, 91, 0.55);
+
+  /* ---------- Status (sparsam, gedeckt) ---------- */
+  --success: #2f6b4f;
+  --warning: #9a741f;
+  --error: #a64040;
+  --info: #365d80;
+  --success-weich: #eaf1ec;
+  --warning-weich: #f6efdc;
+  --error-weich: #f6eaea;
+  --info-weich: #e9eff5;
+
+  /* ============================================================
+     Semantische Ebene — hierauf bauen die Komponenten.
+     [data-grund="dunkel"] schreibt dieselben Namen um, damit jede
+     Komponente ohne eigene Dunkel-Variante auf Navy funktioniert.
+     ============================================================ */
+  --grund: var(--ivory-50);
+  --grund-2: var(--ivory-100);
+  --grund-3: var(--ivory-200);
+  --auf-grund: var(--text-primary);
+  --auf-grund-2: var(--text-secondary);
+  --auf-grund-3: var(--text-muted);
+  --linie: var(--border-light);
+  --linie-stark: #d6d1c5;
+  --akzent: var(--gold-500);
+  --akzent-text: var(--gold-500);
+  --schatten-karte: 0 8px 30px rgba(7, 17, 31, 0.08);
+  --schatten-hoch: 0 18px 50px rgba(7, 17, 31, 0.14);
+
+  /* ---------- Typografie ---------- */
+  /* --font-display / --font-body setzt next/font in layout.tsx */
+  --fw-display: 700;
+  --fw-display-leicht: 600;
+  --fw-body: 400;
+  --fw-medium: 500;
+  --fw-bold: 700;
+
+  --fs-display: clamp(2.75rem, 7vw, 5.25rem);
+  --fs-hero: clamp(2.25rem, 5.6vw, 4.25rem);
+  --fs-h1: clamp(1.875rem, 4vw, 3rem);
+  --fs-h2: clamp(1.5rem, 3vw, 2.25rem);
+  --fs-h3: clamp(1.25rem, 2.2vw, 1.625rem);
+  --fs-h4: 1.125rem;
+  --fs-body-l: 1.125rem;
+  --fs-body: 1rem;
+  --fs-body-s: 0.875rem;
+  --fs-label: 0.75rem;
+  --fs-caption: 0.6875rem;
+
+  --lh-display: 1.02;
+  --lh-heading: 1.14;
+  --lh-body: 1.7;
+  --lh-weit: 1.8;
+  --lh-eng: 1.35;
+
+  /* Syne ist von Haus aus breit — grosse Grade vertragen etwas Zug nach innen,
+     Versal-Labels brauchen dagegen Luft. */
+  --ls-display: -0.015em;
+  --ls-heading: 0.005em;
+  --ls-body: 0;
+  --ls-nav: 0.16em;
+  --ls-label: 0.2em;
+  --ls-eyebrow: 0.28em;
+  --ls-datum: 0.22em;
+
+  /* ---------- Abstaende ---------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* Abstand zwischen Hauptabschnitten der Seite — waechst mit dem Viewport */
+  --abschnitt: clamp(var(--space-16), 9vw, var(--space-32));
+  --abschnitt-klein: clamp(var(--space-12), 6vw, var(--space-20));
+
+  /* ---------- Radien ---------- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pille: 999px;
+
+  /* ---------- Breiten ---------- */
+  --breite-seite: 1280px;
+  --breite-schmal: 760px;
+  --breite-text: 68ch;
+  --rand-seite: clamp(var(--space-5), 5vw, var(--space-16));
+
+  /* ---------- Bewegung ---------- */
+  --dur-schnell: 150ms;
+  --dur-normal: 200ms;
+  --dur-langsam: 250ms;
+  --dur-bild: 600ms;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-aus: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ---------- Ebenen ---------- */
+  --z-basis: 1;
+  --z-haftend: 10;
+  --z-kopf: 100;
+  --z-overlay: 500;
+  --z-dialog: 600;
+  --z-meldung: 700;
+
+  /* ---------- Tap-Ziele ---------- */
+  --tap: 44px;
+}
+
+/* ============================================================
+   Dunkler Grund. Auf jeden Abschnitt setzbar:
+       <section data-grund="dunkel"> … </section>
+   Alle Komponenten darin wechseln mit, ohne eigene Regeln.
+   ============================================================ */
+[data-grund="dunkel"] {
+  --grund: var(--navy-900);
+  --grund-2: var(--navy-800);
+  --grund-3: var(--navy-700);
+  --auf-grund: var(--text-on-dark);
+  --auf-grund-2: var(--text-on-dark-muted);
+  --auf-grund-3: #8e97a3;
+  --linie: var(--border-dark);
+  --linie-stark: rgba(255, 255, 255, 0.24);
+  --akzent-text: var(--gold-300);
+  --schatten-karte: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --schatten-hoch: 0 18px 50px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+[data-grund="tief"] {
+  --grund: var(--navy-950);
+  --grund-2: var(--navy-900);
+  --grund-3: var(--navy-800);
+  --auf-grund: var(--text-on-dark);
+  --auf-grund-2: var(--text-on-dark-muted);
+  --auf-grund-3: #8e97a3;
+  --linie: var(--border-dark);
+  --linie-stark: rgba(255, 255, 255, 0.24);
+  --akzent-text: var(--gold-300);
+  --schatten-karte: 0 8px 30px rgba(0, 0, 0, 0.4);
+  --schatten-hoch: 0 18px 50px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+[data-grund="gedaempft"] {
+  --grund: var(--ivory-100);
+  --grund-2: var(--ivory-200);
+}

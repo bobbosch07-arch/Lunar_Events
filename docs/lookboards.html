@@ -1,0 +1,926 @@
+<title>Lunar Lookboards</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&family=Bodoni+Moda:opsz,wght@6..96,400;6..96,500;6..96,600&family=Work+Sans:wght@300;400;500;600&family=Syne:wght@400;500;600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" />
+<style>
+:root {
+  color-scheme: light;
+  --ivory-50:#FCFBF8; --ivory-100:#F7F5F0; --ivory-200:#EEEAE1;
+  --navy-950:#07111F; --navy-900:#0B1728; --navy-800:#102238; --navy-700:#172E48;
+  --gold-500:#C6A15B; --gold-400:#D4B873; --gold-300:#E4CE98; --gold-200:#EFE0B8;
+  --text-1:#101418; --text-2:#5E6268; --text-3:#858990;
+  --on-dark:#F8F7F3; --on-dark-2:#B9BEC6;
+  --border-light:#E4E0D7; --border-dark:rgba(255,255,255,.14); --border-gold:rgba(198,161,91,.55);
+  --shadow-card:0 8px 30px rgba(7,17,31,.08);
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s5:20px; --s6:24px; --s8:32px;
+  --s10:40px; --s12:48px; --s16:64px; --s20:80px; --s24:96px;
+  --font-display:"Jost",sans-serif; --font-body:"Manrope",sans-serif;
+  --w-display:500; --track-display:.14em; --track-h:.05em; --track-nav:.18em;
+  --radius:6px; --hero-size:3rem;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--navy-950); color:var(--text-1);
+  font-family:var(--font-body); -webkit-font-smoothing:antialiased; }
+img { display:block; max-width:100%; }
+button { font:inherit; cursor:pointer; }
+h1,h2,h3,h4,h5 { margin:0; text-wrap:balance; }
+p { margin:0; }
+a { color:inherit; text-decoration:none; }
+.tab { font-variant-numeric:tabular-nums; }
+:focus-visible { outline:2px solid var(--gold-400); outline-offset:3px; }
+
+.seite-kopf { background:var(--navy-950); color:var(--on-dark);
+  padding:var(--s20) var(--s8) var(--s16);
+  display:flex; flex-direction:column; align-items:center; gap:var(--s5);
+  text-align:center; border-bottom:1px solid var(--border-dark); }
+.seite-kopf img { width:min(280px,60vw); margin-bottom:var(--s4); }
+.sk-eyebrow { font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold-400); }
+.seite-kopf h1 { font-family:"Jost",sans-serif; font-weight:400; font-size:clamp(1.4rem,3.4vw,2.1rem);
+  letter-spacing:.1em; text-transform:uppercase; color:var(--on-dark); }
+.seite-kopf p { max-width:62ch; color:var(--on-dark-2); font-size:.95rem; line-height:1.75; }
+.sprung { display:flex; flex-wrap:wrap; gap:var(--s2); justify-content:center; margin-top:var(--s3); }
+.sprung a { border:1px solid var(--border-dark); border-radius:4px; padding:11px 18px;
+  font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--on-dark-2);
+  transition:border-color .2s, color .2s; }
+.sprung a:hover { color:var(--gold-300); border-color:var(--border-gold); }
+
+.board { background:var(--ivory-50); padding:var(--s20) clamp(20px,4vw,64px) var(--s24);
+  display:flex; flex-direction:column; gap:var(--s16); }
+.board + .board { border-top:6px solid var(--navy-950); }
+.board-kopf { max-width:78ch; display:flex; flex-direction:column; gap:var(--s3); }
+.bk-nr { font-size:.66rem; letter-spacing:.3em; text-transform:uppercase; color:var(--gold-500); }
+.bk-name { font-family:var(--font-display); font-weight:var(--w-display);
+  font-size:clamp(1.9rem,4.6vw,3.1rem); letter-spacing:var(--track-h); line-height:1.05; }
+.bk-char { font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-3); }
+.bk-fonts { display:flex; flex-wrap:wrap; gap:var(--s8); margin:var(--s3) 0 var(--s2); }
+.bk-fonts div { display:flex; flex-direction:column; gap:3px; }
+.bk-fonts dt { font-size:.64rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-3); }
+.bk-fonts dd { margin:0; font-size:.95rem; color:var(--text-1); }
+.probe-display { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.3rem; }
+.probe-body { font-family:var(--font-body); }
+.bk-text { color:var(--text-2); line-height:1.75; font-size:.95rem; max-width:66ch; }
+.bk-risiko { font-size:.9rem; line-height:1.7; color:var(--text-2);
+  border-left:2px solid var(--border-gold); padding-left:var(--s4); max-width:66ch; }
+.bk-risiko span { display:block; font-size:.64rem; letter-spacing:.2em; text-transform:uppercase;
+  color:var(--gold-500); margin-bottom:3px; }
+
+.feld { display:flex; flex-direction:column; gap:var(--s5); }
+.feld-titel { font-size:.64rem; letter-spacing:.24em; text-transform:uppercase; color:var(--text-3);
+  padding-bottom:var(--s3); border-bottom:1px solid var(--border-light); }
+
+.skala { display:flex; flex-direction:column; gap:var(--s5); }
+.sk-zeile { display:grid; grid-template-columns:84px 1fr; gap:var(--s5); align-items:baseline; }
+.sk-rolle { font-size:.62rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-3); }
+.display-xl { font-family:var(--font-display); font-weight:var(--w-display);
+  font-size:clamp(2rem,5.6vw,3.6rem); letter-spacing:var(--track-display); line-height:1.02; text-transform:uppercase; }
+.display-l { font-family:var(--font-display); font-weight:var(--w-display);
+  font-size:clamp(1.4rem,3.2vw,2.1rem); letter-spacing:var(--track-h); line-height:1.15; }
+.display-m { font-family:var(--font-display); font-weight:var(--w-display);
+  font-size:1.25rem; letter-spacing:var(--track-h); }
+.body-t { font-size:1rem; line-height:1.75; color:var(--text-2); max-width:60ch; }
+.label-t { font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--gold-500); }
+.preis-t { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.35rem;
+  letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+
+.nav { display:flex; align-items:center; gap:var(--s8); background:var(--ivory-50);
+  border:1px solid var(--border-light); border-radius:var(--radius); padding:var(--s5) var(--s6); }
+.nav-logo { height:30px; width:auto; }
+.nav-mitte { display:flex; gap:var(--s6); }
+.nav-rechts { display:flex; gap:var(--s6); margin-left:auto; }
+.nav a { font-size:.72rem; letter-spacing:var(--track-nav); text-transform:uppercase; color:var(--text-2);
+  padding-bottom:4px; border-bottom:1px solid transparent; transition:color .2s, border-color .2s; }
+.nav a:hover { color:var(--gold-500); }
+.nav a.aktiv { color:var(--text-1); border-bottom-color:var(--gold-500); }
+
+.hero { position:relative; border-radius:var(--radius); overflow:hidden; min-height:440px;
+  display:flex; align-items:flex-end; background:var(--navy-900); }
+.hero-bild { position:absolute; inset:0;
+  background:
+    radial-gradient(120% 90% at 72% 18%, rgba(198,161,91,.28), transparent 58%),
+    radial-gradient(90% 70% at 18% 82%, rgba(23,46,72,.95), transparent 60%),
+    linear-gradient(168deg,#12263E 0%,#0B1728 46%,#07111F 100%); }
+.bildnotiz { position:absolute; top:var(--s4); right:var(--s4); font-size:.58rem; letter-spacing:.2em;
+  text-transform:uppercase; color:rgba(255,255,255,.34); border:1px solid rgba(255,255,255,.16);
+  border-radius:3px; padding:4px 8px; z-index:2; }
+.hero-inhalt { position:relative; padding:var(--s16) clamp(24px,4vw,48px);
+  display:flex; flex-direction:column; gap:var(--s5); align-items:flex-start; width:100%;
+  background:linear-gradient(0deg, rgba(7,17,31,.86) 12%, rgba(7,17,31,0) 100%); }
+.hero-logo { width:160px; opacity:.95; margin-bottom:var(--s2); }
+.hero-titel { font-family:var(--font-display); font-weight:var(--w-display); color:var(--on-dark);
+  font-size:var(--hero-size); letter-spacing:var(--track-display); line-height:1.02; }
+.hero-sub { color:var(--on-dark-2); font-size:1rem; line-height:1.7; max-width:46ch; }
+.hero-cta { display:flex; flex-wrap:wrap; gap:var(--s3); margin-top:var(--s2); }
+
+.btn { border-radius:var(--radius); padding:14px 26px; font-family:var(--font-body); font-weight:600;
+  font-size:.74rem; letter-spacing:.14em; text-transform:uppercase; border:1px solid transparent;
+  transition:background-color .2s ease, color .2s ease, border-color .2s ease; min-height:46px; }
+.btn-primaer { background:var(--navy-900); color:var(--ivory-50); }
+.btn-primaer:hover { background:var(--navy-700); }
+.btn-primaer[disabled] { background:var(--ivory-200); color:var(--text-3); cursor:not-allowed; }
+.btn-linie { background:transparent; color:var(--navy-900); border-color:var(--navy-900); }
+.btn-linie:hover { background:var(--navy-900); color:var(--ivory-50); }
+.btn-gold { background:transparent; color:var(--navy-900); border-color:var(--border-gold); }
+.btn-gold:hover { background:var(--gold-500); border-color:var(--gold-500); color:var(--navy-950); }
+.btn-hell { background:var(--ivory-50); color:var(--navy-950); }
+.btn-hell:hover { background:var(--gold-300); }
+.btn-linie-hell { background:transparent; color:var(--on-dark); border-color:rgba(255,255,255,.4); }
+.btn-linie-hell:hover { border-color:var(--gold-400); color:var(--gold-300); }
+.btn-klein { padding:10px 18px; min-height:40px; font-size:.68rem; }
+.btn-reihe { display:flex; flex-wrap:wrap; gap:var(--s3); }
+
+.karten { display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:var(--s6); }
+.karte { background:var(--ivory-50); border:1px solid var(--border-light); border-radius:var(--radius);
+  overflow:hidden; box-shadow:var(--shadow-card); display:flex; flex-direction:column; }
+.k-bild { position:relative; aspect-ratio:4/3; }
+.k-bild-1 { background:linear-gradient(158deg,#16304C,#0B1728 62%,#07111F); }
+.k-bild-2 { background:linear-gradient(158deg,#1D3350,#122438 58%,#07111F); }
+.k-bild-3 { background:linear-gradient(158deg,#0F2138,#16293E 55%,#07111F); }
+.k-bild::after { content:""; position:absolute; inset:0;
+  background:radial-gradient(80% 60% at 70% 22%, rgba(198,161,91,.22), transparent 62%); }
+.k-datum { position:absolute; left:var(--s4); bottom:var(--s4); z-index:1; color:var(--on-dark);
+  font-family:var(--font-display); font-weight:var(--w-display); font-size:.85rem; letter-spacing:.22em; }
+.k-vip { position:absolute; right:var(--s4); top:var(--s4); z-index:1; font-size:.58rem; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--gold-300); border:1px solid var(--border-gold);
+  border-radius:3px; padding:4px 8px; }
+.k-text { padding:var(--s5) var(--s5) var(--s6); display:flex; flex-direction:column; gap:var(--s2); flex:1; }
+.k-kat { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); }
+.k-titel { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.3rem;
+  letter-spacing:var(--track-h); text-transform:uppercase; }
+.k-ort { color:var(--text-2); font-size:.9rem; }
+.k-fuss { margin-top:auto; padding-top:var(--s5); display:flex; align-items:baseline;
+  justify-content:space-between; gap:var(--s3); border-top:1px solid var(--border-light); }
+.k-preis { font-size:1.05rem; }
+.k-cta { font-size:.66rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-2);
+  border-bottom:1px solid var(--border-gold); padding-bottom:2px; }
+
+.phasen { display:flex; flex-direction:column; gap:var(--s3); max-width:760px; }
+.phk { display:flex; align-items:center; justify-content:space-between; gap:var(--s5);
+  border:1px solid var(--border-light); border-radius:var(--radius); padding:var(--s5) var(--s6);
+  background:var(--ivory-50); }
+.phk.gewaehlt { border-color:var(--navy-900); box-shadow:inset 3px 0 0 var(--gold-500); background:var(--ivory-100); }
+.phk.aus { background:var(--ivory-100); border-style:dashed; }
+.phk.aus .phk-name, .phk.aus .phk-preis { color:var(--text-3); text-decoration:line-through; }
+.phk.vip { border-color:var(--border-gold); background:linear-gradient(100deg,var(--ivory-100),var(--ivory-50)); }
+.phk-l { display:flex; flex-direction:column; gap:3px; }
+.phk-name { font-family:var(--font-display); font-weight:var(--w-display); font-size:1rem;
+  letter-spacing:.14em; text-transform:uppercase; }
+.phk-hinweis { font-size:.78rem; color:var(--text-2); }
+.phk-r { display:flex; align-items:center; gap:var(--s5); }
+.phk-preis { font-size:1.15rem; }
+.phk-aus { font-size:.66rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); }
+.abendkasse { display:flex; flex-wrap:wrap; align-items:center; gap:var(--s8); max-width:760px;
+  border:1px solid var(--border-light); border-radius:var(--radius); padding:var(--s5) var(--s6);
+  background:var(--ivory-100); }
+.abendkasse > div { display:flex; flex-direction:column; gap:3px; }
+.ak-rolle { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-3); }
+.ak-hinweis { font-size:.92rem; font-weight:500; color:var(--text-2); }
+.ak-trenn { width:1px; align-self:stretch; background:var(--border-light); }
+.ak-fuss { flex-basis:100%; font-size:.8rem; color:var(--text-3); line-height:1.6; }
+
+.ticket-reihe { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:var(--s6); max-width:820px; }
+.ticket { background:var(--navy-900); color:var(--on-dark); border-radius:var(--radius);
+  border:1px solid var(--border-dark); overflow:hidden; display:flex; flex-direction:column; }
+.ticket-vip { border-color:var(--border-gold); }
+.t-kopf { display:flex; align-items:center; justify-content:space-between; gap:var(--s4);
+  padding:var(--s5); border-bottom:1px solid var(--border-dark); }
+.t-logo { height:22px; width:auto; }
+.t-typ { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--on-dark-2);
+  border:1px solid var(--border-dark); border-radius:3px; padding:4px 9px; white-space:nowrap; }
+.t-typ-vip { color:var(--gold-300); border-color:var(--border-gold); }
+.t-body { padding:var(--s6) var(--s5) var(--s5); display:flex; flex-direction:column; gap:var(--s5); }
+.t-event { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.5rem;
+  letter-spacing:var(--track-h); text-transform:uppercase; }
+.t-daten { display:grid; grid-template-columns:1fr 1fr; gap:var(--s4) var(--s5); }
+.t-daten div { display:flex; flex-direction:column; gap:2px; }
+.t-daten span { font-size:.58rem; letter-spacing:.18em; text-transform:uppercase; color:var(--on-dark-2); }
+.t-daten strong { font-size:.88rem; font-weight:500; }
+.t-fuss { margin-top:auto; display:flex; align-items:center; gap:var(--s5);
+  padding:var(--s5); border-top:1px dashed var(--border-dark); }
+.t-hinweis { font-size:.76rem; line-height:1.6; color:var(--on-dark-2); }
+
+.qr { position:relative; width:var(--qr); height:var(--qr); background:var(--ivory-50);
+  border-radius:3px; padding:7px; flex:none; }
+.qr-raster { display:grid; grid-template-columns:repeat(8,1fr); grid-auto-rows:1fr; gap:2px;
+  width:100%; height:100%; }
+.qr-raster i { background:transparent; border-radius:1px; }
+.qr-raster i.an { background:var(--navy-950); }
+.qr-eck { position:absolute; width:23%; height:23%; border:3px solid var(--navy-950); border-radius:2px; }
+.qr-eck.e1 { top:7px; left:7px; }
+.qr-eck.e2 { top:7px; right:7px; }
+.qr-eck.e3 { bottom:7px; left:7px; }
+
+.vip { display:grid; grid-template-columns:1.15fr .85fr; gap:var(--s12); align-items:center;
+  background:var(--ivory-100); border:1px solid var(--border-light); border-radius:var(--radius);
+  padding:clamp(24px,3vw,48px); }
+.vip-links { display:flex; flex-direction:column; gap:var(--s4); align-items:flex-start; }
+.vip-eyebrow { font-size:.62rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold-500); }
+.vip-titel { font-family:var(--font-display); font-weight:var(--w-display);
+  font-size:clamp(1.5rem,3.4vw,2.3rem); letter-spacing:var(--track-h); line-height:1.1; }
+.vip-text { color:var(--text-2); line-height:1.75; max-width:44ch; font-size:.95rem; }
+.vip-liste { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.vip-liste li { padding:var(--s4) 0; border-top:1px solid var(--border-light); font-size:.92rem; }
+.vip-liste li:last-child { border-bottom:1px solid var(--border-light); }
+
+.mobil-reihe { display:flex; flex-wrap:wrap; gap:var(--s8); }
+.phone { width:320px; border:1px solid var(--border-light); border-radius:20px; overflow:hidden;
+  background:var(--ivory-50); box-shadow:var(--shadow-card); display:flex; flex-direction:column; }
+.ph-bar { display:flex; align-items:center; justify-content:space-between; padding:var(--s4) var(--s5);
+  background:var(--navy-950); }
+.ph-bar img { height:18px; width:auto; }
+.ph-menu { display:flex; flex-direction:column; gap:4px; }
+.ph-menu i { display:block; width:20px; height:1px; background:var(--on-dark-2); }
+.ph-titel-klein { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--on-dark-2); }
+.ph-hero { position:relative; height:190px; display:flex; align-items:flex-end;
+  background:linear-gradient(162deg,#16304C,#0B1728 58%,#07111F); }
+.ph-hero::after { content:""; position:absolute; inset:0;
+  background:radial-gradient(90% 70% at 68% 20%, rgba(198,161,91,.24), transparent 60%); }
+.ph-hero-txt { position:relative; z-index:1; padding:var(--s5); display:flex; flex-direction:column;
+  gap:3px; background:linear-gradient(0deg, rgba(7,17,31,.9), transparent); width:100%; }
+.ph-datum { font-size:.6rem; letter-spacing:.22em; color:var(--gold-300); }
+.ph-hero-txt h5 { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.25rem;
+  letter-spacing:var(--track-h); color:var(--on-dark); text-transform:uppercase; }
+.ph-ort { font-size:.76rem; color:var(--on-dark-2); }
+.ph-body { padding:var(--s2) var(--s5); display:flex; flex-direction:column; }
+.ph-zeile { display:flex; align-items:center; justify-content:space-between; gap:var(--s4);
+  padding:var(--s4) 0; border-bottom:1px solid var(--border-light); font-size:.9rem; }
+.ph-zeile b { font-family:var(--font-display); font-weight:var(--w-display); font-variant-numeric:tabular-nums; }
+.ph-zeile b.aus { font-family:var(--font-body); font-size:.68rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--text-3); font-weight:500; }
+.ph-zeile.ph-aktiv { box-shadow:inset 2px 0 0 var(--gold-500); margin-left:-12px; padding-left:12px; }
+.ph-fuss { margin-top:auto; display:flex; align-items:center; justify-content:space-between; gap:var(--s4);
+  padding:var(--s4) var(--s5); border-top:1px solid var(--border-light); background:var(--ivory-100); font-size:.8rem; }
+.ph-fuss .btn { padding:12px 20px; min-height:42px; }
+.ph-ticket { background:var(--navy-900); color:var(--on-dark); padding:var(--s6) var(--s5) var(--s8);
+  display:flex; flex-direction:column; align-items:center; gap:var(--s2); text-align:center; flex:1; }
+.ph-typ { font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold-300); }
+.ph-ticket h5 { font-family:var(--font-display); font-weight:var(--w-display); font-size:1.25rem;
+  letter-spacing:var(--track-h); text-transform:uppercase; }
+.ph-ticket .qr { margin:var(--s5) 0 var(--s3); }
+.ph-nr { font-size:.72rem; letter-spacing:.16em; color:var(--on-dark-2); }
+
+.seite-fuss { background:var(--navy-950); color:var(--on-dark-2); padding:var(--s16) var(--s8) var(--s20);
+  display:flex; flex-direction:column; align-items:center; gap:var(--s4); text-align:center; }
+.seite-fuss h2 { font-family:"Jost",sans-serif; font-weight:400; color:var(--on-dark);
+  font-size:1.3rem; letter-spacing:.14em; text-transform:uppercase; }
+.seite-fuss p { max-width:58ch; font-size:.92rem; line-height:1.75; }
+.fuss-schritte { display:flex; flex-wrap:wrap; gap:var(--s2); justify-content:center; margin-top:var(--s3); }
+.fuss-schritte span { border:1px solid var(--border-dark); border-radius:4px; padding:10px 16px;
+  font-size:.7rem; letter-spacing:.14em; text-transform:uppercase; }
+.fuss-klein { font-size:.8rem; color:#6E7683; margin-top:var(--s6); }
+
+@media (max-width:860px) {
+  .vip { grid-template-columns:1fr; gap:var(--s8); }
+  .nav { flex-wrap:wrap; gap:var(--s4); }
+  .nav-rechts { margin-left:0; }
+  .t-daten { grid-template-columns:1fr; }
+  .sk-zeile { grid-template-columns:1fr; gap:var(--s1); }
+  .phone { width:100%; max-width:340px; }
+  .phk { flex-wrap:wrap; }
+}
+@media (prefers-reduced-motion:reduce) { * { transition:none !important; animation:none !important; } }
+
+.board[data-dir="a"] {
+  --font-display: "Jost", Georgia, "Times New Roman", serif;
+  --font-body: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --w-display: 500;
+  --track-display: 0.16em;
+  --track-h: 0.06em;
+  --track-nav: 0.18em;
+  --radius: 6px;
+  --hero-size: clamp(2.1rem, 5.4vw, 4.1rem);
+}
+.board[data-dir="b"] {
+  --font-display: "Bodoni Moda", Georgia, "Times New Roman", serif;
+  --font-body: "Work Sans", "Segoe UI", system-ui, sans-serif;
+  --w-display: 400;
+  --track-display: 0.01em;
+  --track-h: 0.02em;
+  --track-nav: 0.2em;
+  --radius: 4px;
+  --hero-size: clamp(2.4rem, 6.4vw, 5rem);
+}
+.board[data-dir="c"] {
+  --font-display: "Syne", Georgia, "Times New Roman", serif;
+  --font-body: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  --w-display: 700;
+  --track-display: 0.005em;
+  --track-h: 0.04em;
+  --track-nav: 0.16em;
+  --radius: 8px;
+  --hero-size: clamp(2.2rem, 5.8vw, 4.4rem);
+}</style>
+
+<header class="seite-kopf">
+  <img src="logo/lunar-ivory.png" alt="Lunar Events" />
+  <span class="sk-eyebrow">Schritt 1 vor der Umsetzung</span>
+  <h1>Drei Richtungen zur Auswahl</h1>
+  <p>Farben, Abst&#228;nde und Geometrie sind in allen drei Boards identisch &#8212; sie stehen im Briefing fest.
+     Unterschiedlich ist nur die Typografie, und damit der Charakter der Marke. Dieselben neun Bausteine
+     in derselben Reihenfolge, damit der Vergleich ehrlich bleibt. Eine Richtung ausw&#228;hlen, dann wird sie
+     festgeschrieben und alles Weitere darauf gebaut.</p>
+  <nav class="sprung">
+    <a href="#board-a">01 &middot; Modern Luxury</a>
+    <a href="#board-b">02 &middot; Editorial Luxury</a>
+    <a href="#board-c">03 &middot; Contemporary Nightlife</a>
+  </nav>
+</header>
+
+<section class="board" id="board-a" data-dir="a">
+  <header class="board-kopf">
+    <div class="bk-nr">Lookboard 01</div>
+    <h2 class="bk-name">Modern Luxury</h2>
+    <p class="bk-char">Architektonisch &#183; geometrisch &#183; ruhig</p>
+    <dl class="bk-fonts">
+      <div><dt>Display</dt><dd class="probe-display">Jost</dd></div>
+      <div><dt>Text &amp; UI</dt><dd class="probe-body">Manrope</dd></div>
+      <div><dt>Lizenz</dt><dd class="probe-body">SIL Open Font License</dd></div>
+    </dl>
+    <p class="bk-text">Jost steht in der Futura-Tradition: reine Kreise, gleichm&#228;&#223;ige Strichst&#228;rke, keine Mode-Attit&#252;de. Das ist die Schrift von Architekturb&#252;ros und Hotelgruppen &#8212; teuer wirkt sie durch Proportion, nicht durch Dekor. Manrope tr&#228;gt darunter die Flie&#223;texte, etwas w&#228;rmer und im Kleinen gut lesbar.</p>
+    <p class="bk-risiko"><span>Das Risiko</span>Am sichersten von den dreien &#8212; und am austauschbarsten, wenn die Fotos nicht liefern.</p>
+  </header>
+
+  <div class="feld">
+    <div class="feld-titel">Typografie</div>
+    <div class="skala">
+      <div class="sk-zeile"><span class="sk-rolle">Display</span><span class="display-xl">LUNAR NIGHT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H1</span><span class="display-l">Moonrise Rooftop</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H3</span><span class="display-m">Tickets &amp; Phasen</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Body</span><span class="body-t">Einlass ab 22:00 Uhr. Ab 21 Jahren, Lichtbildausweis erforderlich. Dresscode: elegant, keine Sportkleidung.</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Label</span><span class="label-t">VIP &middot; FRANKFURT &middot; AUSVERKAUFT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Preis</span><span class="preis-t">39 &euro;</span></div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Navigation</div>
+    <nav class="nav">
+      <img class="nav-logo" src="logo/lunar-navy.png" alt="Lunar Events" />
+      <div class="nav-mitte"><a class="aktiv">Events</a><a>About</a><a>Kontakt</a></div>
+      <div class="nav-rechts"><a>Meine Tickets</a><a>Account</a></div>
+    </nav>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Homepage &middot; Hero</div>
+    <div class="hero">
+      <div class="hero-bild" aria-hidden="true"><span class="bildnotiz">Bildfl&#228;che</span></div>
+      <div class="hero-inhalt">
+        <img class="hero-logo" src="logo/lunar-ivory.png" alt="Lunar Events" />
+        <h1 class="hero-titel">YOUR NIGHT.<br/>ELEVATED.</h1>
+        <p class="hero-sub">Ausgew&#228;hlte N&#228;chte in Frankfurt, Mannheim und Stuttgart.</p>
+        <div class="hero-cta">
+          <button class="btn btn-hell">Events entdecken</button>
+          <button class="btn btn-linie-hell">Mehr erfahren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Karten</div>
+    <div class="karten"><article class="karte">
+      <div class="k-bild k-bild-1" aria-hidden="true"><span class="k-datum">24 OKT</span><span class="k-vip">VIP frei</span></div>
+      <div class="k-text">
+        <span class="k-kat">Club</span>
+        <h4 class="k-titel">LUNAR NIGHT 03</h4>
+        <p class="k-ort">Frankfurt &#183; Alte Werft</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 29 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-2" aria-hidden="true"><span class="k-datum">07 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Rooftop</span>
+        <h4 class="k-titel">MOONRISE</h4>
+        <p class="k-ort">Mannheim &#183; Rooftop 12</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 35 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-3" aria-hidden="true"><span class="k-datum">21 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Party</span>
+        <h4 class="k-titel">ECLIPSE</h4>
+        <p class="k-ort">Stuttgart &#183; Halle Nord</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 25 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article></div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Detail &middot; Ticketauswahl</div>
+    <div class="phasen"><div class="phk aus">
+      <div class="phk-l"><span class="phk-name">Early Bird</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">29 &#8364;</span><span class="phk-aus">Ausverkauft</span></div>
+    </div><div class="phk gewaehlt">
+      <div class="phk-l"><span class="phk-name">Phase 2</span><span class="phk-hinweis">Noch 24 verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">39 &#8364;</span><button class="btn btn-primaer btn-klein">Gew&#228;hlt</button></div>
+    </div><div class="phk">
+      <div class="phk-l"><span class="phk-name">Standard</span><span class="phk-hinweis">Verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">49 &#8364;</span><button class="btn btn-linie btn-klein">Ausw&#228;hlen</button></div>
+    </div><div class="phk vip">
+      <div class="phk-l"><span class="phk-name">VIP Experience</span><span class="phk-hinweis">Tisch, Service, Priority Entry</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">auf Anfrage</span><button class="btn btn-gold btn-klein">Anfragen</button></div>
+    </div></div>
+    <div class="abendkasse">
+      <div><span class="ak-rolle">Online</span><strong class="preis-t">39 &euro;</strong></div>
+      <div class="ak-trenn" aria-hidden="true"></div>
+      <div><span class="ak-rolle">Abendkasse</span><strong class="ak-hinweis">Preis kann abweichen</strong></div>
+      <p class="ak-fuss">Online gekaufte Tickets garantieren den Einlass. F&#252;r die Abendkasse gilt das nicht.</p>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Digitales Ticket</div>
+    <div class="ticket-reihe">
+      <div class="ticket">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ">Phase 2</span></div>
+        <div class="t-body">
+          <h4 class="t-event">LUNAR NIGHT 03</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>24. Okt 2026 &middot; 23:00</strong></div>
+            <div><span>Ort</span><strong>Alte Werft, Frankfurt</strong></div>
+            <div><span>Gast</span><strong>N. Schulz</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4471-09</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Am Einlass scannen lassen.<br/>Helligkeit hochdrehen.</p></div>
+      </div>
+      <div class="ticket ticket-vip">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ t-typ-vip">VIP &middot; Tisch 04</span></div>
+        <div class="t-body">
+          <h4 class="t-event">MOONRISE</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>07. Nov 2026 &middot; 22:00</strong></div>
+            <div><span>Ort</span><strong>Rooftop 12, Mannheim</strong></div>
+            <div><span>G&#228;ste</span><strong>6 Personen</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4512-01</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Priority Entry, linker Eingang.<br/>Gastgeberin: Melike K.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">VIP-Sektion</div>
+    <div class="vip">
+      <div class="vip-links">
+        <span class="vip-eyebrow">VIP Experience</span>
+        <h3 class="vip-titel">PRIVATE. PREMIUM. PERSONAL.</h3>
+        <p class="vip-text">VIP ist kein teureres Ticket. Es ist ein Tisch, ein Ansprechpartner und ein Abend, der vorher abgesprochen wurde.</p>
+        <button class="btn btn-gold">VIP anfragen</button>
+      </div>
+      <ul class="vip-liste">
+        <li>Eigener Tisch mit reservierter Fl&#228;che</li>
+        <li>Bottle Service am Platz</li>
+        <li>Priority Entry ohne Anstehen</li>
+        <li>Pers&#246;nliche Absprache vorab</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Buttons &amp; Zust&#228;nde</div>
+    <div class="btn-reihe">
+      <button class="btn btn-primaer">Tickets kaufen</button>
+      <button class="btn btn-linie">Mehr erfahren</button>
+      <button class="btn btn-gold">VIP anfragen</button>
+      <button class="btn btn-primaer" disabled>Ausverkauft</button>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Mobil</div>
+    <div class="mobil-reihe">
+      <div class="phone">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-menu" aria-hidden="true"><i></i><i></i></span></div>
+        <div class="ph-hero">
+          <span class="bildnotiz">Bildfl&#228;che</span>
+          <div class="ph-hero-txt">
+            <span class="ph-datum">24 OKT 2026</span>
+            <h5>LUNAR NIGHT 03</h5>
+            <span class="ph-ort">Frankfurt &middot; Alte Werft</span>
+          </div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-zeile"><span>Early Bird</span><b class="aus">Ausverkauft</b></div>
+          <div class="ph-zeile ph-aktiv"><span>Phase 2</span><b>39 &euro;</b></div>
+          <div class="ph-zeile"><span>Standard</span><b>49 &euro;</b></div>
+        </div>
+        <div class="ph-fuss"><span>2 Tickets &middot; 78 &euro;</span><button class="btn btn-primaer">Weiter</button></div>
+      </div>
+      <div class="phone phone-ticket">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-titel-klein">Meine Tickets</span></div>
+        <div class="ph-ticket">
+          <span class="ph-typ">Phase 2</span>
+          <h5>LUNAR NIGHT 03</h5>
+          <span class="ph-ort">24. Okt &middot; 23:00 &middot; Frankfurt</span>
+          <div class="qr" style="--qr:140px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div>
+          <span class="ph-nr tab">LUN-4471-09</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="board" id="board-b" data-dir="b">
+  <header class="board-kopf">
+    <div class="bk-nr">Lookboard 02</div>
+    <h2 class="bk-name">Editorial Luxury</h2>
+    <p class="bk-char">Fashion &#183; redaktionell &#183; hochwertig</p>
+    <dl class="bk-fonts">
+      <div><dt>Display</dt><dd class="probe-display">Bodoni Moda</dd></div>
+      <div><dt>Text &amp; UI</dt><dd class="probe-body">Work Sans</dd></div>
+      <div><dt>Lizenz</dt><dd class="probe-body">SIL Open Font License</dd></div>
+    </dl>
+    <p class="bk-text">Bodoni ist die Schrift der Modemagazine: extremer Strichkontrast, hohe Serifen, aristokratisch. Sie macht aus einem Eventnamen eine Titelseite. Work Sans daneben bleibt bewusst n&#252;chtern &#8212; der Kontrast zwischen beiden ist die eigentliche Gestaltung.</p>
+    <p class="bk-risiko"><span>Das Risiko</span>St&#228;rkster Charakter, engste F&#252;hrung: Bodoni bricht bei kleinen Graden und schlechten Fotos sofort zusammen.</p>
+  </header>
+
+  <div class="feld">
+    <div class="feld-titel">Typografie</div>
+    <div class="skala">
+      <div class="sk-zeile"><span class="sk-rolle">Display</span><span class="display-xl">LUNAR NIGHT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H1</span><span class="display-l">Moonrise Rooftop</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H3</span><span class="display-m">Tickets &amp; Phasen</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Body</span><span class="body-t">Einlass ab 22:00 Uhr. Ab 21 Jahren, Lichtbildausweis erforderlich. Dresscode: elegant, keine Sportkleidung.</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Label</span><span class="label-t">VIP &middot; FRANKFURT &middot; AUSVERKAUFT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Preis</span><span class="preis-t">39 &euro;</span></div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Navigation</div>
+    <nav class="nav">
+      <img class="nav-logo" src="logo/lunar-navy.png" alt="Lunar Events" />
+      <div class="nav-mitte"><a class="aktiv">Events</a><a>About</a><a>Kontakt</a></div>
+      <div class="nav-rechts"><a>Meine Tickets</a><a>Account</a></div>
+    </nav>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Homepage &middot; Hero</div>
+    <div class="hero">
+      <div class="hero-bild" aria-hidden="true"><span class="bildnotiz">Bildfl&#228;che</span></div>
+      <div class="hero-inhalt">
+        <img class="hero-logo" src="logo/lunar-ivory.png" alt="Lunar Events" />
+        <h1 class="hero-titel">YOUR NIGHT.<br/>ELEVATED.</h1>
+        <p class="hero-sub">Ausgew&#228;hlte N&#228;chte in Frankfurt, Mannheim und Stuttgart.</p>
+        <div class="hero-cta">
+          <button class="btn btn-hell">Events entdecken</button>
+          <button class="btn btn-linie-hell">Mehr erfahren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Karten</div>
+    <div class="karten"><article class="karte">
+      <div class="k-bild k-bild-1" aria-hidden="true"><span class="k-datum">24 OKT</span><span class="k-vip">VIP frei</span></div>
+      <div class="k-text">
+        <span class="k-kat">Club</span>
+        <h4 class="k-titel">LUNAR NIGHT 03</h4>
+        <p class="k-ort">Frankfurt &#183; Alte Werft</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 29 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-2" aria-hidden="true"><span class="k-datum">07 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Rooftop</span>
+        <h4 class="k-titel">MOONRISE</h4>
+        <p class="k-ort">Mannheim &#183; Rooftop 12</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 35 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-3" aria-hidden="true"><span class="k-datum">21 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Party</span>
+        <h4 class="k-titel">ECLIPSE</h4>
+        <p class="k-ort">Stuttgart &#183; Halle Nord</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 25 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article></div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Detail &middot; Ticketauswahl</div>
+    <div class="phasen"><div class="phk aus">
+      <div class="phk-l"><span class="phk-name">Early Bird</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">29 &#8364;</span><span class="phk-aus">Ausverkauft</span></div>
+    </div><div class="phk gewaehlt">
+      <div class="phk-l"><span class="phk-name">Phase 2</span><span class="phk-hinweis">Noch 24 verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">39 &#8364;</span><button class="btn btn-primaer btn-klein">Gew&#228;hlt</button></div>
+    </div><div class="phk">
+      <div class="phk-l"><span class="phk-name">Standard</span><span class="phk-hinweis">Verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">49 &#8364;</span><button class="btn btn-linie btn-klein">Ausw&#228;hlen</button></div>
+    </div><div class="phk vip">
+      <div class="phk-l"><span class="phk-name">VIP Experience</span><span class="phk-hinweis">Tisch, Service, Priority Entry</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">auf Anfrage</span><button class="btn btn-gold btn-klein">Anfragen</button></div>
+    </div></div>
+    <div class="abendkasse">
+      <div><span class="ak-rolle">Online</span><strong class="preis-t">39 &euro;</strong></div>
+      <div class="ak-trenn" aria-hidden="true"></div>
+      <div><span class="ak-rolle">Abendkasse</span><strong class="ak-hinweis">Preis kann abweichen</strong></div>
+      <p class="ak-fuss">Online gekaufte Tickets garantieren den Einlass. F&#252;r die Abendkasse gilt das nicht.</p>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Digitales Ticket</div>
+    <div class="ticket-reihe">
+      <div class="ticket">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ">Phase 2</span></div>
+        <div class="t-body">
+          <h4 class="t-event">LUNAR NIGHT 03</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>24. Okt 2026 &middot; 23:00</strong></div>
+            <div><span>Ort</span><strong>Alte Werft, Frankfurt</strong></div>
+            <div><span>Gast</span><strong>N. Schulz</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4471-09</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Am Einlass scannen lassen.<br/>Helligkeit hochdrehen.</p></div>
+      </div>
+      <div class="ticket ticket-vip">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ t-typ-vip">VIP &middot; Tisch 04</span></div>
+        <div class="t-body">
+          <h4 class="t-event">MOONRISE</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>07. Nov 2026 &middot; 22:00</strong></div>
+            <div><span>Ort</span><strong>Rooftop 12, Mannheim</strong></div>
+            <div><span>G&#228;ste</span><strong>6 Personen</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4512-01</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Priority Entry, linker Eingang.<br/>Gastgeberin: Melike K.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">VIP-Sektion</div>
+    <div class="vip">
+      <div class="vip-links">
+        <span class="vip-eyebrow">VIP Experience</span>
+        <h3 class="vip-titel">PRIVATE. PREMIUM. PERSONAL.</h3>
+        <p class="vip-text">VIP ist kein teureres Ticket. Es ist ein Tisch, ein Ansprechpartner und ein Abend, der vorher abgesprochen wurde.</p>
+        <button class="btn btn-gold">VIP anfragen</button>
+      </div>
+      <ul class="vip-liste">
+        <li>Eigener Tisch mit reservierter Fl&#228;che</li>
+        <li>Bottle Service am Platz</li>
+        <li>Priority Entry ohne Anstehen</li>
+        <li>Pers&#246;nliche Absprache vorab</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Buttons &amp; Zust&#228;nde</div>
+    <div class="btn-reihe">
+      <button class="btn btn-primaer">Tickets kaufen</button>
+      <button class="btn btn-linie">Mehr erfahren</button>
+      <button class="btn btn-gold">VIP anfragen</button>
+      <button class="btn btn-primaer" disabled>Ausverkauft</button>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Mobil</div>
+    <div class="mobil-reihe">
+      <div class="phone">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-menu" aria-hidden="true"><i></i><i></i></span></div>
+        <div class="ph-hero">
+          <span class="bildnotiz">Bildfl&#228;che</span>
+          <div class="ph-hero-txt">
+            <span class="ph-datum">24 OKT 2026</span>
+            <h5>LUNAR NIGHT 03</h5>
+            <span class="ph-ort">Frankfurt &middot; Alte Werft</span>
+          </div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-zeile"><span>Early Bird</span><b class="aus">Ausverkauft</b></div>
+          <div class="ph-zeile ph-aktiv"><span>Phase 2</span><b>39 &euro;</b></div>
+          <div class="ph-zeile"><span>Standard</span><b>49 &euro;</b></div>
+        </div>
+        <div class="ph-fuss"><span>2 Tickets &middot; 78 &euro;</span><button class="btn btn-primaer">Weiter</button></div>
+      </div>
+      <div class="phone phone-ticket">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-titel-klein">Meine Tickets</span></div>
+        <div class="ph-ticket">
+          <span class="ph-typ">Phase 2</span>
+          <h5>LUNAR NIGHT 03</h5>
+          <span class="ph-ort">24. Okt &middot; 23:00 &middot; Frankfurt</span>
+          <div class="qr" style="--qr:140px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div>
+          <span class="ph-nr tab">LUN-4471-09</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="board" id="board-c" data-dir="c">
+  <header class="board-kopf">
+    <div class="bk-nr">Lookboard 03</div>
+    <h2 class="bk-name">Contemporary Nightlife</h2>
+    <p class="bk-char">Jung &#183; kantig &#183; energisch</p>
+    <dl class="bk-fonts">
+      <div><dt>Display</dt><dd class="probe-display">Syne</dd></div>
+      <div><dt>Text &amp; UI</dt><dd class="probe-body">DM Sans</dd></div>
+      <div><dt>Lizenz</dt><dd class="probe-body">SIL Open Font License</dd></div>
+    </dl>
+    <p class="bk-text">Syne kommt aus dem Kultur- und Clubumfeld: ungleiche Buchstabenbreiten, harte Schnitte, ein Rhythmus, der nach Plakat und Line-up klingt. Premium, aber mit Puls. DM Sans h&#228;lt den Funktionsteil &#8212; Preise, Formulare, Checkout &#8212; ruhig und unauff&#228;llig.</p>
+    <p class="bk-risiko"><span>Das Risiko</span>Am n&#228;chsten an &#8218;Clubflyer&#8216;. Tr&#228;gt das Branding, vertr&#228;gt aber keine zweite laute Entscheidung daneben.</p>
+  </header>
+
+  <div class="feld">
+    <div class="feld-titel">Typografie</div>
+    <div class="skala">
+      <div class="sk-zeile"><span class="sk-rolle">Display</span><span class="display-xl">LUNAR NIGHT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H1</span><span class="display-l">Moonrise Rooftop</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">H3</span><span class="display-m">Tickets &amp; Phasen</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Body</span><span class="body-t">Einlass ab 22:00 Uhr. Ab 21 Jahren, Lichtbildausweis erforderlich. Dresscode: elegant, keine Sportkleidung.</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Label</span><span class="label-t">VIP &middot; FRANKFURT &middot; AUSVERKAUFT</span></div>
+      <div class="sk-zeile"><span class="sk-rolle">Preis</span><span class="preis-t">39 &euro;</span></div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Navigation</div>
+    <nav class="nav">
+      <img class="nav-logo" src="logo/lunar-navy.png" alt="Lunar Events" />
+      <div class="nav-mitte"><a class="aktiv">Events</a><a>About</a><a>Kontakt</a></div>
+      <div class="nav-rechts"><a>Meine Tickets</a><a>Account</a></div>
+    </nav>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Homepage &middot; Hero</div>
+    <div class="hero">
+      <div class="hero-bild" aria-hidden="true"><span class="bildnotiz">Bildfl&#228;che</span></div>
+      <div class="hero-inhalt">
+        <img class="hero-logo" src="logo/lunar-ivory.png" alt="Lunar Events" />
+        <h1 class="hero-titel">YOUR NIGHT.<br/>ELEVATED.</h1>
+        <p class="hero-sub">Ausgew&#228;hlte N&#228;chte in Frankfurt, Mannheim und Stuttgart.</p>
+        <div class="hero-cta">
+          <button class="btn btn-hell">Events entdecken</button>
+          <button class="btn btn-linie-hell">Mehr erfahren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Karten</div>
+    <div class="karten"><article class="karte">
+      <div class="k-bild k-bild-1" aria-hidden="true"><span class="k-datum">24 OKT</span><span class="k-vip">VIP frei</span></div>
+      <div class="k-text">
+        <span class="k-kat">Club</span>
+        <h4 class="k-titel">LUNAR NIGHT 03</h4>
+        <p class="k-ort">Frankfurt &#183; Alte Werft</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 29 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-2" aria-hidden="true"><span class="k-datum">07 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Rooftop</span>
+        <h4 class="k-titel">MOONRISE</h4>
+        <p class="k-ort">Mannheim &#183; Rooftop 12</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 35 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article><article class="karte">
+      <div class="k-bild k-bild-3" aria-hidden="true"><span class="k-datum">21 NOV</span></div>
+      <div class="k-text">
+        <span class="k-kat">Party</span>
+        <h4 class="k-titel">ECLIPSE</h4>
+        <p class="k-ort">Stuttgart &#183; Halle Nord</p>
+        <div class="k-fuss"><span class="k-preis preis-t">ab 25 &#8364;</span><span class="k-cta">Event ansehen</span></div>
+      </div>
+    </article></div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Event-Detail &middot; Ticketauswahl</div>
+    <div class="phasen"><div class="phk aus">
+      <div class="phk-l"><span class="phk-name">Early Bird</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">29 &#8364;</span><span class="phk-aus">Ausverkauft</span></div>
+    </div><div class="phk gewaehlt">
+      <div class="phk-l"><span class="phk-name">Phase 2</span><span class="phk-hinweis">Noch 24 verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">39 &#8364;</span><button class="btn btn-primaer btn-klein">Gew&#228;hlt</button></div>
+    </div><div class="phk">
+      <div class="phk-l"><span class="phk-name">Standard</span><span class="phk-hinweis">Verf&#252;gbar</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">49 &#8364;</span><button class="btn btn-linie btn-klein">Ausw&#228;hlen</button></div>
+    </div><div class="phk vip">
+      <div class="phk-l"><span class="phk-name">VIP Experience</span><span class="phk-hinweis">Tisch, Service, Priority Entry</span></div>
+      <div class="phk-r"><span class="phk-preis preis-t">auf Anfrage</span><button class="btn btn-gold btn-klein">Anfragen</button></div>
+    </div></div>
+    <div class="abendkasse">
+      <div><span class="ak-rolle">Online</span><strong class="preis-t">39 &euro;</strong></div>
+      <div class="ak-trenn" aria-hidden="true"></div>
+      <div><span class="ak-rolle">Abendkasse</span><strong class="ak-hinweis">Preis kann abweichen</strong></div>
+      <p class="ak-fuss">Online gekaufte Tickets garantieren den Einlass. F&#252;r die Abendkasse gilt das nicht.</p>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Digitales Ticket</div>
+    <div class="ticket-reihe">
+      <div class="ticket">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ">Phase 2</span></div>
+        <div class="t-body">
+          <h4 class="t-event">LUNAR NIGHT 03</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>24. Okt 2026 &middot; 23:00</strong></div>
+            <div><span>Ort</span><strong>Alte Werft, Frankfurt</strong></div>
+            <div><span>Gast</span><strong>N. Schulz</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4471-09</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Am Einlass scannen lassen.<br/>Helligkeit hochdrehen.</p></div>
+      </div>
+      <div class="ticket ticket-vip">
+        <div class="t-kopf"><img src="logo/lunar-ivory.png" alt="Lunar Events" class="t-logo" /><span class="t-typ t-typ-vip">VIP &middot; Tisch 04</span></div>
+        <div class="t-body">
+          <h4 class="t-event">MOONRISE</h4>
+          <div class="t-daten">
+            <div><span>Datum</span><strong>07. Nov 2026 &middot; 22:00</strong></div>
+            <div><span>Ort</span><strong>Rooftop 12, Mannheim</strong></div>
+            <div><span>G&#228;ste</span><strong>6 Personen</strong></div>
+            <div><span>Bestellung</span><strong class="tab">LUN-4512-01</strong></div>
+          </div>
+        </div>
+        <div class="t-fuss"><div class="qr" style="--qr:104px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div><p class="t-hinweis">Priority Entry, linker Eingang.<br/>Gastgeberin: Melike K.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">VIP-Sektion</div>
+    <div class="vip">
+      <div class="vip-links">
+        <span class="vip-eyebrow">VIP Experience</span>
+        <h3 class="vip-titel">PRIVATE. PREMIUM. PERSONAL.</h3>
+        <p class="vip-text">VIP ist kein teureres Ticket. Es ist ein Tisch, ein Ansprechpartner und ein Abend, der vorher abgesprochen wurde.</p>
+        <button class="btn btn-gold">VIP anfragen</button>
+      </div>
+      <ul class="vip-liste">
+        <li>Eigener Tisch mit reservierter Fl&#228;che</li>
+        <li>Bottle Service am Platz</li>
+        <li>Priority Entry ohne Anstehen</li>
+        <li>Pers&#246;nliche Absprache vorab</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Buttons &amp; Zust&#228;nde</div>
+    <div class="btn-reihe">
+      <button class="btn btn-primaer">Tickets kaufen</button>
+      <button class="btn btn-linie">Mehr erfahren</button>
+      <button class="btn btn-gold">VIP anfragen</button>
+      <button class="btn btn-primaer" disabled>Ausverkauft</button>
+    </div>
+  </div>
+
+  <div class="feld">
+    <div class="feld-titel">Mobil</div>
+    <div class="mobil-reihe">
+      <div class="phone">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-menu" aria-hidden="true"><i></i><i></i></span></div>
+        <div class="ph-hero">
+          <span class="bildnotiz">Bildfl&#228;che</span>
+          <div class="ph-hero-txt">
+            <span class="ph-datum">24 OKT 2026</span>
+            <h5>LUNAR NIGHT 03</h5>
+            <span class="ph-ort">Frankfurt &middot; Alte Werft</span>
+          </div>
+        </div>
+        <div class="ph-body">
+          <div class="ph-zeile"><span>Early Bird</span><b class="aus">Ausverkauft</b></div>
+          <div class="ph-zeile ph-aktiv"><span>Phase 2</span><b>39 &euro;</b></div>
+          <div class="ph-zeile"><span>Standard</span><b>49 &euro;</b></div>
+        </div>
+        <div class="ph-fuss"><span>2 Tickets &middot; 78 &euro;</span><button class="btn btn-primaer">Weiter</button></div>
+      </div>
+      <div class="phone phone-ticket">
+        <div class="ph-bar"><img src="logo/lunar-ivory.png" alt="Lunar Events" /><span class="ph-titel-klein">Meine Tickets</span></div>
+        <div class="ph-ticket">
+          <span class="ph-typ">Phase 2</span>
+          <h5>LUNAR NIGHT 03</h5>
+          <span class="ph-ort">24. Okt &middot; 23:00 &middot; Frankfurt</span>
+          <div class="qr" style="--qr:140px" role="img" aria-label="Platzhalter f&#252;r den Ticket-Code"><div class="qr-raster"><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i></i><i></i><i></i><i class="an"></i><i class="an"></i><i class="an"></i><i></i></div><span class="qr-eck e1"></span><span class="qr-eck e2"></span><span class="qr-eck e3"></span></div>
+          <span class="ph-nr tab">LUN-4471-09</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<footer class="seite-fuss">
+  <h2>Nach der Entscheidung</h2>
+  <p>Die gew&#228;hlte Richtung wird zu Design-Tokens: Schriftskala, Farben, Abst&#228;nde, Radien, Schatten,
+     Bewegung. Danach entsteht das Komponentensystem, und erst darauf die Seiten. Kein Bauteil bekommt
+     eigene Farben oder eigene Schriftgrade.</p>
+  <div class="fuss-schritte">
+    <span>1 &middot; Typografie festschreiben</span><span>2 &middot; Tokens</span><span>3 &middot; Komponenten</span>
+    <span>4 &middot; Seiten</span><span>5 &middot; Checkout</span><span>6 &middot; App</span>
+  </div>
+  <p class="fuss-klein">Bildfl&#228;chen sind Platzhalter &#8212; echte Eventfotos ersetzen sie.
+     Die Codefelder auf den Tickets sind Attrappen.</p>
+</footer>

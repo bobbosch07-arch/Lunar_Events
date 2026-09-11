@@ -1,0 +1,159 @@
+.karte {
+  display: flex;
+  flex-direction: column;
+  background: var(--grund);
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--schatten-karte);
+  transition:
+    transform var(--dur-langsam) var(--ease-aus),
+    box-shadow var(--dur-langsam) var(--ease);
+}
+
+.karte:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--schatten-hoch);
+}
+
+.bildfeld {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: linear-gradient(158deg, #16304c, #0b1728 62%, #07111f);
+}
+
+/* Leichter Goldschimmer ueber dem Motiv haelt Karten mit und ohne Foto
+   in derselben Welt. */
+.bildfeld::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(80% 60% at 70% 22%, rgba(198, 161, 91, 0.2), transparent 62%);
+  pointer-events: none;
+}
+
+.bild {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--dur-bild) var(--ease-aus);
+}
+
+.karte:hover .bild {
+  transform: scale(1.03);
+}
+
+.datum {
+  position: absolute;
+  left: var(--space-4);
+  bottom: var(--space-4);
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-body-s);
+  letter-spacing: var(--ls-datum);
+  text-transform: uppercase;
+  color: var(--text-on-dark);
+  text-shadow: 0 1px 12px rgba(7, 17, 31, 0.7);
+}
+
+.marke {
+  position: absolute;
+  right: var(--space-4);
+  top: var(--space-4);
+  z-index: 1;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  padding: 5px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-gold);
+  color: var(--gold-300);
+  background: rgba(7, 17, 31, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.markeAus {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: var(--text-on-dark-muted);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  flex: 1;
+}
+
+.kategorie {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+.titel {
+  font-size: var(--fs-h3);
+  text-transform: uppercase;
+  color: var(--auf-grund);
+}
+
+.ort {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+}
+
+.fuss {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-top: auto;
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--linie);
+}
+
+.preis {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-body-l);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+.preisAus {
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-3);
+}
+
+.cta {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+  border-bottom: 1px solid var(--border-gold);
+  padding-bottom: 2px;
+  transition: color var(--dur-normal) var(--ease);
+}
+
+.karte:hover .cta {
+  color: var(--akzent-text);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .karte:hover {
+    transform: none;
+  }
+  .karte:hover .bild {
+    transform: none;
+  }
+}

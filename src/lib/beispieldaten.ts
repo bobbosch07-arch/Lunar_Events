@@ -1,0 +1,227 @@
+import type { Ort, Phase, Veranstaltung } from "./typen";
+
+/**
+ * PLATZHALTER. Steht hier, bis die Datenbank Daten liefert — damit die
+ * Oberflaeche von Anfang an an echten Formen entwickelt wird und nicht an
+ * leeren Listen. Wird von `src/lib/events.ts` benutzt, solange keine
+ * Supabase-Zugangsdaten gesetzt sind.
+ */
+
+const ALTE_WERFT: Ort = {
+  id: "ort-1",
+  name: "Alte Werft",
+  stadt: "Frankfurt",
+  strasse: "Hanauer Landstraße 188",
+  plz: "60314",
+  land: "DE",
+  lat: null,
+  lng: null,
+};
+
+const ROOFTOP: Ort = {
+  id: "ort-2",
+  name: "Rooftop 12",
+  stadt: "Mannheim",
+  strasse: "P7 12",
+  plz: "68161",
+  land: "DE",
+  lat: null,
+  lng: null,
+};
+
+const HALLE_NORD: Ort = {
+  id: "ort-3",
+  name: "Halle Nord",
+  stadt: "Stuttgart",
+  strasse: "Nordbahnhofstraße 34",
+  plz: "70191",
+  land: "DE",
+  lat: null,
+  lng: null,
+};
+
+function inTagen(tage: number, stunde = 23, minute = 0): string {
+  const d = new Date();
+  d.setDate(d.getDate() + tage);
+  d.setHours(stunde, minute, 0, 0);
+  return d.toISOString();
+}
+
+export const BEISPIEL_EVENTS: Veranstaltung[] = [
+  {
+    id: "ev-1",
+    slug: "lunar-night-03",
+    titel: "LUNAR NIGHT 03",
+    untertitel: "Die dritte Nacht",
+    teaser: "Drei Floors, ein Innenhof, Einlass bis zwei.",
+    beschreibung:
+      "Die dritte Ausgabe unserer Hausreihe. Zwei Floors im Hauptsaal, House und Afro im Innenhof, dazu eine Bar, die bis fünf offen bleibt.\n\nDer Innenhof ist überdacht und beheizt.",
+    kategorie: "club",
+    status: "veroeffentlicht",
+    beginn: inTagen(18),
+    einlass: inTagen(18, 22, 0),
+    ende: inTagen(19, 5, 0),
+    ort: ALTE_WERFT,
+    bild: null,
+    mindestalter: 21,
+    dresscode: "Elegant. Keine Sportkleidung, keine Caps.",
+    veranstalter: "Lunar Events",
+    abendkasse: true,
+    abendkasse_hinweis: null,
+    featured: true,
+    ab_preis_cent: 2900,
+    vip_verfuegbar: true,
+    ausverkauft: false,
+  },
+  {
+    id: "ev-2",
+    slug: "moonrise-rooftop-opening",
+    titel: "MOONRISE",
+    untertitel: "Rooftop Opening",
+    teaser: "Sonnenuntergang über Mannheim, danach die ganze Nacht.",
+    beschreibung:
+      "Wir eröffnen die Dachterrasse. Ab 20 Uhr Apéro mit Blick über die Stadt, ab Mitternacht drinnen weiter.",
+    kategorie: "rooftop",
+    status: "veroeffentlicht",
+    beginn: inTagen(32, 20, 0),
+    einlass: inTagen(32, 19, 30),
+    ende: inTagen(33, 4, 0),
+    ort: ROOFTOP,
+    bild: null,
+    mindestalter: 21,
+    dresscode: "Smart casual.",
+    veranstalter: "Lunar Events",
+    abendkasse: false,
+    abendkasse_hinweis: null,
+    featured: true,
+    ab_preis_cent: 3500,
+    vip_verfuegbar: true,
+    ausverkauft: false,
+  },
+  {
+    id: "ev-3",
+    slug: "eclipse",
+    titel: "ECLIPSE",
+    untertitel: null,
+    teaser: "Eine Halle, ein Line-up, kein Licht zu viel.",
+    beschreibung: "Halle Nord, komplett abgedunkelt. Line-up wird zwei Wochen vorher bekanntgegeben.",
+    kategorie: "party",
+    status: "veroeffentlicht",
+    beginn: inTagen(46),
+    einlass: inTagen(46, 22, 30),
+    ende: null,
+    ort: HALLE_NORD,
+    bild: null,
+    mindestalter: 18,
+    dresscode: null,
+    veranstalter: "Lunar Events",
+    abendkasse: true,
+    abendkasse_hinweis: "Nur solange Plätze frei sind.",
+    featured: false,
+    ab_preis_cent: 2500,
+    vip_verfuegbar: false,
+    ausverkauft: false,
+  },
+  {
+    id: "ev-4",
+    slug: "lunar-night-02",
+    titel: "LUNAR NIGHT 02",
+    untertitel: null,
+    teaser: "Ausverkauft — die zweite Nacht.",
+    beschreibung: "Ausverkauft.",
+    kategorie: "club",
+    status: "veroeffentlicht",
+    beginn: inTagen(60),
+    einlass: null,
+    ende: null,
+    ort: ALTE_WERFT,
+    bild: null,
+    mindestalter: 21,
+    dresscode: "Elegant.",
+    veranstalter: "Lunar Events",
+    abendkasse: false,
+    abendkasse_hinweis: null,
+    featured: false,
+    ab_preis_cent: 3900,
+    vip_verfuegbar: false,
+    ausverkauft: true,
+  },
+];
+
+export const BEISPIEL_PHASEN: Record<string, Phase[]> = {
+  "ev-1": [
+    {
+      id: "ph-1",
+      event_id: "ev-1",
+      name: "Early Bird",
+      art: "standard",
+      preis_cent: 2900,
+      gebuehr_cent: 200,
+      kontingent: 120,
+      verkauft: 120,
+      ab: null,
+      bis: null,
+      leistungen: ["Eintritt", "Garderobe inklusive"],
+      beschreibung: null,
+      position: 1,
+      aktiv: true,
+    },
+    {
+      id: "ph-2",
+      event_id: "ev-1",
+      name: "Phase 2",
+      art: "standard",
+      preis_cent: 3900,
+      gebuehr_cent: 250,
+      kontingent: 200,
+      verkauft: 176,
+      ab: null,
+      bis: null,
+      leistungen: ["Eintritt", "Garderobe inklusive"],
+      beschreibung: null,
+      position: 2,
+      aktiv: true,
+    },
+    {
+      id: "ph-3",
+      event_id: "ev-1",
+      name: "Standard",
+      art: "standard",
+      preis_cent: 4900,
+      gebuehr_cent: 250,
+      kontingent: null,
+      verkauft: 41,
+      ab: null,
+      bis: null,
+      leistungen: ["Eintritt", "Garderobe inklusive"],
+      beschreibung: null,
+      position: 3,
+      aktiv: true,
+    },
+    {
+      id: "ph-4",
+      event_id: "ev-1",
+      name: "VIP Experience",
+      art: "vip",
+      preis_cent: 0,
+      gebuehr_cent: 0,
+      kontingent: 8,
+      verkauft: 3,
+      ab: null,
+      bis: null,
+      leistungen: [
+        "Eigener Tisch mit reservierter Fläche",
+        "Bottle Service am Platz",
+        "Priority Entry ohne Anstehen",
+        "Persönliche Absprache vorab",
+      ],
+      beschreibung: "Für vier bis zwölf Gäste. Wir melden uns innerhalb von 24 Stunden.",
+      position: 4,
+      aktiv: true,
+    },
+  ],
+};
+
+export function beispielPhasen(eventId: string): Phase[] {
+  return BEISPIEL_PHASEN[eventId] ?? BEISPIEL_PHASEN["ev-1"];
+}

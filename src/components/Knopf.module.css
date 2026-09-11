@@ -1,0 +1,114 @@
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 14px 26px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-body);
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-normal) var(--ease),
+    border-color var(--dur-normal) var(--ease),
+    color var(--dur-normal) var(--ease);
+}
+
+.knopf:disabled,
+.knopf[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ---------- Varianten ---------- */
+
+/* Der Normalfall: dunkles Navy auf hellem Grund. */
+.primaer {
+  background: var(--navy-900);
+  color: var(--ivory-50);
+}
+.primaer:hover:not(:disabled) {
+  background: var(--navy-700);
+}
+.primaer:disabled {
+  background: var(--ivory-200);
+  color: var(--text-muted);
+}
+
+.linie {
+  background: transparent;
+  color: var(--navy-900);
+  border-color: var(--navy-900);
+}
+.linie:hover:not(:disabled) {
+  background: var(--navy-900);
+  color: var(--ivory-50);
+}
+.linie:disabled {
+  border-color: var(--border-light);
+  color: var(--text-muted);
+}
+
+/* Gold ist der Premium-Fall: VIP, nichts anderes. Fuellung erst beim Hover,
+   damit die Farbe selten bleibt (Briefing 5). */
+.gold {
+  background: transparent;
+  color: var(--auf-grund);
+  border-color: var(--border-gold);
+}
+.gold:hover:not(:disabled) {
+  background: var(--gold-500);
+  border-color: var(--gold-500);
+  color: var(--navy-950);
+}
+
+/* Auf dunklem Grund kehrt sich der Kontrast um. */
+.hell {
+  background: var(--ivory-50);
+  color: var(--navy-950);
+}
+.hell:hover:not(:disabled) {
+  background: var(--gold-300);
+}
+
+.linieHell {
+  background: transparent;
+  color: var(--text-on-dark);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+.linieHell:hover:not(:disabled) {
+  border-color: var(--gold-400);
+  color: var(--gold-300);
+}
+
+/* Textknopf fuer Nebensaechliches — traegt keine Flaeche. */
+.still {
+  background: transparent;
+  color: var(--auf-grund-2);
+  padding-inline: var(--space-2);
+}
+.still:hover:not(:disabled) {
+  color: var(--akzent-text);
+}
+
+/* ---------- Groessen ---------- */
+
+.klein {
+  min-height: 40px;
+  padding: 10px 18px;
+  font-size: var(--fs-caption);
+}
+
+.gross {
+  padding: 18px 34px;
+  font-size: var(--fs-body-s);
+}
+
+.voll {
+  width: 100%;
+}
