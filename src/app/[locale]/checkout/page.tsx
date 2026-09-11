@@ -7,6 +7,7 @@ import { CheckoutFluss, type Posten } from "@/components/CheckoutFluss";
 import { holeEvent, holePhasen } from "@/lib/events";
 import { phasenZustand } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
+import { paypalEingerichtet } from "@/lib/paypal";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
@@ -79,6 +80,11 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   if (posten.length === 0) redirect(`/events/${event.slug}#tickets`);
 
   const stripeAktiv = stripeEingerichtet();
+  // Die Kennung ist öffentlich — sie steht ohnehin im Skript, das PayPal
+  // im Browser lädt.
+  const paypalClientId = paypalEingerichtet()
+    ? (process.env.PAYPAL_CLIENT_ID ?? null)
+    : null;
   const testmodus =
     !process.env.STRIPE_SECRET_KEY && !process.env.PAYPAL_CLIENT_SECRET;
 
@@ -106,6 +112,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             posten={posten}
             testmodus={testmodus}
             stripeAktiv={stripeAktiv}
+            paypalClientId={paypalClientId}
             rueckkehrBasis={eigeneAdresse()}
           />
         </div>

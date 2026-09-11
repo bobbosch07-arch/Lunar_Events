@@ -57,7 +57,12 @@ export async function GET() {
       zahlung: {
         stripe: schluesselArt(process.env.STRIPE_SECRET_KEY, "sk_test_"),
         stripeWebhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
-        paypal: process.env.PAYPAL_CLIENT_SECRET ? "eingerichtet" : "fehlt",
+        paypal: process.env.PAYPAL_CLIENT_SECRET
+          ? process.env.PAYPAL_UMGEBUNG === "live"
+            ? "live"
+            : "sandbox"
+          : "fehlt",
+        paypalWebhook: Boolean(process.env.PAYPAL_WEBHOOK_ID),
       },
       versand: {
         mail: Boolean(process.env.RESEND_API_KEY),

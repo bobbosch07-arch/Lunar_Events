@@ -209,6 +209,20 @@
   color: var(--auf-grund-2);
 }
 
+/* Auf schmalen Schirmen stehen die Eckdaten untereinander. Mit Trennern
+   im Fluss bliebe sonst bei jedem Umbruch ein Punkt am Zeilenende
+   hängen. */
+@media (max-width: 620px) {
+  .eckdaten {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+  .eckTrenner {
+    display: none;
+  }
+}
+
 @media (max-width: 900px) {
   .spalten {
     grid-template-columns: 1fr;

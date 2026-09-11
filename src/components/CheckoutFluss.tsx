@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { StripeZahlung } from "./StripeZahlung";
+import { PaypalZahlung } from "./PaypalZahlung";
 import { preisText } from "@/lib/format";
 import {
   reserviereBestellung,
@@ -32,6 +33,8 @@ type Props = {
   testmodus: boolean;
   /** Stripe hat Schlüssel — dann wird echt gezahlt. */
   stripeAktiv: boolean;
+  /** Gesetzt, wenn PayPal eingerichtet ist. */
+  paypalClientId: string | null;
   /** Absolute Adresse, zu der Stripe nach der Zahlung zurückschickt. */
   rueckkehrBasis: string;
 };
@@ -51,6 +54,10 @@ export function CheckoutFluss(props: Props) {
   const router = useRouter();
 
   const [schritt, setSchritt] = useState<1 | 2 | 3>(1);
+  // Karte zuerst: der häufigere Weg, und Apple/Google Pay hängen daran.
+  const [zahlweg, setZahlweg] = useState<"karte" | "paypal">(
+    props.stripeAktiv ? "karte" : "paypal",
+  );
   const [formular, setFormular] = useState<Formular>(LEER);
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
   const [agb, setAgb] = useState(false);
@@ -264,10 +271,46 @@ export function CheckoutFluss(props: Props) {
               </label>
             </div>
 
-            {props.stripeAktiv ? (
+            {/* Die Auswahl erscheint nur, wenn es wirklich etwas zu wählen
+                gibt — bei einem einzigen Weg wäre sie ein leerer Klick. */}
+            {props.stripeAktiv && props.paypalClientId ? (
+              <div className={css.zahlarten}>
+                <label
+                  className={`${css.zahlart} ${zahlweg === "karte" ? css.zahlartGewaehlt : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="zahlweg"
+                    checked={zahlweg === "karte"}
+                    onChange={() => setZahlweg("karte")}
+                  />
+                  <span className={css.zahlartName}>{t("karte")}</span>
+                  <span className={css.zahlartNotiz}>Apple Pay · Google Pay · SEPA</span>
+                </label>
+                <label
+                  className={`${css.zahlart} ${zahlweg === "paypal" ? css.zahlartGewaehlt : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="zahlweg"
+                    checked={zahlweg === "paypal"}
+                    onChange={() => setZahlweg("paypal")}
+                  />
+                  <span className={css.zahlartName}>{t("paypal")}</span>
+                </label>
+              </div>
+            ) : null}
+
+            {props.stripeAktiv && zahlweg === "karte" ? (
               <StripeZahlung
                 bestellungId={bestellung.id}
                 rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
+                freigegeben={agb && widerruf}
+              />
+            ) : props.paypalClientId ? (
+              <PaypalZahlung
+                bestellungId={bestellung.id}
+                clientId={props.paypalClientId}
                 freigegeben={agb && widerruf}
               />
             ) : (
