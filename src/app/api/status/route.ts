@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
 import { gefundeneNamen, verwandteNamen } from "@/lib/supabase/umgebung";
+import { appleEingerichtet, zertifikatLaeuftAb } from "@/lib/wallet/apple";
+import { googleEingerichtet } from "@/lib/wallet/google";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +36,8 @@ export async function GET() {
     }
   }
 
+  const passAblauf = appleEingerichtet() ? await zertifikatLaeuftAb() : null;
+
   function schluesselArt(wert: string | undefined, testPraefix: string) {
     if (!wert) return "fehlt";
     return wert.startsWith(testPraefix) ? "test" : "live";
@@ -66,9 +70,9 @@ export async function GET() {
       },
       versand: {
         mail: Boolean(process.env.RESEND_API_KEY),
-        wallet: Boolean(
-          process.env.APPLE_WALLET_TEAM_ID || process.env.GOOGLE_WALLET_ISSUER_ID,
-        ),
+        appleWallet: appleEingerichtet(),
+        appleZertifikatBis: passAblauf ? passAblauf.toISOString() : null,
+        googleWallet: googleEingerichtet(),
       },
       zeit: {
         serverZone: Intl.DateTimeFormat().resolvedOptions().timeZone,

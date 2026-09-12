@@ -4,6 +4,7 @@ import { BackofficeRahmen } from "@/components/BackofficeRahmen";
 import { Link } from "@/i18n/navigation";
 import { holeKennzahlen, holeEventZeilen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
+import { appleEingerichtet, zertifikatLaeuftAb } from "@/lib/wallet/apple";
 import css from "./backoffice.module.css";
 
 export const metadata: Metadata = {
@@ -27,11 +28,19 @@ export default async function Uebersicht({
 }
 
 async function Inhalt({ locale }: { locale: string }) {
-  const [zahlen, events, f] = await Promise.all([
+  const [zahlen, events, f, passAblauf] = await Promise.all([
     holeKennzahlen(),
     holeEventZeilen(),
     getFormatter(),
+    appleEingerichtet() ? zertifikatLaeuftAb() : Promise.resolve(null),
   ]);
+
+  // Apple stellt das Signaturzertifikat für 398 Tage aus. Läuft es ab,
+  // lassen sich keine neuen Pässe mehr ausstellen — bereits ausgegebene
+  // bleiben gültig. Ohne Vorwarnung fällt das mitten im Vorverkauf auf.
+  const tageBisAblauf = passAblauf
+    ? Math.floor((passAblauf.getTime() - Date.now()) / 86400000)
+    : null;
 
   const kommende = events
     .filter((e) => new Date(e.beginn).getTime() > Date.now())
@@ -61,12 +70,24 @@ async function Inhalt({ locale }: { locale: string }) {
         ))}
       </div>
 
+      {tageBisAblauf !== null && tageBisAblauf < 45 ? (
+        <p className={css.notiz} style={{ marginTop: 0, marginBottom: "1.5rem" }}>
+          <strong>
+            Das Apple-Wallet-Zertifikat läuft in {tageBisAblauf} Tagen ab
+            {passAblauf ? ` (${f.dateTime(passAblauf, "lang")})` : ""}.
+          </strong>{" "}
+          Danach lassen sich keine neuen Pässe mehr ausstellen; bereits
+          ausgegebene bleiben gültig. Erneuern im Apple-Developer-Portal
+          unter der Pass Type ID.
+        </p>
+      ) : null}
+
       {zahlen.abgelaufeneReservierungen > 0 ? (
         <p className={css.notiz}>
           <strong>{zahlen.abgelaufeneReservierungen}</strong> Reservierungen sind
-          abgelaufen, ohne dass jemand gezahlt hat. Ihre Kontingente sind noch
-          blockiert — der Aufräumlauf (<code>raeume_reservierungen_auf</code>)
-          gibt sie frei, sobald er eingerichtet ist.
+          abgelaufen, ohne dass jemand gezahlt hat. Der Aufräumlauf gibt die
+          Kontingente alle fünf Minuten von selbst frei — steht die Zahl
+          dauerhaft hoch, läuft er nicht.
         </p>
       ) : null}
 

@@ -1,0 +1,40 @@
+.reihe {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-top: 1px solid var(--border-dark);
+}
+
+/* Apple und Google geben für ihre Knöpfe Gestaltungsvorgaben vor. Statt
+   sie halb zu befolgen, bauen wir sie in unserer eigenen Sprache — das
+   ist bei einem Link, der zum Speichern führt, zulässig und passt zur
+   Marke. */
+.knopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-on-dark);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition:
+    background-color var(--dur-normal) var(--ease),
+    border-color var(--dur-normal) var(--ease);
+}
+
+.knopf:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--border-gold);
+}
+
+.zeichen {
+  flex: none;
+  opacity: 0.9;
+}

@@ -3,6 +3,8 @@
 import { dienstClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
 import { sendeTickets } from "@/lib/mail";
+import { appleEingerichtet, erzeugeApplePass } from "@/lib/wallet/apple";
+import { ladePassDaten } from "@/lib/wallet/laden";
 
 /**
  * Verschickt die Tickets — genau einmal je Bestellung.
@@ -25,7 +27,7 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
       `id, nummer, status, zugangstoken, mail_gesendet_am,
        kunde:kunden(email, vorname),
        event:events(titel, beginn, ort:orte(name, stadt)),
-       tickets(id)`,
+       tickets(id, code)`,
     )
     .eq("id", bestellungId)
     .single();
@@ -56,6 +58,39 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     minute: "2-digit",
   }).format(new Date(event.beginn));
 
+  const tickets = (bestellung.tickets ?? []) as Array<{ code: string }>;
+
+  // Apple-Pässe hängen direkt an: Ein Tipp im Anhang, und das Ticket
+  // liegt in Wallet — das ist der ganze Sinn der Sache. Google geht nur
+  // über den Link auf der Ticketseite.
+  //
+  // Ab sieben Tickets bleibt es beim Link: Jeder Pass wiegt rund 100 KB,
+  // und eine Mail, die am Postfach abprallt, ist schlimmer als eine ohne
+  // Anhang.
+  let paesse: Array<{ name: string; inhaltBase64: string }> | undefined;
+  if (appleEingerichtet() && tickets.length <= 6) {
+    const erzeugte: Array<{ name: string; inhaltBase64: string }> = [];
+    for (const ticket of tickets) {
+      try {
+        const geladen = await ladePassDaten(
+          ticket.code,
+          bestellung.zugangstoken as string,
+        );
+        if (!geladen) continue;
+        const roh = await erzeugeApplePass(geladen.daten);
+        erzeugte.push({
+          name: `lunar-${ticket.code}.pkpass`,
+          inhaltBase64: roh.toString("base64"),
+        });
+      } catch (fehler) {
+        // Ein fehlgeschlagener Pass darf die Mail nicht aufhalten — die
+        // Tickets stehen ohnehin hinter dem Link.
+        console.error("[mail] Pass nicht erzeugt:", (fehler as Error).message);
+      }
+    }
+    if (erzeugte.length > 0) paesse = erzeugte;
+  }
+
   const geschickt = await sendeTickets({
     an: kunde.email,
     vorname: kunde.vorname,
@@ -63,8 +98,9 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     eventTitel: event.titel,
     wann: `${wann} Uhr`,
     ort: `${event.ort.name}, ${event.ort.stadt}`,
-    anzahl: ((bestellung.tickets ?? []) as unknown[]).length,
+    anzahl: tickets.length,
     ticketLink: `${eigeneAdresse()}/tickets/${bestellung.zugangstoken}`,
+    paesse,
   });
 
   if (geschickt) {

@@ -16,12 +16,15 @@ export function versandEingerichtet(): boolean {
 const ABSENDER =
   process.env.MAIL_ABSENDER ?? "Lunar Events <tickets@lunar-events.de>";
 
+type Anhang = { name: string; inhaltBase64: string };
+
 type Nachricht = {
   an: string;
   betreff: string;
   html: string;
   text: string;
   antwortAn?: string;
+  anhaenge?: Anhang[];
 };
 
 export async function versende(nachricht: Nachricht): Promise<boolean> {
@@ -46,6 +49,10 @@ export async function versende(nachricht: Nachricht): Promise<boolean> {
         html: nachricht.html,
         text: nachricht.text,
         reply_to: nachricht.antwortAn,
+        attachments: nachricht.anhaenge?.map((a) => ({
+          filename: a.name,
+          content: a.inhaltBase64,
+        })),
       }),
     });
 
@@ -105,6 +112,8 @@ export type TicketMail = {
   ort: string;
   anzahl: number;
   ticketLink: string;
+  /** Apple-Wallet-Pässe, die direkt anhängen. */
+  paesse?: Array<{ name: string; inhaltBase64: string }>;
 };
 
 export async function sendeTickets(daten: TicketMail): Promise<boolean> {
@@ -135,7 +144,11 @@ ${kopfBalken("Tickets sind da")}
 </td></tr></table>
 
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
-Der Link führt zu deinen Tickets mit QR-Code — am besten gleich speichern.
+${
+  daten.paesse?.length
+    ? "Im Anhang liegen deine Pässe für Apple Wallet — einmal antippen, dann liegen sie auf dem Sperrbildschirm, sobald du am Veranstaltungsort bist.<br /><br />"
+    : ""
+}Der Link führt zu deinen Tickets mit QR-Code — am besten gleich speichern.
 Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 </p>
 </td></tr>`);
@@ -159,6 +172,7 @@ Lunar Events`;
     betreff: `${daten.eventTitel} — ${stueck.charAt(0).toUpperCase()}${stueck.slice(1)}`,
     html,
     text,
+    anhaenge: daten.paesse,
   });
 }
 

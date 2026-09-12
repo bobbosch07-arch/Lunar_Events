@@ -1,5 +1,6 @@
 import QRCode from "qrcode";
 import { Logo } from "./Logo";
+import { WalletKnoepfe } from "./WalletKnoepfe";
 import css from "./TicketKarte.module.css";
 
 export type TicketAnzeige = {
@@ -13,6 +14,9 @@ export type TicketAnzeige = {
   event_wann: string;
   event_ort: string;
   bestellnummer: string;
+  /** Nur gesetzt, wo Wallet-Knöpfe erscheinen sollen. */
+  zugangstoken?: string;
+  wallet?: { apple: boolean; google: boolean };
 };
 
 /**
@@ -102,6 +106,17 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
           <p className={css.nummer}>{ticket.code}</p>
         </div>
       </div>
+
+      {/* Für ein entwertetes oder storniertes Ticket gibt es nichts mehr
+          zu speichern. */}
+      {ticket.zugangstoken && ticket.wallet && !entwertet ? (
+        <WalletKnoepfe
+          code={ticket.code}
+          zugangstoken={ticket.zugangstoken}
+          apple={ticket.wallet.apple}
+          google={ticket.wallet.google}
+        />
+      ) : null}
     </article>
   );
 }

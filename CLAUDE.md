@@ -155,6 +155,35 @@ Personal legt `scripts/mitarbeiter.mjs` an — es gibt bewusst keine
 Oberfläche dafür. Wer Personal anlegen darf, bestimmt, wer an die Kasse
 kommt.
 
+## Wallet-Pässe
+
+Beide Anbieter sind gebaut und warten nur auf Zugangsdaten — die Schritte
+dafür stehen in [`docs/wallet.md`](docs/wallet.md).
+
+**Die Knöpfe erscheinen nur, wenn der jeweilige Zugang eingerichtet ist**
+(`appleEingerichtet()`, `googleEingerichtet()`), wie beim Testkauf und
+beim Mailversand. Ein Knopf, der zu einer Fehlermeldung führt, ist
+schlimmer als keiner.
+
+Zwei Fallen, die `scripts/wallet-testen.mjs` gefunden hat, bevor
+Zertifikate im Spiel waren:
+
+- **`passkit-generator` nimmt kein `.p12` entgegen**, sondern zwei
+  getrennte PEM-Blöcke. `zerlegeP12()` macht das.
+- **Eine leere Passphrase wird abgelehnt.** Der herausgelöste Schlüssel
+  wird deshalb sofort wieder verschlüsselt, mit einer Zufallsphrase, die
+  den Prozess nie verlässt.
+
+Der Zugang zu einem Pass braucht **Ticketcode und Zugangstoken der
+Bestellung**. Der Code allein genügt nicht: Er steht im QR und wird am
+Einlass herumgezeigt.
+
+**Apple-Pässe hängen an der Ticketmail** (bis sechs Stück; darüber wird
+die Mail zu schwer). Google geht nur über den Link auf der Ticketseite.
+
+**Das Apple-Signaturzertifikat gilt 398 Tage.** Die Backoffice-Übersicht
+warnt ab 45 Tagen vorher — sonst fällt das mitten im Vorverkauf auf.
+
 ## Auswertung
 
 **Gezählt wird ohne Personenbezug** — keine IP, keine Kennung, kein
@@ -222,14 +251,13 @@ Fertig und geprüft:
 
 Offen:
 
-1. **PayPal** — Zugangsdaten fehlen noch. Stripe ist eingehängt, PayPal
-   gehört daneben, nicht statt.
+1. **Zugangsdaten nachtragen**: PayPal, Resend, Apple- und
+   Google-Wallet. Alles dafür ist gebaut; ohne Schlüssel bleibt es
+   stumm, und die Oberfläche verspricht nichts davon.
 2. **Mailversand** (`RESEND_API_KEY`). Ohne ihn sagt die
    Bestätigungsseite ausdrücklich, dass die Seite die einzige Stelle mit
    den Tickets ist — und niemand erfährt von neuen VIP-Anfragen außer
    durchs Backoffice.
-3. **Wallet-Pässe**: Apple (.pkpass, braucht Zertifikat) und Google
-   Wallet (Service Account). Samsung liest Google-Pässe.
 4. **Echte Eventfotos.** Der Upload steht, die Bilder fehlen. Laut
    Briefing tragen sie die halbe Gestaltung.
 5. **Firmendaten** für Impressum, AGB und Datenschutz — die Lücken sind

@@ -6,6 +6,8 @@ import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
+import { appleEingerichtet } from "@/lib/wallet/apple";
+import { googleEingerichtet } from "@/lib/wallet/google";
 import css from "./tickets.module.css";
 
 type Props = { params: Promise<{ locale: string; token: string }> };
@@ -65,6 +67,7 @@ export default async function TicketAnsicht({ params }: Props) {
     .eq("bestellung_id", bestellung.id)
     .order("erstellt_am", { ascending: true });
 
+  const wallet = { apple: appleEingerichtet(), google: googleEingerichtet() };
   const wann = f.dateTime(new Date(event.beginn), "mitZeit");
   const ort = `${event.ort.name}, ${event.ort.stadt}`;
   const name = [kunde?.vorname, kunde?.nachname].filter(Boolean).join(" ") || null;
@@ -85,6 +88,8 @@ export default async function TicketAnsicht({ params }: Props) {
     event_wann: wann,
     event_ort: ort,
     bestellnummer: bestellung.nummer as string,
+    zugangstoken: token,
+    wallet,
   }));
 
   const vorbei = new Date(event.beginn).getTime() < Date.now();
