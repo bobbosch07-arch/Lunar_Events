@@ -49,7 +49,7 @@ export default async function About({
       <Block titel="Zusammenarbeit">
         <Absatz>
           Location, Booking, Partnerschaft oder Presse:{" "}
-          <a href="mailto:kontakt@lunar-events.de">kontakt@lunar-events.de</a>.
+          <a href="mailto:lunar.eventsss.de@gmail.com">lunar.eventsss.de@gmail.com</a>.
         </Absatz>
       </Block>
     </Textseite>

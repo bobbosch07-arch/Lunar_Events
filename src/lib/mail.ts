@@ -14,6 +14,8 @@ export function versandEingerichtet(): boolean {
 }
 
 const ABSENDER =
+  // Absender muss eine beim Mailanbieter bestätigte eigene Domain sein —
+  // eine Gmail-Adresse lehnt Resend ab. Kontaktadressen stehen woanders.
   process.env.MAIL_ABSENDER ?? "Lunar Events <tickets@lunar-events.de>";
 
 type Anhang = { name: string; inhaltBase64: string };
@@ -227,7 +229,7 @@ ${zeilen.map(([n, w]) => `${n}: ${w}`).join("\n")}
 ${daten.nachricht ? `\nNachricht:\n${daten.nachricht}\n` : ""}
 Im Backoffice: ${eigeneAdresse()}/backoffice/vip`;
 
-  const ziel = process.env.MAIL_TEAM ?? "kontakt@lunar-events.de";
+  const ziel = process.env.MAIL_TEAM ?? "lunar.eventsss.de@gmail.com";
 
   return versende({
     an: ziel,

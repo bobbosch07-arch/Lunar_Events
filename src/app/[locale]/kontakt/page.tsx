@@ -32,8 +32,8 @@ export default async function Kontakt({
               "Tickets",
               <>
                 Bestellung nicht angekommen, Frage zum Einlass:{" "}
-                <a href="mailto:tickets@lunar-events.de">
-                  tickets@lunar-events.de
+                <a href="mailto:lunar.eventsss.de@gmail.com">
+                  lunar.eventsss.de@gmail.com
                 </a>
                 . Halte deine Bestellnummer bereit, das geht schneller.
               </>,
@@ -47,8 +47,8 @@ export default async function Kontakt({
             ],
             [
               "Presse & Booking",
-              <a key="p" href="mailto:kontakt@lunar-events.de">
-                kontakt@lunar-events.de
+              <a key="p" href="mailto:lunar.eventsss.de@gmail.com">
+                lunar.eventsss.de@gmail.com
               </a>,
             ],
             ["Telefon", <Luecke key="t">Nummer und Erreichbarkeit</Luecke>],

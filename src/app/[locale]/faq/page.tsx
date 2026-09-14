@@ -47,7 +47,7 @@ const FRAGEN: Array<[string, string[]]> = [
   [
     "Ich habe bezahlt, aber keine Tickets bekommen.",
     [
-      "Das sollte nicht passieren: Tickets entstehen genau dann, wenn die Zahlung bestätigt ist. Melde dich mit deiner Bestellnummer bei tickets@lunar-events.de, wir finden die Bestellung sofort.",
+      "Das sollte nicht passieren: Tickets entstehen genau dann, wenn die Zahlung bestätigt ist. Melde dich mit deiner Bestellnummer bei lunar.eventsss.de@gmail.com, wir finden die Bestellung sofort.",
     ],
   ],
   [

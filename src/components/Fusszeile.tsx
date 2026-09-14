@@ -74,17 +74,20 @@ export function Fusszeile() {
                   {t("datenschutz")}
                 </Link>
               </li>
-              <li>
-                <Link href="/impressum" className={css.punkt}>
-                  {t("impressum")}
-                </Link>
-              </li>
             </ul>
           </div>
         </div>
 
         <div className={css.unten}>
-          <span>{t("rechte", { jahr })}</span>
+          <span>
+            {t("rechte", { jahr })}
+            {/* Das Impressum steht bewusst nur hier, klein neben dem
+                Copyright: gesetzlich muss es von jeder Seite erreichbar
+                sein, auffallen muss es nicht. */}
+            <Link href="/impressum" className={css.impressum}>
+              {t("impressum")}
+            </Link>
+          </span>
           <div className={css.sozial}>
             <a
               href={INSTAGRAM}

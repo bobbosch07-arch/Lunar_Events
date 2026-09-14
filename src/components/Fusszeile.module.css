@@ -101,3 +101,18 @@
     flex-wrap: wrap;
   }
 }
+
+/* Klein und zurückgenommen, aber lesbar und antippbar — ein Impressum,
+   das man nicht findet, gilt rechtlich als fehlend. */
+.impressum {
+  margin-left: var(--space-3);
+  font-size: var(--fs-caption);
+  color: var(--text-on-dark-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: rgba(255, 255, 255, 0.2);
+}
+
+.impressum:hover {
+  color: var(--gold-300);
+}

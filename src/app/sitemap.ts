@@ -28,7 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: pfad === "" ? 1 : pfad === "/events" ? 0.9 : 0.5,
   }));
 
-  const rechtliches = ["/agb", "/datenschutz", "/impressum"].map((pfad) => ({
+  // Das Impressum steht absichtlich nicht in der Sitemap (noindex, siehe dort).
+  const rechtliches = ["/agb", "/datenschutz"].map((pfad) => ({
     ...mitSprachen(pfad),
     lastModified: new Date(),
     changeFrequency: "yearly" as const,

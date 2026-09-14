@@ -1,11 +1,27 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { Textseite, Block, Absatz, Angaben, Luecke } from "@/components/Textseite";
+import { Textseite, Block, Absatz, Angaben } from "@/components/Textseite";
 
+/**
+ * Pflichtangaben nach § 5 DDG.
+ *
+ * Bewusst unauffällig: nur ein kleiner Verweis im Footer, nicht in der
+ * Sitemap, und `noindex` — damit die Seite nicht bei einer Namenssuche in
+ * Google auftaucht. Weiter verstecken geht nicht: Das Impressum muss
+ * „leicht erkennbar und unmittelbar erreichbar" bleiben, sonst ist es
+ * abmahnfähig. Ein Footer-Link auf jeder Seite erfüllt das.
+ *
+ * Register und USt-IdNr. fehlen absichtlich: Sie gehören nur hinein, wenn
+ * es sie gibt. Nach Gewerbeanmeldung und Vergabe der USt-IdNr. ergänzen.
+ */
 export const metadata: Metadata = {
   title: "Impressum",
-  robots: { index: true, follow: false },
+  robots: { index: false, follow: false },
 };
+
+const NAME = "Nicklas Reyes Kretschmar";
+const ANSCHRIFT = "Kranichsteiner-Straße 27, 64390 Erzhausen";
+const EMAIL = "lunar.eventsss.de@gmail.com";
 
 export default async function Impressum({
   params,
@@ -16,20 +32,13 @@ export default async function Impressum({
   setRequestLocale(locale);
 
   return (
-    <Textseite
-      titel="Impressum"
-      vorspann="Angaben gemäß § 5 Digitale-Dienste-Gesetz."
-      warnung={{
-        titel: "Noch auszufüllen",
-        text: "Die markierten Stellen müssen durch die echten Firmendaten ersetzt werden. Ein unvollständiges Impressum ist abmahnfähig — diese Seite darf so nicht öffentlich bleiben.",
-      }}
-    >
+    <Textseite titel="Impressum" vorspann="Angaben gemäß § 5 Digitale-Dienste-Gesetz.">
       <Block titel="Anbieter">
         <Angaben
           zeilen={[
-            ["Firma", <Luecke key="f">Vollständige Firmierung inkl. Rechtsform</Luecke>],
-            ["Anschrift", <Luecke key="a">Straße, Hausnummer, PLZ, Ort</Luecke>],
-            ["Vertreten durch", <Luecke key="v">Geschäftsführer / Inhaber</Luecke>],
+            ["Name", NAME],
+            ["Anschrift", ANSCHRIFT],
+            ["Handelnd als", "Lunar Events"],
           ]}
         />
       </Block>
@@ -37,51 +46,23 @@ export default async function Impressum({
       <Block titel="Kontakt">
         <Angaben
           zeilen={[
-            ["Telefon", <Luecke key="t">Telefonnummer</Luecke>],
             [
               "E-Mail",
-              <a key="m" href="mailto:kontakt@lunar-events.de">
-                kontakt@lunar-events.de
+              <a key="m" href={`mailto:${EMAIL}`}>
+                {EMAIL}
               </a>,
             ],
-          ]}
-        />
-        <Absatz>
-          Die E-Mail-Adresse ist ein Vorschlag und muss eingerichtet sein,
-          bevor diese Seite online geht.
-        </Absatz>
-      </Block>
-
-      <Block titel="Register und Steuern">
-        <Angaben
-          zeilen={[
-            ["Registergericht", <Luecke key="r">Amtsgericht, falls eingetragen</Luecke>],
-            ["Registernummer", <Luecke key="n">HRB …</Luecke>],
-            ["USt-IdNr.", <Luecke key="u">DE … (§ 27 a UStG)</Luecke>],
           ]}
         />
       </Block>
 
       <Block titel="Verantwortlich für den Inhalt">
         <Absatz>
-          <Luecke>Name und Anschrift der verantwortlichen Person</Luecke> — nach
-          § 18 Abs. 2 Medienstaatsvertrag.
+          {NAME}, {ANSCHRIFT} — nach § 18 Abs. 2 Medienstaatsvertrag.
         </Absatz>
       </Block>
 
-      <Block titel="Streitbeilegung">
-        <Absatz>
-          Die Europäische Kommission stellt eine Plattform zur
-          Online-Streitbeilegung bereit:{" "}
-          <a
-            href="https://ec.europa.eu/consumers/odr/"
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            ec.europa.eu/consumers/odr
-          </a>
-          .
-        </Absatz>
+      <Block titel="Verbraucherstreitbeilegung">
         <Absatz>
           Wir sind nicht bereit und nicht verpflichtet, an
           Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
