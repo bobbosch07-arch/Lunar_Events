@@ -236,6 +236,26 @@ eigene Datenbankfunktion nicht. `holeEventZeilen({ abJetzt, grenze })`
 lädt für die Übersicht nur die sechs kommenden Events statt der
 gesamten Historie.
 
+### Anmeldung fürs Team
+
+**Gäste melden sich per Link an, das Team zusätzlich mit Passwort.** Das
+Backoffice-Tor zeigt die Passwort-Anmeldung (`Anmeldung mitPasswort`),
+gesetzt wird es unter „Mein Zugang" (`/backoffice/zugang`). Beide
+Server-Aktionen prüfen die Rolle: Wer mit Passwort hereinkommt, aber nicht
+(mehr) zum Team gehört, wird sofort wieder abgemeldet — sonst ginge das
+Passwort am Rollenentzug vorbei. Ob ein Passwort existiert, verrät Supabase
+nicht; `user_metadata.passwort_gesetzt` ist nur für die Beschriftung da.
+
+**Ausgestellte Links führen über `/anmelden`**, eine Zwischenseite mit
+Knopf. Messenger rufen Adressen für ihre Vorschau selbst ab und
+verbrauchten den Einmal-Link, bevor jemand tippte — so ist der erste
+Backoffice-Zugang gescheitert. `scripts/anmeldelink.mjs` baut die Links
+entsprechend.
+
+Die Kopfzeile zeigt „Backoffice" nur Team-Mitgliedern und prüft das im
+Browser: Sie hängt auch an statisch vorgerenderten Seiten, eine
+Serverprüfung machte die alle dynamisch.
+
 ### Zwei Fallen, die hier zugeschnappt sind
 
 **Eine Funktion lässt sich nicht an eine Client-Komponente reichen.**

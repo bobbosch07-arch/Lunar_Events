@@ -39,7 +39,7 @@ export default async function BackofficeLayout({
     return (
       <main className={css.tor}>
         <Logo ton="ivory" hoehe={64} />
-        <Anmeldung weiter="/backoffice" />
+        <Anmeldung weiter="/backoffice" mitPasswort />
       </main>
     );
   }

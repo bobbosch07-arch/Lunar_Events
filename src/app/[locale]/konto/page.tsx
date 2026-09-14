@@ -5,6 +5,7 @@ import { Fusszeile } from "@/components/Fusszeile";
 import { Anmeldung } from "@/components/Anmeldung";
 import { Knopf } from "@/components/Knopf";
 import { holeAngemeldeten } from "@/lib/konto";
+import { serverClient } from "@/lib/supabase/server";
 import { meldeAb } from "@/app/aktionen/konto";
 import css from "./konto.module.css";
 
@@ -29,6 +30,17 @@ export default async function Konto({
     getTranslations("konto"),
   ]);
 
+  let team = false;
+  if (angemeldet) {
+    const db = await serverClient();
+    const { data: m } = await db
+      .from("mitarbeiter")
+      .select("rolle, aktiv")
+      .eq("user_id", angemeldet.id)
+      .maybeSingle();
+    team = Boolean(m?.aktiv && (m.rolle === "admin" || m.rolle === "team"));
+  }
+
   return (
     <>
       <a href="#inhalt" className="sprunglink">
@@ -47,6 +59,16 @@ export default async function Konto({
               </header>
 
               <div className={css.kacheln}>
+                {team ? (
+                  <article className={css.kachel}>
+                    <h2 className={css.kachelTitel}>Backoffice</h2>
+                    <p className={css.kachelText}>
+                      Events, Bestellungen, VIP-Anfragen und Zahlungen —
+                      dieses Konto gehört zum Team.
+                    </p>
+                    <Knopf href="/backoffice">Zum Backoffice</Knopf>
+                  </article>
+                ) : null}
                 <article className={css.kachel}>
                   <h2 className={css.kachelTitel}>{t("meineTickets")}</h2>
                   <p className={css.kachelText}>

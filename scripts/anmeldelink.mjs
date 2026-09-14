@@ -10,9 +10,9 @@
  * vier Mails pro Stunde, und sie landen gern im Spam).
  *
  * Der Link ist ein Zugang — wer ihn hat, ist angemeldet. Er gilt eine
- * Stunde und **nur einmal**. Schon eine Linkvorschau in einem
- * Messenger kann ihn verbrauchen; dann ist er weg und es braucht einen
- * neuen.
+ * Stunde und **nur einmal**. Messenger-Vorschauen verbrauchen ihn
+ * nicht mehr: Er führt auf eine Zwischenseite (`/anmelden`), eingelöst
+ * wird erst beim Tippen auf den Knopf.
  *
  * Jeder neue Link macht den vorherigen derselben Adresse ungültig.
  */
@@ -57,8 +57,11 @@ if (error) {
   process.exit(1);
 }
 
+// Der Link führt auf eine Zwischenseite mit Knopf, nicht direkt zur
+// Einlösung: Messenger rufen Adressen für ihre Vorschau selbst ab und
+// verbrauchen den Link sonst, bevor jemand tippt.
 const link =
-  `${basis}/auth/bestaetigen` +
+  `${basis}/anmelden` +
   `?token_hash=${data.properties.hashed_token}` +
   `&type=magiclink&weiter=${encodeURIComponent(ziel)}`;
 

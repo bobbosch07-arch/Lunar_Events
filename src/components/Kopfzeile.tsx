@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { Logo } from "./Logo";
+import { browserClient } from "@/lib/supabase/client";
 import css from "./Kopfzeile.module.css";
 
 type Props = {
@@ -27,6 +28,30 @@ export function Kopfzeile({ ueberHero = false }: Props) {
   const locale = useLocale();
   const [offen, setOffen] = useState(false);
   const [gescrollt, setGescrollt] = useState(false);
+  const [team, setTeam] = useState(false);
+
+  // Gehört die angemeldete Person zum Team, steht "Backoffice" neben
+  // "Account". Geprüft wird im Browser und nicht auf dem Server: Der Kopf
+  // hängt auch an statisch vorgerenderten Seiten, und eine Serverprüfung
+  // machte jede davon dynamisch. Die Verknüpfung ist nur ein Wegweiser —
+  // was dahinter sichtbar ist, entscheidet weiterhin das Backoffice selbst.
+  useEffect(() => {
+    let aktiv = true;
+    const db = browserClient();
+    db.auth.getSession().then(async ({ data }) => {
+      const id = data.session?.user.id;
+      if (!id) return;
+      const { data: m } = await db
+        .from("mitarbeiter")
+        .select("rolle, aktiv")
+        .eq("user_id", id)
+        .maybeSingle();
+      if (aktiv) setTeam(Boolean(m?.aktiv && (m.rolle === "admin" || m.rolle === "team")));
+    });
+    return () => {
+      aktiv = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!ueberHero) return;
@@ -88,6 +113,11 @@ export function Kopfzeile({ ueberHero = false }: Props) {
             >
               {t("meineTickets")}
             </Link>
+            {team ? (
+              <Link href="/backoffice" className={css.punkt}>
+                {t("backoffice")}
+              </Link>
+            ) : null}
             <Link href="/konto" className={css.punkt}>
               {t("konto")}
             </Link>
@@ -123,6 +153,11 @@ export function Kopfzeile({ ueberHero = false }: Props) {
           <Link href="/konto" className={css.schubladePunkt}>
             {t("konto")}
           </Link>
+          {team ? (
+            <Link href="/backoffice" className={css.schubladePunkt}>
+              {t("backoffice")}
+            </Link>
+          ) : null}
           <span className={css.schubladeTrenner} />
           <div className={css.sprachen}>
             <span>{t("sprache")}</span>
