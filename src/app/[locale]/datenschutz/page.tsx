@@ -39,7 +39,7 @@ export default async function Datenschutz({
     >
       <Block titel="Verantwortlich">
         <Absatz>
-          Nicklas Reyes Kretschmar, Kranichsteiner-Straße 27, 64390
+          Niklas Reyes Kretschmar, Kranichsteiner-Straße 27, 64390
           Erzhausen. Bei Fragen zum Datenschutz:{" "}
           <a href="mailto:lunar.eventsss.de@gmail.com">
             lunar.eventsss.de@gmail.com

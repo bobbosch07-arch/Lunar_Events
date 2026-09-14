@@ -1,0 +1,170 @@
+/* Backoffice: Dichte und Lesbarkeit vor Atmosphäre (Briefing 32). */
+
+.rechner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.leiste {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--space-4) var(--space-6);
+}
+
+.feld {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 200px;
+}
+
+.regler {
+  flex: 1;
+  min-width: 220px;
+  max-width: 420px;
+}
+
+.regler input {
+  width: 100%;
+  accent-color: var(--navy-900);
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.beschriftung strong {
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.eingabe {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--ivory-50);
+  color: var(--text-primary);
+  font-size: var(--fs-body-s);
+}
+
+.eingabe:focus,
+.menge:focus {
+  border-color: var(--navy-900);
+}
+
+.zurueck {
+  min-height: 40px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-body-s);
+  cursor: pointer;
+}
+
+.zurueck:hover {
+  background: var(--ivory-100);
+  color: var(--text-primary);
+}
+
+.menge {
+  width: 90px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: var(--ivory-50);
+  color: var(--text-primary);
+  font-size: var(--fs-body-s);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Unbegrenzte Phase ohne Annahme: sichtbar markiert, nicht nur farbig. */
+.mengeOffen {
+  border-color: var(--warning);
+  border-style: dashed;
+}
+
+.offen td {
+  background: var(--warning-weich, rgba(180, 120, 20, 0.06));
+}
+
+.summe td {
+  padding: var(--space-4);
+  border-top: 2px solid var(--border-light);
+  font-weight: var(--fw-medium);
+  font-variant-numeric: tabular-nums;
+}
+
+.hinweis {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-primary);
+}
+
+.betont {
+  border-color: var(--navy-900);
+  box-shadow: inset 3px 0 0 var(--gold-500);
+}
+
+.unterteil {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+}
+
+.kosten {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--ivory-50);
+}
+
+.kostenfelder {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-4);
+}
+
+.kostenfelder .feld {
+  min-width: 0;
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 1.1rem;
+  letter-spacing: var(--ls-heading);
+}
+
+.bisher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.bisher > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bisherWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}

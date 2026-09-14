@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const NAME = "Nicklas Reyes Kretschmar";
+const NAME = "Niklas Reyes Kretschmar";
 const ANSCHRIFT = "Kranichsteiner-Straße 27, 64390 Erzhausen";
 const EMAIL = "lunar.eventsss.de@gmail.com";
 

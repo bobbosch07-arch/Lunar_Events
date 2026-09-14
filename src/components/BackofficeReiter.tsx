@@ -10,6 +10,7 @@ const ZIELE = [
   { href: "/backoffice/bestellungen", name: "Bestellungen" },
   { href: "/backoffice/vip", name: "VIP" },
   { href: "/backoffice/auswertung", name: "Auswertung" },
+  { href: "/backoffice/hochrechnung", name: "Hochrechnung" },
   { href: "/backoffice/zugang", name: "Mein Zugang" },
 ] as const;
 

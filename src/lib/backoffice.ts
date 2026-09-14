@@ -327,3 +327,88 @@ export async function holeHerkunft(tage = 30): Promise<Herkunft[]> {
     .sort((a, b) => b.anzahl - a.anzahl)
     .slice(0, 8);
 }
+
+export type HochPhase = {
+  id: string;
+  name: string;
+  art: "standard" | "vip";
+  preisCent: number;
+  gebuehrCent: number;
+  kontingent: number | null;
+  verkauft: number;
+  position: number;
+  aktiv: boolean;
+};
+
+export type HochEvent = {
+  id: string;
+  titel: string;
+  beginn: string;
+  status: string;
+  phasen: HochPhase[];
+  fastlane: { aktiv: boolean; preisCent: number; kontingent: number | null; verkauft: number };
+  /** Tatsächlich bezahlt, aus den Bestellungen — nicht hochgerechnet. */
+  bezahltCent: number;
+};
+
+/**
+ * Rohdaten für die Umsatz-Hochrechnung. Gerechnet wird im Browser, weil
+ * dort mit Annahmen gespielt wird (Auslastung, Mengen, Zahlungskosten) —
+ * die Datenbank liefert nur, was feststeht.
+ */
+export async function holeHochrechnung(): Promise<HochEvent[]> {
+  const db = await serverClient();
+
+  const { data, error } = await db
+    .from("events")
+    .select(
+      `id, titel, beginn, status,
+       fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
+       phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft, position, aktiv)`,
+    )
+    .order("beginn", { ascending: true });
+
+  if (error || !data) {
+    console.error("[backoffice] Hochrechnung laden fehlgeschlagen:", error?.message);
+    return [];
+  }
+
+  const { data: bezahlt } = await db
+    .from("bestellungen")
+    .select("event_id, gesamt_cent")
+    .eq("status", "bezahlt")
+    .in("event_id", data.map((e) => e.id as string));
+
+  const jeEvent = new Map<string, number>();
+  for (const b of bezahlt ?? []) {
+    const id = b.event_id as string;
+    jeEvent.set(id, (jeEvent.get(id) ?? 0) + (b.gesamt_cent as number));
+  }
+
+  return data.map((e) => ({
+    id: e.id as string,
+    titel: e.titel as string,
+    beginn: e.beginn as string,
+    status: e.status as string,
+    phasen: ((e.phasen ?? []) as Array<Record<string, unknown>>)
+      .map((p) => ({
+        id: p.id as string,
+        name: p.name as string,
+        art: (p.art === "vip" ? "vip" : "standard") as "standard" | "vip",
+        preisCent: (p.preis_cent as number) ?? 0,
+        gebuehrCent: (p.gebuehr_cent as number) ?? 0,
+        kontingent: (p.kontingent as number | null) ?? null,
+        verkauft: (p.verkauft as number) ?? 0,
+        position: (p.position as number) ?? 0,
+        aktiv: (p.aktiv as boolean) ?? true,
+      }))
+      .sort((a, b) => a.position - b.position),
+    fastlane: {
+      aktiv: (e.fastlane_aktiv as boolean) ?? false,
+      preisCent: (e.fastlane_preis_cent as number) ?? 0,
+      kontingent: (e.fastlane_kontingent as number | null) ?? null,
+      verkauft: (e.fastlane_verkauft as number) ?? 0,
+    },
+    bezahltCent: jeEvent.get(e.id as string) ?? 0,
+  }));
+}
