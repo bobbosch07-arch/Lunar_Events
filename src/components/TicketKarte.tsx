@@ -10,6 +10,8 @@ export type TicketAnzeige = {
   status: "gueltig" | "entwertet" | "storniert";
   gast_name: string | null;
   platz: string | null;
+  /** Darf an der Schlange vorbei. */
+  fastlane?: boolean;
   event_titel: string;
   event_wann: string;
   event_ort: string;
@@ -58,9 +60,9 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
             ? "Eingelöst"
             : ticket.status === "storniert"
               ? "Storniert"
-              : ticket.platz
-                ? `${ticket.phase_name} · ${ticket.platz}`
-                : ticket.phase_name}
+              : [ticket.phase_name, ticket.platz, ticket.fastlane ? "Fast Lane" : null]
+                  .filter(Boolean)
+                  .join(" · ")}
         </span>
       </div>
 

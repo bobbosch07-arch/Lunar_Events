@@ -403,3 +403,15 @@
   flex-direction: column;
   gap: var(--space-5);
 }
+
+/* "Mehr erfahren" neben der Fast-Lane-Wahl ist ein Knopf, sieht aber aus
+   wie die Textverweise der Kasse: ohne den Rahmen, den Browser Knöpfen
+   von sich aus geben. */
+button.zfAendern {
+  margin-left: var(--space-2);
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-gold);
+  background: none;
+  cursor: pointer;
+}

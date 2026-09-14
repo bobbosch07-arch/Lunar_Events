@@ -39,6 +39,8 @@ function deuteFehler(meldung: string): ReservierungErgebnis {
       rest: Number(rest ?? 0),
     };
   }
+  if (meldung.includes("FASTLANE_AUSVERKAUFT") || meldung.includes("FASTLANE_NICHT_VERFUEGBAR"))
+    return { ok: false, fehler: "fastlane_aus" };
   if (meldung.includes("EVENT_VORBEI")) return { ok: false, fehler: "vorbei" };
   if (meldung.includes("EVENT_NICHT_VERFUEGBAR"))
     return { ok: false, fehler: "nicht_verfuegbar" };
@@ -57,6 +59,8 @@ export async function reserviereBestellung(eingabe: {
   vorname: string;
   nachname: string;
   telefon?: string;
+  /** Für wie viele Tickets Fast Lane dazugebucht wird. */
+  fastlane?: number;
 }): Promise<ReservierungErgebnis> {
   if (eingabe.auswahl.length === 0) return { ok: false, fehler: "leer" };
 
@@ -69,6 +73,7 @@ export async function reserviereBestellung(eingabe: {
     p_vorname: eingabe.vorname.trim() || null,
     p_nachname: eingabe.nachname.trim() || null,
     p_telefon: eingabe.telefon?.trim() || null,
+    p_fastlane: Math.max(0, Math.floor(eingabe.fastlane ?? 0)),
   });
 
   if (error) return deuteFehler(error.message);

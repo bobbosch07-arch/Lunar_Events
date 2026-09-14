@@ -50,6 +50,13 @@ export type EventStand = {
   abendkasse: boolean;
   abendkasseHinweis: string;
   featured: boolean;
+  fastlaneAktiv: boolean;
+  fastlanePreisEuro: string;
+  /** Leer = unbegrenzt. */
+  fastlaneKontingent: string;
+  fastlaneBeschreibung: string;
+  /** Nur zur Anzeige: schon verkaufte Fast-Lane-Plätze. */
+  fastlaneVerkauft: number;
   phasen: PhasenStand[];
 };
 

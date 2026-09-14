@@ -120,6 +120,24 @@ verkauft und Preis der nächsten Phase, erst ab 50 %, ab 80 % in
 Warnfarbe. Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer
 Verfügbarkeit — nie erfundene Zahlen, keine Countdowns.
 
+**Fast Lane ist ein Upgrade, keine Phase** (Migration 0011). Es hängt an
+den Tickets (`tickets.fastlane`), sonst bekäme jeder Käufer einen zweiten
+QR-Code, der allein nichts öffnet. Das Kontingent liegt am Event
+(`fastlane_kontingent`/`fastlane_verkauft`), weil der Engpass die Spur am
+Eingang ist. Es läuft durch dieselben Stellen wie ein Phasenkontingent:
+`reserviere(… p_fastlane)` bucht unter Sperre, `raeume_reservierungen_auf`
+gibt zurück, `bestaetige_zahlung` markiert die Tickets, `entwerte_ticket`
+meldet es dem Scanner. Wer ein Kontingent anfasst, muss alle vier
+mitdenken.
+
+Angeboten wird es nur für **die ganze Bestellung**: Reichen die freien
+Plätze nicht für alle Tickets, gibt es kein Angebot. Das Fenster in der
+Kasse (`FastLaneAngebot`, natives `<dialog>`) erscheint einmal, die Wahl
+bleibt in Schritt 1 änderbar. **Nie vorangekreuzt** — ein
+kostenpflichtiges Extra muss der Gast selbst wählen (§ 312a Abs. 3 BGB).
+Das Briefing schließt Pop-ups eigentlich aus; es ist ausdrücklich
+gewünscht und deshalb so zurückhaltend gebaut.
+
 **Reservierungen verfallen** (`reserviert_bis`, voreingestellt 15 Minuten);
 `raeume_reservierungen_auf()` gibt die Kontingente zurück.
 

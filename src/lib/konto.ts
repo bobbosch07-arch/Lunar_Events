@@ -21,6 +21,7 @@ type TicketZeile = {
   gast_name: string | null;
   platz: string | null;
   entwertet_am: string | null;
+  fastlane: boolean;
   bestellung: {
     nummer: string;
     event: { titel: string; beginn: string; ort: { name: string; stadt: string } };
@@ -46,7 +47,7 @@ export async function holeMeineTickets(
   const { data, error } = await db
     .from("tickets")
     .select(
-      `code, phase_name, art, status, gast_name, platz, entwertet_am,
+      `code, phase_name, art, status, gast_name, platz, entwertet_am, fastlane,
        bestellung:bestellungen!inner(
          nummer, status,
          event:events(titel, beginn, ort:orte(name, stadt))
@@ -72,6 +73,7 @@ export async function holeMeineTickets(
           : "gueltig",
     gast_name: z.gast_name,
     platz: z.platz,
+    fastlane: z.fastlane,
     event_titel: z.bestellung.event.titel,
     event_wann: formatiere(z.bestellung.event.beginn),
     event_ort: `${z.bestellung.event.ort.name}, ${z.bestellung.event.ort.stadt}`,

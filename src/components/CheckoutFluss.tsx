@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { StripeZahlung } from "./StripeZahlung";
 import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
+import { FastLaneAngebot } from "./FastLaneAngebot";
+import type { FastLane } from "@/lib/typen";
 import { preisText } from "@/lib/format";
 import {
   reserviereBestellung,
@@ -38,6 +40,8 @@ type Props = {
   paypalClientId: string | null;
   /** Absolute Adresse, zu der Stripe nach der Zahlung zurückschickt. */
   rueckkehrBasis: string;
+  /** Fast-Lane-Upgrade, falls das Event es anbietet und Plätze frei sind. */
+  fastlane: FastLane | null;
 };
 
 type Formular = {
@@ -65,6 +69,8 @@ export function CheckoutFluss(props: Props) {
   const [widerruf, setWiderruf] = useState(false);
   const [laeuft, setLaeuft] = useState(false);
   const [stoerung, setStoerung] = useState<string | null>(null);
+  const [fastlane, setFastlane] = useState(false);
+  const [angebotOffen, setAngebotOffen] = useState(false);
   const [bestellung, setBestellung] = useState<{
     id: string;
     nummer: string;
@@ -82,6 +88,26 @@ export function CheckoutFluss(props: Props) {
     }
     return { zwischensumme, gebuehren, gesamt: zwischensumme + gebuehren, anzahl };
   }, [props.posten]);
+
+  // Angeboten wird Fast Lane nur für die ganze Bestellung. Reichen die
+  // freien Plätze nicht für alle Tickets, gibt es kein Angebot — halbe
+  // Gruppen an der Schlange vorbei hilft niemandem.
+  const angebot =
+    props.fastlane && (props.fastlane.rest === null || props.fastlane.rest >= anzahl)
+      ? props.fastlane
+      : null;
+  const fastlaneCent = fastlane && angebot ? angebot.preis_cent * anzahl : 0;
+  const gesamtMitFastlane = gesamt + fastlaneCent;
+
+  // Einmal beim Betreten der Kasse. Erst nach dem ersten Zeichnen, weil
+  // showModal() ein fertiges Element braucht.
+  const angebotGezeigt = useRef(false);
+  useEffect(() => {
+    if (angebot && !angebotGezeigt.current) {
+      angebotGezeigt.current = true;
+      setAngebotOffen(true);
+    }
+  }, [angebot]);
 
   function pruefe(): boolean {
     const neu: Partial<Record<keyof Formular, string>> = {};
@@ -114,9 +140,20 @@ export function CheckoutFluss(props: Props) {
       vorname: formular.vorname,
       nachname: formular.nachname,
       telefon: formular.telefon,
+      fastlane: fastlane && angebot ? anzahl : 0,
     });
 
     setLaeuft(false);
+
+    if (!ergebnis.ok && ergebnis.fehler === "fastlane_aus") {
+      // Die Tickets gibt es noch, nur die Fast-Lane-Plätze nicht mehr.
+      // Den ganzen Kauf daran scheitern zu lassen wäre falsch.
+      setFastlane(false);
+      setStoerung(
+        "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
+      );
+      return;
+    }
 
     if (!ergebnis.ok) {
       // Wer zu spät kommt, muss es erfahren, bevor er Geld eingibt —
@@ -162,6 +199,19 @@ export function CheckoutFluss(props: Props) {
   return (
     <>
       <Zaehler art="kasse_begonnen" eventId={props.eventId} />
+      {angebot ? (
+        <FastLaneAngebot
+          offen={angebotOffen}
+          angebot={angebot}
+          anzahl={anzahl}
+          gewaehlt={fastlane}
+          uebernehmen={(wahl) => {
+            setFastlane(wahl);
+            setAngebotOffen(false);
+          }}
+          schliessen={() => setAngebotOffen(false)}
+        />
+      ) : null}
       <ol className={css.schritte}>
         {schritte.map((name, i) => {
           const nr = i + 1;
@@ -184,6 +234,28 @@ export function CheckoutFluss(props: Props) {
             <p className={css.hinweis}>
               {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} für {props.eventTitel}.
             </p>
+            {angebot ? (
+              <div className={css.zustimmungen}>
+                <label className={css.zustimmung}>
+                  <input
+                    type="checkbox"
+                    checked={fastlane}
+                    onChange={(e) => setFastlane(e.target.checked)}
+                  />
+                  <span>
+                    <strong>Fast Lane</strong> — nicht anstehen, eigene Spur am
+                    Einlass. + {preisText(angebot.preis_cent * anzahl, locale)}{" "}
+                    <button
+                      type="button"
+                      className={css.zfAendern}
+                      onClick={() => setAngebotOffen(true)}
+                    >
+                      Mehr erfahren
+                    </button>
+                  </span>
+                </label>
+              </div>
+            ) : null}
             <div className={css.knoepfe}>
               <Knopf onClick={() => setSchritt(2)} groesse="gross">
                 {t("weiter")}
@@ -385,13 +457,21 @@ export function CheckoutFluss(props: Props) {
               <span className={css.zfWert}>{preisText(gebuehren, locale)}</span>
             </div>
           ) : null}
+          {fastlaneCent > 0 ? (
+            <div className={css.zfZeile}>
+              <span className={css.zfName}>
+                Fast Lane <span className={css.zfMenge}>× {anzahl}</span>
+              </span>
+              <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
+            </div>
+          ) : null}
         </div>
 
         <div className={css.zfTrenner} />
 
         <div className={css.zfSumme}>
           <span className={css.zfSummeLabel}>{t("gesamt")}</span>
-          <span className={css.zfSummeWert}>{preisText(gesamt, locale)}</span>
+          <span className={css.zfSummeWert}>{preisText(gesamtMitFastlane, locale)}</span>
         </div>
 
         {schritt === 1 ? (

@@ -40,6 +40,10 @@ export type EventEingabe = {
   abendkasse: boolean;
   abendkasse_hinweis: string | null;
   featured: boolean;
+  fastlane_aktiv: boolean;
+  fastlane_preis_cent: number;
+  fastlane_kontingent: number | null;
+  fastlane_beschreibung: string | null;
   phasen: PhasenEingabe[];
 };
 
@@ -105,6 +109,10 @@ export async function speichereEvent(
     abendkasse: eingabe.abendkasse,
     abendkasse_hinweis: eingabe.abendkasse_hinweis?.trim() || null,
     featured: eingabe.featured,
+    fastlane_aktiv: eingabe.fastlane_aktiv,
+    fastlane_preis_cent: Math.max(0, eingabe.fastlane_preis_cent),
+    fastlane_kontingent: eingabe.fastlane_kontingent,
+    fastlane_beschreibung: eingabe.fastlane_beschreibung?.trim() || null,
     veranstalter: "Lunar Events",
     geaendert_am: new Date().toISOString(),
   };
@@ -114,6 +122,14 @@ export async function speichereEvent(
     : await db.from("events").insert(zeile).select("id, slug").single();
 
   if (error) {
+    // Die Regel in der Tabelle lässt kein Kontingent unter die schon
+    // verkauften Plätze sinken.
+    if (error.message.includes("events_fastlane_gueltig")) {
+      return {
+        ok: false,
+        fehler: "Das Fast-Lane-Kontingent ist kleiner als die schon verkauften Plätze.",
+      };
+    }
     if (error.code === "23505") {
       return { ok: false, fehler: `Die Adresse „${slug}" ist schon vergeben.` };
     }

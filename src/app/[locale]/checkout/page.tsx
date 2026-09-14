@@ -111,6 +111,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             eventWann={f.dateTime(new Date(event.beginn), "mitZeit")}
             eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
             posten={posten}
+            fastlane={event.fastlane ?? null}
             testmodus={testmodus}
             stripeAktiv={stripeAktiv}
             paypalClientId={paypalClientId}

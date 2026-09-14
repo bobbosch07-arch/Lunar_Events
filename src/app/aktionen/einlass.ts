@@ -12,6 +12,8 @@ export type EinlassErgebnis = {
   event?: string;
   typ?: string;
   art?: string;
+  /** Darf an der normalen Schlange vorbei. */
+  fastlane?: boolean;
   gast?: string | null;
   platz?: string | null;
   zeitpunkt?: string;

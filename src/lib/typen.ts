@@ -80,6 +80,16 @@ export type Veranstaltung = {
   ab_preis_cent: number | null;
   vip_verfuegbar: boolean;
   ausverkauft: boolean;
+  /** Nur gesetzt, wenn Fast Lane angeboten wird und noch Plätze hat. */
+  fastlane?: FastLane | null;
+};
+
+/** Das Fast-Lane-Upgrade, wie die Kasse es anbietet. */
+export type FastLane = {
+  preis_cent: number;
+  /** Freie Plätze, null = unbegrenzt. */
+  rest: number | null;
+  beschreibung: string | null;
 };
 
 /**

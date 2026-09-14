@@ -86,6 +86,11 @@ export function EventFormular({
       abendkasse: stand.abendkasse,
       abendkasse_hinweis: stand.abendkasseHinweis || null,
       featured: stand.featured,
+      fastlane_aktiv: stand.fastlaneAktiv,
+      fastlane_preis_cent: centAus(stand.fastlanePreisEuro),
+      fastlane_kontingent:
+        stand.fastlaneKontingent.trim() === "" ? null : Number(stand.fastlaneKontingent),
+      fastlane_beschreibung: stand.fastlaneBeschreibung || null,
       phasen: stand.phasen.map((p, i) => ({
         id: p.id,
         name: p.name,
@@ -401,6 +406,76 @@ export function EventFormular({
                 onChange={(e) => setze("abendkasseHinweis", e.target.value)}
               />
             </div>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ---------- Fast Lane ---------- */}
+      <section className={css.gruppe}>
+        <h2 className={css.gruppenTitel}>Fast Lane</h2>
+        <div className={css.raster}>
+          <div className={`${css.feld} ${css.breit}`}>
+            <label className={css.schalter}>
+              <input
+                type="checkbox"
+                checked={stand.fastlaneAktiv}
+                onChange={(e) => setze("fastlaneAktiv", e.target.checked)}
+              />
+              Fast Lane anbieten
+            </label>
+            <span className={css.hinweis}>
+              Nach der Ticketwahl erscheint in der Kasse ein Fenster mit dem
+              Upgrade. Am Einlass zeigt der Scanner „Fast Lane“ an — die
+              eigene Spur muss es vor Ort dann auch geben.
+            </span>
+          </div>
+          {stand.fastlaneAktiv ? (
+            <>
+              <div className={css.feld}>
+                <label className={css.beschriftung} htmlFor="fl-preis">
+                  Preis pro Ticket (€)
+                </label>
+                <input
+                  id="fl-preis"
+                  inputMode="decimal"
+                  className={css.eingabe}
+                  value={stand.fastlanePreisEuro}
+                  onChange={(e) => setze("fastlanePreisEuro", e.target.value)}
+                />
+              </div>
+              <div className={css.feld}>
+                <label className={css.beschriftung} htmlFor="fl-kontingent">
+                  Kontingent
+                </label>
+                <input
+                  id="fl-kontingent"
+                  type="number"
+                  min={stand.fastlaneVerkauft}
+                  className={css.eingabe}
+                  placeholder="unbegrenzt"
+                  value={stand.fastlaneKontingent}
+                  onChange={(e) => setze("fastlaneKontingent", e.target.value)}
+                />
+                <span className={css.hinweis}>
+                  {stand.fastlaneVerkauft > 0
+                    ? `${stand.fastlaneVerkauft} schon verkauft (inkl. laufender Reservierungen).`
+                    : "Leer lassen für unbegrenzt."}
+                </span>
+              </div>
+              <div className={`${css.feld} ${css.breit}`}>
+                <label className={css.beschriftung} htmlFor="fl-text">
+                  Beschreibung im Fenster
+                </label>
+                <textarea
+                  id="fl-text"
+                  rows={2}
+                  className={css.eingabe}
+                  placeholder="Eigene Spur am Einlass: Du gehst an der Schlange vorbei und bist direkt drin."
+                  value={stand.fastlaneBeschreibung}
+                  onChange={(e) => setze("fastlaneBeschreibung", e.target.value)}
+                />
+              </div>
+            </>
           ) : null}
         </div>
       </section>

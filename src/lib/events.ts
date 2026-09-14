@@ -17,6 +17,8 @@ const AUSWAHL = `
   id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
   beginn, einlass, ende, bild_pfad, bild_alt, bild_fokus, mindestalter,
   dresscode, veranstalter, abendkasse, abendkasse_hinweis, featured,
+  fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
+  fastlane_beschreibung,
   ort:orte(*),
   phasen(*)
 `;
@@ -49,6 +51,19 @@ function bauePhase(z: Zeile): Phase {
     beschreibung: (z.beschreibung as string | null) ?? null,
     position: (z.position as number) ?? 0,
     aktiv: (z.aktiv as boolean) ?? true,
+  };
+}
+
+/** Fast Lane nur anbieten, wenn eingeschaltet und nicht vergriffen. */
+function fastlaneAus(z: Zeile): Veranstaltung["fastlane"] {
+  if (!z.fastlane_aktiv) return null;
+  const kontingent = (z.fastlane_kontingent as number | null) ?? null;
+  const rest = kontingent === null ? null : kontingent - ((z.fastlane_verkauft as number) ?? 0);
+  if (rest !== null && rest <= 0) return null;
+  return {
+    preis_cent: (z.fastlane_preis_cent as number) ?? 0,
+    rest,
+    beschreibung: (z.fastlane_beschreibung as string | null) ?? null,
   };
 }
 
@@ -98,6 +113,7 @@ function baueEvent(z: Zeile): Veranstaltung {
     // noch kaufbar. Ein Event ganz ohne Phasen ist nicht ausverkauft,
     // sondern noch nicht bepreist.
     ausverkauft: standard.length > 0 && kaufbar.length === 0,
+    fastlane: fastlaneAus(z),
   };
 }
 

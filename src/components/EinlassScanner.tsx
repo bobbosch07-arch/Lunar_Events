@@ -293,6 +293,13 @@ export function EinlassScanner({ events }: { events: Event[] }) {
             <span className={css.urteil}>{urteil.text}</span>
             {zustand.art === "ergebnis" ? (
               <>
+                {/* Groß und eigenständig: Wer am Eingang steht, muss es aus
+                    einem Meter Abstand sehen, bevor er jemanden an der
+                    Schlange vorbeiwinkt. Offline kennt der Scanner nur die
+                    Prüfsumme — dann steht hier nichts. */}
+                {zustand.wert.fastlane ? (
+                  <span className={css.fastlane}>Fast Lane</span>
+                ) : null}
                 {zustand.wert.typ ? (
                   <span className={css.detail}>
                     {zustand.wert.typ}

@@ -45,6 +45,8 @@ async function Inhalt({ slug }: { slug: string }) {
       `id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
        beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus,
        mindestalter, dresscode, abendkasse, abendkasse_hinweis, featured,
+       fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
+       fastlane_beschreibung,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv)`,
     )
@@ -94,6 +96,12 @@ async function Inhalt({ slug }: { slug: string }) {
     abendkasse: (event.abendkasse as boolean) ?? false,
     abendkasseHinweis: (event.abendkasse_hinweis as string | null) ?? "",
     featured: (event.featured as boolean) ?? false,
+    fastlaneAktiv: (event.fastlane_aktiv as boolean) ?? false,
+    fastlanePreisEuro: euroAus((event.fastlane_preis_cent as number) ?? 0),
+    fastlaneKontingent:
+      event.fastlane_kontingent === null ? "" : String(event.fastlane_kontingent),
+    fastlaneBeschreibung: (event.fastlane_beschreibung as string | null) ?? "",
+    fastlaneVerkauft: (event.fastlane_verkauft as number) ?? 0,
     phasen,
   };
 

@@ -58,7 +58,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
   const db = dienstClient();
   const { data: rohTickets } = await db
     .from("tickets")
-    .select("code, phase_name, art, status, gast_name, platz")
+    .select("code, phase_name, art, status, gast_name, platz, fastlane")
     .eq("bestellung_id", b)
     .order("erstellt_am", { ascending: true });
 
@@ -78,6 +78,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
     status: z.status as TicketAnzeige["status"],
     gast_name: (z.gast_name as string | null) ?? null,
     platz: (z.platz as string | null) ?? null,
+    fastlane: Boolean(z.fastlane),
     event_titel: event.titel,
     event_wann: wann,
     event_ort: ort,

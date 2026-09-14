@@ -38,6 +38,11 @@ function vorlage(): EventStand {
     abendkasse: false,
     abendkasseHinweis: "",
     featured: false,
+    fastlaneAktiv: false,
+    fastlanePreisEuro: "10,00",
+    fastlaneKontingent: "50",
+    fastlaneBeschreibung: "",
+    fastlaneVerkauft: 0,
     phasen: [
       { ...LEERE_PHASE, name: "Early Bird", preisEuro: "29,00", kontingent: "100" },
       { ...LEERE_PHASE, name: "Standard", preisEuro: "39,00" },

@@ -234,3 +234,18 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+/* Fast Lane: helles Feld auf dem farbigen Ergebnis, damit es sich vom
+   Urteil abhebt statt darin unterzugehen. */
+.fastlane {
+  align-self: flex-start;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
+  background: var(--gold-500);
+  color: var(--navy-950);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}

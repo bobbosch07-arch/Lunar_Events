@@ -1,0 +1,164 @@
+.fenster {
+  width: min(440px, calc(100% - 2 * var(--space-4)));
+  max-height: calc(100dvh - 2 * var(--space-4));
+  margin: auto;
+  padding: 0;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--ivory-50);
+  color: var(--text-primary);
+  box-shadow: var(--schatten-hoch);
+  overflow: auto;
+}
+
+.fenster[open] {
+  animation: erscheint 220ms var(--ease);
+}
+
+/* Abgedunkelt, nicht verschwommen — das Briefing schließt Glaseffekte aus. */
+.fenster::backdrop {
+  background: rgba(7, 17, 31, 0.62);
+  animation: abdunkeln 220ms var(--ease);
+}
+
+@keyframes erscheint {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes abdunkeln {
+  from {
+    opacity: 0;
+  }
+}
+
+.inhalt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-6) var(--space-6);
+}
+
+.zu {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: var(--tap);
+  height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background-color var(--dur-schnell) var(--ease);
+}
+
+.zu:hover {
+  background: var(--ivory-100);
+  color: var(--text-primary);
+}
+
+/* Das Ausrufezeichen als Zeichen der Marke statt als Emoji: Emojis sehen
+   auf jedem Gerät anders aus, dieses hier überall gleich. */
+.marke {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: var(--space-1);
+  border-radius: 50%;
+  background: var(--navy-950);
+  color: var(--gold-500);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+}
+
+.text {
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.preis {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+}
+
+.preisZusatz {
+  font-family: var(--font-body);
+  font-weight: var(--fw-regular, 400);
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+/* Gewählt zeigt Rahmen UND Haken UND Goldkante — Gold allein ist kein
+   Merkmal (Briefing, Barrierefreiheit). */
+.wahl {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  margin-top: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  cursor: pointer;
+  transition: border-color var(--dur-schnell) var(--ease);
+}
+
+.wahl input {
+  margin-top: 2px;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--navy-900);
+  flex: none;
+}
+
+.wahlAn {
+  border-color: var(--navy-900);
+  box-shadow: inset 3px 0 0 var(--gold-500);
+}
+
+.wahlPreis {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.knapp {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--warning);
+}
+
+.knoepfe {
+  width: 100%;
+  margin-top: var(--space-2);
+}

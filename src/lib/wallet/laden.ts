@@ -20,7 +20,7 @@ export async function ladePassDaten(
   const { data: ticket } = await db
     .from("tickets")
     .select(
-      `code, phase_name, art, status, gast_name, platz,
+      `code, phase_name, art, status, gast_name, platz, fastlane,
        bestellung:bestellungen!inner(nummer, status, zugangstoken),
        event:events(id, titel, beginn, einlass, status,
                     ort:orte(name, stadt, strasse, lat, lng))`,
@@ -66,7 +66,11 @@ export async function ladePassDaten(
       ortStrasse: event.ort.strasse,
       lat: event.ort.lat,
       lng: event.ort.lng,
-      ticketArt: ticket.phase_name as string,
+      // Fast Lane steht mit im Tickettyp — am Einlass zeigt der Gast den
+      // Pass, nicht die Webseite.
+      ticketArt: ticket.fastlane
+        ? `${ticket.phase_name as string} · Fast Lane`
+        : (ticket.phase_name as string),
       gastName: (ticket.gast_name as string | null) ?? null,
       platz: (ticket.platz as string | null) ?? null,
       bestellnummer: bestellung.nummer,
