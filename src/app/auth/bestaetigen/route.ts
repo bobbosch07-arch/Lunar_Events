@@ -15,13 +15,25 @@ export const dynamic = "force-dynamic";
 export async function GET(anfrage: NextRequest) {
   const { searchParams, origin } = new URL(anfrage.url);
   const code = searchParams.get("code");
+  // Supabase schickt je nach Weg entweder einen "code" (der Browser hat
+  // beim Anfordern ein Gegenstück hinterlegt) oder einen "token_hash"
+  // (der steht für sich allein). Nur der zweite funktioniert auch dann,
+  // wenn der Link in einem anderen Browser geöffnet wird als dem, der
+  // ihn angefordert hat — oder wenn er gar nicht angefordert, sondern
+  // von der Veranstaltungsleitung ausgestellt wurde.
+  const tokenHash = searchParams.get("token_hash");
+  const art = (searchParams.get("type") ?? "magiclink") as
+    | "magiclink"
+    | "email"
+    | "recovery"
+    | "invite";
   const weiter = searchParams.get("weiter") ?? "/konto/tickets";
 
   // Nur eigene Pfade, keine fremden Adressen: sonst ließe sich der
   // Anmeldelink missbrauchen, um Leute woandershin zu schicken.
   const ziel = weiter.startsWith("/") && !weiter.startsWith("//") ? weiter : "/konto";
 
-  if (!code) {
+  if (!code && !tokenHash) {
     return NextResponse.redirect(`${origin}/konto?fehler=kein_code`);
   }
 
@@ -43,7 +55,9 @@ export async function GET(anfrage: NextRequest) {
     },
   );
 
-  const { error } = await db.auth.exchangeCodeForSession(code);
+  const { error } = tokenHash
+    ? await db.auth.verifyOtp({ token_hash: tokenHash, type: art })
+    : await db.auth.exchangeCodeForSession(code!);
 
   if (error) {
     console.error("[auth] Anmeldung fehlgeschlagen:", error.message);
