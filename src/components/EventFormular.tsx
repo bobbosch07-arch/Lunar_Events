@@ -6,59 +6,16 @@ import { Knopf } from "./Knopf";
 import { BildFeld } from "./BildFeld";
 import { speichereEvent, type EventEingabe } from "@/app/aktionen/event-speichern";
 import css from "./EventFormular.module.css";
+import {
+  LEERE_PHASE,
+  type EventStand,
+  type OrtWahl,
+  type PhasenStand,
+} from "@/lib/event-stand";
 
-export type OrtWahl = { id: string; name: string; stadt: string };
-
-export type PhasenStand = {
-  id?: string;
-  name: string;
-  art: "standard" | "vip";
-  preisEuro: string;
-  gebuehrEuro: string;
-  kontingent: string;
-  leistungen: string[];
-  beschreibung: string;
-  aktiv: boolean;
-  verkauft: number;
-};
-
-export type EventStand = {
-  id?: string;
-  slug: string;
-  titel: string;
-  untertitel: string;
-  teaser: string;
-  beschreibung: string;
-  kategorie: string;
-  status: string;
-  beginn: string;
-  einlass: string;
-  ende: string;
-  ortId: string;
-  bildPfad: string;
-  bildAlt: string;
-  bildFokus: string;
-  mindestalter: string;
-  dresscode: string;
-  abendkasse: boolean;
-  abendkasseHinweis: string;
-  featured: boolean;
-  phasen: PhasenStand[];
-};
+export type { EventStand, OrtWahl, PhasenStand };
 
 const KATEGORIEN = ["club", "party", "festival", "rooftop", "special"];
-
-export const LEERE_PHASE: PhasenStand = {
-  name: "",
-  art: "standard",
-  preisEuro: "",
-  gebuehrEuro: "2,50",
-  kontingent: "",
-  leistungen: ["Eintritt"],
-  beschreibung: "",
-  aktiv: true,
-  verkauft: 0,
-};
 
 /** "39,50" oder "39.50" → 3950 */
 function centAus(text: string): number {

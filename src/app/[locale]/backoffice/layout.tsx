@@ -1,37 +1,38 @@
 import type { ReactNode } from "react";
+import { setRequestLocale } from "next-intl/server";
+import { Anmeldung } from "@/components/Anmeldung";
+import { BackofficeReiter } from "@/components/BackofficeReiter";
+import { Logo } from "@/components/Logo";
 import { Link } from "@/i18n/navigation";
-import { Anmeldung } from "./Anmeldung";
-import { Logo } from "./Logo";
 import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
-import css from "@/app/[locale]/backoffice/backoffice.module.css";
-
-const ZIELE = [
-  { href: "/backoffice", name: "Übersicht" },
-  { href: "/backoffice/events", name: "Events" },
-  { href: "/backoffice/bestellungen", name: "Bestellungen" },
-  { href: "/backoffice/vip", name: "VIP" },
-  { href: "/backoffice/auswertung", name: "Auswertung" },
-] as const;
+import css from "./backoffice.module.css";
 
 export type Rolle = "admin" | "team" | "einlass";
 
 /**
- * Wacht über den gesamten Backoffice-Bereich und liefert den Rahmen.
- * Die Rechteprüfung steht hier einmal, statt auf jeder Unterseite
- * wiederholt zu werden — vergessen kann man sie so nicht.
+ * Rahmen und Rechteprüfung fürs gesamte Backoffice.
+ *
+ * Das stand bis dahin in einer Komponente, die *jede* Seite selbst
+ * aufrief. Damit lief bei jedem Reiterwechsel wieder alles von vorn:
+ * Sitzung beim Auth-Server nachprüfen, Mitarbeiterzeile laden, Kopf neu
+ * aufbauen — zwei zusätzliche Netzwerkrunden, bevor die eigentliche
+ * Abfrage überhaupt begann.
+ *
+ * Als Layout bleibt der Rahmen beim Wechsel zwischen den Reitern stehen
+ * und wird nicht neu gerechnet. Next lädt dann nur noch den Teil, der
+ * sich wirklich ändert.
  */
-export async function BackofficeRahmen({
-  aktiv,
-  titel,
-  kopfzusatz,
+export default async function BackofficeLayout({
   children,
+  params,
 }: {
-  aktiv: string;
-  titel: string;
-  kopfzusatz?: ReactNode;
   children: ReactNode;
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const angemeldet = await holeAngemeldeten();
 
   if (!angemeldet) {
@@ -81,31 +82,13 @@ export async function BackofficeRahmen({
               <Logo ton="ivory" hoehe={30} />
               Backoffice
             </span>
-            <nav className={css.reiter}>
-              {ZIELE.map((z) => (
-                <Link
-                  key={z.href}
-                  href={z.href}
-                  className={z.href === aktiv ? css.reiterAktiv : undefined}
-                >
-                  {z.name}
-                </Link>
-              ))}
-              <Link href="/einlass">Einlass</Link>
-              <Link href="/">Zur Website</Link>
-            </nav>
+            <BackofficeReiter />
           </div>
         </div>
       </header>
 
       <main className={css.inhalt}>
-        <div className="seitenbreite">
-          <div className={css.zeile}>
-            <h1 className={css.seitentitel}>{titel}</h1>
-            {kopfzusatz}
-          </div>
-          {children}
-        </div>
+        <div className="seitenbreite">{children}</div>
       </main>
     </div>
   );

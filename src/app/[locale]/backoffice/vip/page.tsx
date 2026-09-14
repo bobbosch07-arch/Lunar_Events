@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getFormatter, setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { VipTabelle } from "@/components/VipTabelle";
 import { holeVipAnfragen } from "@/lib/backoffice";
 import css from "../backoffice.module.css";
@@ -19,9 +21,12 @@ export default async function VipBackoffice({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen aktiv="/backoffice/vip" titel="VIP-Anfragen">
-      <Inhalt />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="VIP-Anfragen" />
+      <Suspense fallback={<BackofficeSkelett zeilen={6} />}>
+        <Inhalt />
+      </Suspense>
+    </>
   );
 }
 
@@ -40,8 +45,10 @@ async function Inhalt() {
       ) : null}
 
       <VipTabelle
-        anfragen={anfragen}
-        formatiere={(iso) => f.dateTime(new Date(iso), "kurz")}
+        anfragen={anfragen.map((a) => ({
+          ...a,
+          erstelltAmText: f.dateTime(new Date(a.erstelltAm), "kurz"),
+        }))}
       />
 
       <p className={css.notiz}>

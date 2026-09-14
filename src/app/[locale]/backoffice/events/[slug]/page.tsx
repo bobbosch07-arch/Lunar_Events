@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
-import { EventFormular, type EventStand } from "@/components/EventFormular";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
+import { EventFormular } from "@/components/EventFormular";
+import type { EventStand } from "@/lib/event-stand";
 import { holeOrte } from "@/app/aktionen/event-speichern";
 import { serverClient } from "@/lib/supabase/server";
 import { utcNachBerlinFeld } from "@/lib/zeit";
@@ -24,9 +27,12 @@ export default async function EventBearbeiten({ params }: Props) {
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen aktiv="/backoffice/events" titel="Event bearbeiten">
-      <Inhalt slug={slug} />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="Event bearbeiten" />
+      <Suspense fallback={<BackofficeSkelett zeilen={8} />}>
+        <Inhalt slug={slug} />
+      </Suspense>
+    </>
   );
 }
 

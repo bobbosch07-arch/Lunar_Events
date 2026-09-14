@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
-import { EventFormular, LEERE_PHASE, type EventStand } from "@/components/EventFormular";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
+import { EventFormular } from "@/components/EventFormular";
+import { LEERE_PHASE, type EventStand } from "@/lib/event-stand";
 import { holeOrte } from "@/app/aktionen/event-speichern";
 
 export const metadata: Metadata = {
@@ -63,9 +66,12 @@ export default async function NeuesEvent({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen aktiv="/backoffice/events" titel="Event anlegen">
-      <Inhalt />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="Event anlegen" />
+      <Suspense fallback={<BackofficeSkelett zeilen={8} />}>
+        <Inhalt />
+      </Suspense>
+    </>
   );
 }
 

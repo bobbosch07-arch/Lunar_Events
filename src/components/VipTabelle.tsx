@@ -22,10 +22,11 @@ function marke(status: string) {
 
 export function VipTabelle({
   anfragen,
-  formatiere,
 }: {
-  anfragen: VipZeile[];
-  formatiere: (iso: string) => string;
+  // Fertig formatiert vom Server. Eine Funktion laesst sich nicht an
+  // eine Client-Komponente reichen — React bricht die Seite dann mit
+  // "Functions cannot be passed directly to Client Components" ab.
+  anfragen: Array<VipZeile & { erstelltAmText: string }>;
 }) {
   const [laeuft, starte] = useTransition();
   const [offen, setOffen] = useState<string | null>(null);
@@ -78,7 +79,7 @@ export function VipTabelle({
                 </td>
                 <td className={css.zahl}>{a.gaeste}</td>
                 <td className={css.nebensache}>{a.paket ?? "offen"}</td>
-                <td className={css.nebensache}>{formatiere(a.erstelltAm)}</td>
+                <td className={css.nebensache}>{a.erstelltAmText}</td>
                 <td>
                   <select
                     value={a.status}

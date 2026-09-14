@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getFormatter, setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Aufraeumknopf } from "@/components/Aufraeumknopf";
 import { holeBestellungen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
@@ -27,13 +29,14 @@ export default async function Bestellungen({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen
-      aktiv="/backoffice/bestellungen"
-      titel="Bestellungen"
-      kopfzusatz={<Aufraeumknopf />}
-    >
-      <Inhalt locale={locale} />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="Bestellungen">
+        <Aufraeumknopf />
+      </BackofficeKopf>
+      <Suspense fallback={<BackofficeSkelett zeilen={10} />}>
+        <Inhalt locale={locale} />
+      </Suspense>
+    </>
   );
 }
 

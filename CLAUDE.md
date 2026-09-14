@@ -201,6 +201,56 @@ ein Seitenwechsel die Meldung nicht abschneidet. Bots werden am
 User-Agent grob aussortiert — sie sehen Seiten an und kaufen nie, was
 die Quote sonst verzerrt.
 
+## Backoffice — warum es so gebaut ist
+
+**Der Rahmen ist ein Layout** (`src/app/[locale]/backoffice/layout.tsx`),
+keine Komponente, die jede Seite selbst aufruft. Vorher lief bei jedem
+Reiterwechsel alles von vorn: Sitzung beim Auth-Server nachprüfen,
+Mitarbeiterzeile laden, Kopf neu bauen — zwei Netzwerkrunden, bevor die
+eigentliche Abfrage überhaupt begann. Ein Layout wird beim Wechsel
+zwischen Geschwisterseiten **nicht neu gerechnet**; Next lädt nur den
+Teil, der sich ändert. Die Rechteprüfung steht damit weiterhin an genau
+einer Stelle. Wer eine neue Backoffice-Seite anlegt, braucht sie nicht
+zu wiederholen.
+
+**Jede Seite trennt Titel und Daten.** Die Titelzeile (`BackofficeKopf`)
+weiß nichts von der Datenbank und steht sofort da; der Inhalt hängt in
+einer `<Suspense>`-Grenze mit `BackofficeSkelett`. Dazu kommt
+`loading.tsx` — dessen zweiter Zweck ist der wichtigere: Erst dadurch
+kann Next beim Vorausladen eines Reiters überhaupt etwas ablegen. Eine
+Seite, die bei jedem Aufruf die Datenbank fragt, lässt sich nicht
+vorausladen; ihre Ladeansicht schon.
+
+**Die Reiter sind eine Client-Komponente** (`BackofficeReiter`) — nicht
+wegen `usePathname`, der weiß es genauso spät wie der Server, sondern
+wegen `useLinkStatus`. Daran hängt `:has(.ladepunkt[data-laeuft])` im
+Stylesheet: Der angeklickte Reiter sieht **sofort** aktiv aus, der alte
+tritt zurück. Ohne das wirkte ein Klick auf eine Abfrage, die eine
+Sekunde braucht, wie ein verschluckter Klick.
+
+**Gezählt wird in der Datenbank.** `holeKennzahlen()` holte einmal
+*alle* Bestellungen und *alle* Tickets, um vier Zahlen zu bilden. Jetzt
+`select("id", { count: "exact", head: true })` — das überträgt keine
+Zeilen. Die Umsatzsumme ist die Ausnahme: Summieren kann PostgREST ohne
+eigene Datenbankfunktion nicht. `holeEventZeilen({ abJetzt, grenze })`
+lädt für die Übersicht nur die sechs kommenden Events statt der
+gesamten Historie.
+
+### Zwei Fallen, die hier zugeschnappt sind
+
+**Eine Funktion lässt sich nicht an eine Client-Komponente reichen.**
+`<VipTabelle formatiere={(iso) => …}>` brach die ganze VIP-Seite ab
+("Functions cannot be passed directly to Client Components"). Formatiert
+wird jetzt auf dem Server, hinübergereicht wird Text.
+
+**Werte aus einem `"use client"`-Modul kommen in einer
+Server-Komponente nicht an.** Sie bekommt statt des Wertes einen
+Platzhalter, über den React später die Komponente findet.
+`{ ...LEERE_PHASE }` ergab so ein Objekt ohne `leistungen`, und „Event
+anlegen" brach beim Zeichnen ab — während „Event bearbeiten" lief, weil
+dessen Phasen aus der Datenbank kommen. Solche geteilten Werte gehören
+in eine Datei **ohne** `"use client"`: `src/lib/event-stand.ts`.
+
 ## Umgebungsvariablen
 
 **Beide Namen für den öffentlichen Supabase-Schlüssel werden akzeptiert**

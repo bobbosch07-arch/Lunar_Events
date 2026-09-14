@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getFormatter, setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { EventStatusWahl } from "@/components/EventStatusWahl";
 import { Knopf } from "@/components/Knopf";
 import { Link } from "@/i18n/navigation";
@@ -22,17 +24,16 @@ export default async function EventsBackoffice({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen
-      aktiv="/backoffice/events"
-      titel="Events"
-      kopfzusatz={
+    <>
+      <BackofficeKopf titel="Events">
         <Knopf href="/backoffice/events/neu" groesse="klein">
           Event anlegen
         </Knopf>
-      }
-    >
-      <Inhalt locale={locale} />
-    </BackofficeRahmen>
+      </BackofficeKopf>
+      <Suspense fallback={<BackofficeSkelett zeilen={8} />}>
+        <Inhalt locale={locale} />
+      </Suspense>
+    </>
   );
 }
 

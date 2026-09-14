@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { getFormatter, setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Link } from "@/i18n/navigation";
 import { holeKennzahlen, holeEventZeilen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
@@ -21,16 +23,19 @@ export default async function Uebersicht({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen aktiv="/backoffice" titel="Übersicht">
-      <Inhalt locale={locale} />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="Übersicht" />
+      <Suspense fallback={<BackofficeSkelett kacheln={4} />}>
+        <Inhalt locale={locale} />
+      </Suspense>
+    </>
   );
 }
 
 async function Inhalt({ locale }: { locale: string }) {
   const [zahlen, events, f, passAblauf] = await Promise.all([
     holeKennzahlen(),
-    holeEventZeilen(),
+    holeEventZeilen({ abJetzt: true, grenze: 6 }),
     getFormatter(),
     appleEingerichtet() ? zertifikatLaeuftAb() : Promise.resolve(null),
   ]);
@@ -41,11 +46,6 @@ async function Inhalt({ locale }: { locale: string }) {
   const tageBisAblauf = passAblauf
     ? Math.floor((passAblauf.getTime() - Date.now()) / 86400000)
     : null;
-
-  const kommende = events
-    .filter((e) => new Date(e.beginn).getTime() > Date.now())
-    .sort((a, b) => a.beginn.localeCompare(b.beginn))
-    .slice(0, 6);
 
   const kacheln: Array<[string, string, string?]> = [
     ["Umsatz", preisText(zahlen.umsatzCent, locale), `${zahlen.bezahlteBestellungen} Bestellungen`],
@@ -108,14 +108,14 @@ async function Inhalt({ locale }: { locale: string }) {
             </tr>
           </thead>
           <tbody>
-            {kommende.length === 0 ? (
+            {events.length === 0 ? (
               <tr>
                 <td colSpan={6} className={css.leer}>
                   Keine kommenden Events.
                 </td>
               </tr>
             ) : (
-              kommende.map((e) => {
+              events.map((e) => {
                 const anteil =
                   e.kontingent && e.kontingent > 0
                     ? Math.min(100, Math.round((e.verkauft / e.kontingent) * 100))

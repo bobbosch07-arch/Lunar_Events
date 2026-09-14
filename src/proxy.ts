@@ -25,6 +25,14 @@ export default async function proxy(anfrage: NextRequest) {
   const schluessel = SUPABASE_OEFFENTLICH;
   if (!url || !schluessel) return antwort;
 
+  // Ohne Sitzungscookie gibt es nichts aufzufrischen. Das spart bei jedem
+  // Aufruf eines Gastes eine Runde zum Auth-Server — und die Vorabladungen
+  // des Backoffice fragen nicht fuenfmal dasselbe nach.
+  const hatSitzung = anfrage.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("auth-token"));
+  if (!hatSitzung) return antwort;
+
   const db = createServerClient(url, schluessel, {
     cookies: {
       getAll() {

@@ -21,30 +21,56 @@ export async function holeKennzahlen(): Promise<Kennzahlen> {
   const db = await serverClient();
   const jetzt = new Date().toISOString();
 
-  const [bestellungen, tickets, events, vip] = await Promise.all([
-    db.from("bestellungen").select("status, gesamt_cent, reserviert_bis"),
-    db.from("tickets").select("status"),
-    db.from("events").select("id").eq("status", "veroeffentlicht").gt("beginn", jetzt),
-    db.from("vip_anfragen").select("status").in("status", ["neu", "in_bearbeitung"]),
+  // Gezaehlt wird in der Datenbank, nicht hier.
+  //
+  // Vorher holte diese Funktion *alle* Bestellungen und *alle* Tickets und
+  // zaehlte sie in JavaScript durch. Bei vier Testevents faellt das nicht
+  // auf; nach einer ausverkauften Nacht sind es tausende Zeilen, die nur
+  // uebertragen werden, um am Ende vier Zahlen zu ergeben. `head: true`
+  // schickt gar keine Zeilen mit, nur die Anzahl.
+  const zaehle = (tabelle: string) =>
+    db.from(tabelle).select("id", { count: "exact", head: true });
+
+  const [
+    umsatzZeilen,
+    tickets,
+    entwertet,
+    events,
+    vip,
+    offen,
+    abgelaufen,
+  ] = await Promise.all([
+    // Die einzige Abfrage, die noch Zeilen braucht: Summieren kann
+    // PostgREST nicht ohne eigene Funktion in der Datenbank.
+    db.from("bestellungen").select("gesamt_cent").eq("status", "bezahlt"),
+    zaehle("tickets").neq("status", "storniert"),
+    zaehle("tickets").eq("status", "entwertet"),
+    zaehle("events").eq("status", "veroeffentlicht").gt("beginn", jetzt),
+    zaehle("vip_anfragen").in("status", ["neu", "in_bearbeitung"]),
+    db
+      .from("bestellungen")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "offen")
+      .or(`reserviert_bis.is.null,reserviert_bis.gt.${jetzt}`),
+    db
+      .from("bestellungen")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "offen")
+      .not("reserviert_bis", "is", null)
+      .lte("reserviert_bis", jetzt),
   ]);
 
-  const alle = bestellungen.data ?? [];
-  const bezahlt = alle.filter((b) => b.status === "bezahlt");
-  const offen = alle.filter((b) => b.status === "offen");
+  const bezahlt = umsatzZeilen.data ?? [];
 
   return {
     umsatzCent: bezahlt.reduce((s, b) => s + (b.gesamt_cent as number), 0),
     bezahlteBestellungen: bezahlt.length,
-    verkaufteTickets: (tickets.data ?? []).filter((t) => t.status !== "storniert").length,
-    entwerteteTickets: (tickets.data ?? []).filter((t) => t.status === "entwertet").length,
-    kommendeEvents: (events.data ?? []).length,
-    offeneVip: (vip.data ?? []).length,
-    offeneReservierungen: offen.filter(
-      (b) => !b.reserviert_bis || new Date(b.reserviert_bis as string) > new Date(),
-    ).length,
-    abgelaufeneReservierungen: offen.filter(
-      (b) => b.reserviert_bis && new Date(b.reserviert_bis as string) <= new Date(),
-    ).length,
+    verkaufteTickets: tickets.count ?? 0,
+    entwerteteTickets: entwertet.count ?? 0,
+    kommendeEvents: events.count ?? 0,
+    offeneVip: vip.count ?? 0,
+    offeneReservierungen: offen.count ?? 0,
+    abgelaufeneReservierungen: abgelaufen.count ?? 0,
   };
 }
 
@@ -61,17 +87,32 @@ export type EventZeile = {
   phasen: number;
 };
 
-export async function holeEventZeilen(): Promise<EventZeile[]> {
+/**
+ * Ohne Angabe: alle Events, neueste zuerst — das ist die Eventliste.
+ *
+ * Mit `abJetzt` nur die kommenden, naechste zuerst. Die Uebersicht zeigt
+ * davon sechs und hat vorher trotzdem die gesamte Historie geladen, samt
+ * aller Phasen, um sie danach wegzuwerfen.
+ */
+export async function holeEventZeilen(
+  optionen: { abJetzt?: boolean; grenze?: number } = {},
+): Promise<EventZeile[]> {
   const db = await serverClient();
+  const { abJetzt = false, grenze } = optionen;
 
-  const { data, error } = await db
+  let abfrage = db
     .from("events")
     .select(
       `id, slug, titel, status, beginn,
        ort:orte(name, stadt),
        phasen(id, preis_cent, gebuehr_cent, kontingent, verkauft, art)`,
     )
-    .order("beginn", { ascending: false });
+    .order("beginn", { ascending: abJetzt });
+
+  if (abJetzt) abfrage = abfrage.gt("beginn", new Date().toISOString());
+  if (grenze) abfrage = abfrage.limit(grenze);
+
+  const { data, error } = await abfrage;
 
   if (error || !data) {
     console.error("[backoffice] Events laden fehlgeschlagen:", error?.message);
@@ -84,7 +125,11 @@ export async function holeEventZeilen(): Promise<EventZeile[]> {
   const { data: bestellungen } = await db
     .from("bestellungen")
     .select("event_id, gesamt_cent")
-    .eq("status", "bezahlt");
+    .eq("status", "bezahlt")
+    // Nur die Bestellungen zu den Events, die gerade geladen wurden —
+    // sonst kaeme die gesamte Verkaufshistorie mit, um sechs Zahlen zu
+    // bilden.
+    .in("event_id", data.map((e) => e.id as string));
 
   const umsatzJeEvent = new Map<string, number>();
   for (const b of bestellungen ?? []) {

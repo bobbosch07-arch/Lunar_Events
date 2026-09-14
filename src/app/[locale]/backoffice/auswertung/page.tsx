@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { BackofficeRahmen } from "@/components/BackofficeRahmen";
+import { Suspense } from "react";
+import { BackofficeKopf } from "@/components/BackofficeKopf";
+import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { holeAuswertung, holeHerkunft } from "@/lib/backoffice";
 import css from "../backoffice.module.css";
 
@@ -23,9 +25,12 @@ export default async function Auswertung({
   setRequestLocale(locale);
 
   return (
-    <BackofficeRahmen aktiv="/backoffice/auswertung" titel="Auswertung">
-      <Inhalt />
-    </BackofficeRahmen>
+    <>
+      <BackofficeKopf titel="Auswertung" />
+      <Suspense fallback={<BackofficeSkelett kacheln={4} />}>
+        <Inhalt />
+      </Suspense>
+    </>
   );
 }
 
