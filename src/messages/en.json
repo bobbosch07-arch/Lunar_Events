@@ -139,7 +139,8 @@
     "sicher": "Payment encrypted via {anbieter}",
     "fehler": "The payment didn't go through. Nothing was charged.",
     "abgelaufen": "Your reservation expired. Please pick your tickets again.",
-    "reserviertNoch": "Held for {minuten}:{sekunden}"
+    "reserviertNoch": "Held for {minuten}:{sekunden}",
+    "bestellnummer": "Order number"
   },
   "bestaetigung": {
     "titel": "PURCHASE COMPLETE",

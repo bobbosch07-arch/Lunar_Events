@@ -1,0 +1,90 @@
+/* Semantische Tokens, damit der Block auf der hellen Bestätigungsseite
+   und auf der dunklen Ticketseite gleichermaßen funktioniert. */
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  max-width: 560px;
+  padding: clamp(var(--space-5), 4vw, var(--space-8));
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+  color: var(--auf-grund);
+  box-shadow: inset 3px 0 0 var(--gold-500);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--auf-grund);
+}
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.zeile {
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) 1fr;
+  gap: var(--space-4);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--linie);
+}
+
+.zeile:last-child {
+  border-bottom: 0;
+}
+
+.name {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+  align-self: center;
+}
+
+.wert {
+  margin: 0;
+  font-size: var(--fs-body);
+  color: var(--auf-grund);
+  overflow-wrap: anywhere;
+}
+
+/* IBAN, Betrag, Verwendungszweck: gleich breite Ziffern, mit einem
+   Doppelklick komplett markierbar. */
+.fest {
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  user-select: all;
+}
+
+.wichtig {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--auf-grund);
+}
+
+.text {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--auf-grund-2);
+}
+
+@media (max-width: 520px) {
+  .zeile {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}

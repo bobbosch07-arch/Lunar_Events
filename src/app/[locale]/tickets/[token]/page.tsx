@@ -5,6 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
+import { UeberweisungsDaten } from "@/components/UeberweisungsDaten";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
 import { appleEingerichtet } from "@/lib/wallet/apple";
 import { googleEingerichtet } from "@/lib/wallet/google";
@@ -38,14 +39,17 @@ export default async function TicketAnsicht({ params }: Props) {
   const { data: bestellung } = await db
     .from("bestellungen")
     .select(
-      `id, nummer, status,
+      `id, nummer, status, vorkasse, rabatt_cent, gesamt_cent, reserviert_bis,
        kunde:kunden(vorname, nachname),
        event:events(titel, beginn, einlass, status, ort:orte(name, stadt, strasse, plz))`,
     )
     .eq("zugangstoken", token)
     .maybeSingle();
 
-  if (!bestellung || bestellung.status !== "bezahlt") notFound();
+  // Offene Vorkasse-Bestellungen zeigen die Bankverbindung; alles andere,
+  // was nicht bezahlt ist, gibt es hier nicht.
+  const wartetAufUeberweisung = bestellung?.status === "offen" && Boolean(bestellung?.vorkasse);
+  if (!bestellung || (bestellung.status !== "bezahlt" && !wartetAufUeberweisung)) notFound();
 
   const [t, f] = await Promise.all([getTranslations("ticket"), getFormatter()]);
 
@@ -92,6 +96,36 @@ export default async function TicketAnsicht({ params }: Props) {
     zugangstoken: token,
     wallet,
   }));
+
+  if (wartetAufUeberweisung) {
+    return (
+      <div className={css.rahmen}>
+        <header className={css.kopf}>
+          <div className="seitenbreite">
+            <Link href="/" aria-label="Lunar Events">
+              <Logo ton="ivory" hoehe={40} prioritaet />
+            </Link>
+          </div>
+        </header>
+        <main className={css.inhalt}>
+          <div className="seitenbreite">
+            <div className={css.kopfzeile}>
+              <span className="eyebrow">Zahlung ausstehend</span>
+              <h1 className={css.titel}>{event.titel}</h1>
+              <p className={css.wann}>{wann}</p>
+            </div>
+            <UeberweisungsDaten
+              nummer={bestellung.nummer as string}
+              betragCent={bestellung.gesamt_cent as number}
+              rabattCent={(bestellung.rabatt_cent as number) ?? 0}
+              bis={(bestellung.reserviert_bis as string | null) ?? null}
+              locale={locale}
+            />
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   const vorbei = new Date(event.beginn).getTime() < Date.now();
 

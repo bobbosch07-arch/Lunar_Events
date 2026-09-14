@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
 import { Zaehler } from "@/components/Zaehler";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
+import { UeberweisungsDaten } from "@/components/UeberweisungsDaten";
 import {
   holeEigeneBestellung,
   stelleZahlungSicher,
@@ -20,10 +21,22 @@ type Props = {
   searchParams: Promise<{ b?: string }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const { b } = await searchParams;
+  const robots = { index: false, follow: false };
+
+  // Bei Vorkasse ist noch nichts bezahlt — "Kauf erfolgreich" im Tab wäre
+  // eine Zusage, die erst der Zahlungseingang einlöst.
+  if (b) {
+    const bestellung = await holeEigeneBestellung(b);
+    if (bestellung?.status === "offen" && (bestellung as { vorkasse?: boolean }).vorkasse) {
+      return { title: "Bestellung eingegangen", robots };
+    }
+  }
+
   const t = await getTranslations({ locale, namespace: "bestaetigung" });
-  return { title: t("titel"), robots: { index: false, follow: false } };
+  return { title: t("titel"), robots };
 }
 
 export default async function BestaetigungsSeite({ params, searchParams }: Props) {
@@ -68,6 +81,10 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
   );
   const eventId = (bestellung as unknown as { event_id?: string }).event_id ?? null;
   const ticketAdresse = `${eigeneAdresse()}/tickets/${bestellung.zugangstoken as string}`;
+  // Vorkasse: bestellt, aber noch nicht bezahlt. Dann zeigt die Seite die
+  // Bankverbindung statt Tickets — und zählt noch keinen Kauf.
+  const wartetAufUeberweisung =
+    bestellung.status === "offen" && Boolean((bestellung as { vorkasse?: boolean }).vorkasse);
   const wann = f.dateTime(new Date(event.beginn), "mitZeit");
   const ort = `${event.ort.name}, ${event.ort.stadt}`;
 
@@ -87,7 +104,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
 
   return (
     <div className={css.rahmen}>
-      <Zaehler art="kauf_abgeschlossen" eventId={eventId} />
+      {wartetAufUeberweisung ? null : <Zaehler art="kauf_abgeschlossen" eventId={eventId} />}
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">
@@ -100,7 +117,9 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
         <div className="seitenbreite">
           <div className={css.jubel}>
             <span className="eyebrow">{f.dateTime(new Date(), "lang")}</span>
-            <h1 className={css.titel}>{t("titel")}</h1>
+            <h1 className={css.titel}>
+              {wartetAufUeberweisung ? "Fast geschafft" : t("titel")}
+            </h1>
             <p className={css.event}>{event.titel}</p>
             <p className={css.wann}>
               {wann} · {ort}
@@ -128,12 +147,26 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
                   {preisText(bestellung.gesamt_cent as number, locale)}
                 </dd>
               </div>
-              <div>
-                <dt>Tickets</dt>
-                <dd className={css.tab}>{tickets.length}</dd>
-              </div>
+              {/* "Tickets 0" verunsichert, solange die Überweisung aussteht —
+                  die Tickets entstehen ja erst danach. */}
+              {wartetAufUeberweisung ? null : (
+                <div>
+                  <dt>Tickets</dt>
+                  <dd className={css.tab}>{tickets.length}</dd>
+                </div>
+              )}
             </dl>
           </div>
+
+          {wartetAufUeberweisung ? (
+            <UeberweisungsDaten
+              nummer={bestellung.nummer as string}
+              betragCent={bestellung.gesamt_cent as number}
+              rabattCent={((bestellung as { rabatt_cent?: number }).rabatt_cent ?? 0)}
+              bis={(bestellung.reserviert_bis as string | null) ?? null}
+              locale={locale}
+            />
+          ) : null}
 
           {tickets.length > 0 ? (
             <section className={css.tickets}>

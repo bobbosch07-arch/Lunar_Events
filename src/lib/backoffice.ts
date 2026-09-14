@@ -174,6 +174,9 @@ export type BestellZeile = {
   email: string;
   event: string;
   tickets: number;
+  /** Vorkasse: wartet auf Überweisung, solange status "offen" ist. */
+  vorkasse: boolean;
+  reserviertBis: string | null;
 };
 
 export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
@@ -182,7 +185,7 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
   const { data, error } = await db
     .from("bestellungen")
     .select(
-      `id, nummer, status, gesamt_cent, zahlungsart, erstellt_am,
+      `id, nummer, status, gesamt_cent, zahlungsart, erstellt_am, vorkasse, reserviert_bis,
        kunde:kunden(vorname, nachname, email),
        event:events(titel),
        tickets(id)`,
@@ -215,6 +218,8 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       email: kunde?.email ?? "—",
       event: event?.titel ?? "—",
       tickets: ((b.tickets ?? []) as unknown[]).length,
+      vorkasse: Boolean(b.vorkasse),
+      reserviertBis: (b.reserviert_bis as string | null) ?? null,
     };
   });
 }

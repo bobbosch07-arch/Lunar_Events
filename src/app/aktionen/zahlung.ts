@@ -28,13 +28,16 @@ export async function starteZahlung(
   const db = dienstClient();
   const { data: bestellung, error } = await db
     .from("bestellungen")
-    .select("id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, kunde:kunden(email)")
+    .select("id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, vorkasse, kunde:kunden(email)")
     .eq("id", bestellungId)
     .single();
 
   if (error || !bestellung) return { ok: false, fehler: "unbekannt" };
   if (bestellung.status === "bezahlt") return { ok: false, fehler: "schon_bezahlt" };
   if (bestellung.status !== "offen") return { ok: false, fehler: "nicht_offen" };
+  // Vorkasse-Bestellungen tragen den Rabatt schon im Betrag. Über Karte
+  // oder PayPal abzubuchen hieße, den Nachlass ohne Überweisung zu geben.
+  if (bestellung.vorkasse) return { ok: false, fehler: "vorkasse" };
   if (
     bestellung.reserviert_bis &&
     new Date(bestellung.reserviert_bis as string) < new Date()

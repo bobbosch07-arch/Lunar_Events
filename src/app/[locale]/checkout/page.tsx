@@ -8,6 +8,7 @@ import { holeEvent, holePhasen } from "@/lib/events";
 import { phasenZustaende } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import { paypalEingerichtet } from "@/lib/paypal";
+import { vorkasseMoeglich } from "@/lib/vorkasse";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
@@ -112,6 +113,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
             posten={posten}
             fastlane={event.fastlane ?? null}
+            vorkasseMoeglich={vorkasseMoeglich(event.beginn)}
             testmodus={testmodus}
             stripeAktiv={stripeAktiv}
             paypalClientId={paypalClientId}

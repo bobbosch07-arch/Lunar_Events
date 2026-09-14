@@ -139,7 +139,8 @@
     "sicher": "Zahlung verschlüsselt über {anbieter}",
     "fehler": "Die Zahlung ist nicht durchgegangen. Es wurde nichts abgebucht.",
     "abgelaufen": "Deine Reservierung ist abgelaufen. Bitte wähle die Tickets neu.",
-    "reserviertNoch": "Reserviert für {minuten}:{sekunden}"
+    "reserviertNoch": "Reserviert für {minuten}:{sekunden}",
+    "bestellnummer": "Bestellnummer"
   },
   "bestaetigung": {
     "titel": "KAUF ERFOLGREICH",

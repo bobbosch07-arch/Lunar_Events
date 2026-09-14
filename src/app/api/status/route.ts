@@ -1,3 +1,4 @@
+import { vorkasseEingerichtet } from "@/lib/vorkasse";
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
 import { gefundeneNamen, verwandteNamen } from "@/lib/supabase/umgebung";
@@ -67,6 +68,7 @@ export async function GET() {
             : "sandbox"
           : "fehlt",
         paypalWebhook: Boolean(process.env.PAYPAL_WEBHOOK_ID),
+        vorkasse: vorkasseEingerichtet(),
       },
       versand: {
         mail: Boolean(process.env.RESEND_API_KEY),

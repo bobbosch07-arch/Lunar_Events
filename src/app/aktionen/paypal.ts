@@ -29,13 +29,16 @@ export async function paypalBestellungAnlegen(
   const db = dienstClient();
   const { data: bestellung } = await db
     .from("bestellungen")
-    .select("nummer, status, gesamt_cent, reserviert_bis, event:events(titel)")
+    .select("nummer, status, gesamt_cent, reserviert_bis, vorkasse, event:events(titel)")
     .eq("id", bestellungId)
     .single();
 
   if (!bestellung) return { ok: false, fehler: "unbekannt" };
   if (bestellung.status === "bezahlt") return { ok: false, fehler: "schon_bezahlt" };
   if (bestellung.status !== "offen") return { ok: false, fehler: "nicht_offen" };
+  // Vorkasse-Bestellungen tragen den Rabatt schon im Betrag. Über Karte
+  // oder PayPal abzubuchen hieße, den Nachlass ohne Überweisung zu geben.
+  if (bestellung.vorkasse) return { ok: false, fehler: "vorkasse" };
   if (
     bestellung.reserviert_bis &&
     new Date(bestellung.reserviert_bis as string) < new Date()

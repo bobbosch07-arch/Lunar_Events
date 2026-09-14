@@ -157,6 +157,28 @@ ohne Zahlung ausstellen. Seither:
   zurücksetzt —, muss `grant execute` selbst schreiben. Sonst ist sie
   unerreichbar, und das ist der sichere Fehler.
 
+**Vorkasse ist ein Rabatt, kein Aufschlag** (Migration 0013). Wer per
+Überweisung zahlt, bekommt die Servicegebühren als eigene Minuszeile
+„Vorkasse-Rabatt" erlassen. Umgekehrt formuliert — „Karte kostet Gebühr" —
+wäre es ein Entgelt für die Zahlungsart, und das verbietet § 270a BGB. Die
+Servicegebühr bleibt deshalb für alle Zahlungsarten gleich.
+
+Ablauf: `reserviere()` wie immer, dann `waehle_vorkasse()` (nur
+`service_role`): Rabatt = `gebuehr_cent`, Frist 3 Tage, höchstens bis
+2 Tage vor Beginn; unter 5 Tagen bis zum Event wird Vorkasse nicht
+angeboten. Die Bestellung bleibt `offen` — Tickets entstehen erst, wenn
+das Team im Backoffice „Zahlung eingegangen" drückt (`bestaetigeVorkasse`,
+prüft die Rolle, dann `bestaetige_zahlung` mit dem Dienstschlüssel).
+Verfällt die Frist, gibt der normale Aufräumlauf die Plätze frei; eine
+danach eingehende Zahlung stellt **keine** Tickets aus, das Geld geht
+zurück. Stripe und PayPal lehnen Vorkasse-Bestellungen ab, sonst würde der
+Rabatt ohne Überweisung abgebucht.
+
+Die Bankverbindung steht nur in der Umgebung (`VORKASSE_KONTOINHABER`,
+`VORKASSE_IBAN`, optional `VORKASSE_BIC`, `VORKASSE_BANK`). Fehlt sie, gibt
+es Vorkasse nicht. Solange kein Mailversand läuft, stehen die Bankdaten nur
+auf der Bestätigungsseite und unter dem Ticketlink.
+
 **Reservierungen verfallen** (`reserviert_bis`, voreingestellt 15 Minuten);
 `raeume_reservierungen_auf()` gibt die Kontingente zurück.
 

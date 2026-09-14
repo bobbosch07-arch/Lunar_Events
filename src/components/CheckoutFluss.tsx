@@ -8,6 +8,7 @@ import { StripeZahlung } from "./StripeZahlung";
 import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
 import { FastLaneAngebot } from "./FastLaneAngebot";
+import { waehleVorkasse } from "@/app/aktionen/vorkasse";
 import type { FastLane } from "@/lib/typen";
 import { preisText } from "@/lib/format";
 import {
@@ -42,6 +43,8 @@ type Props = {
   rueckkehrBasis: string;
   /** Fast-Lane-Upgrade, falls das Event es anbietet und Plätze frei sind. */
   fastlane: FastLane | null;
+  /** Bankverbindung hinterlegt und das Event weit genug entfernt. */
+  vorkasseMoeglich: boolean;
 };
 
 type Formular = {
@@ -60,8 +63,14 @@ export function CheckoutFluss(props: Props) {
 
   const [schritt, setSchritt] = useState<1 | 2 | 3>(1);
   // Karte zuerst: der häufigere Weg, und Apple/Google Pay hängen daran.
-  const [zahlweg, setZahlweg] = useState<"karte" | "paypal">(
-    props.stripeAktiv ? "karte" : "paypal",
+  const [zahlweg, setZahlweg] = useState<"karte" | "paypal" | "vorkasse">(
+    props.stripeAktiv
+      ? "karte"
+      : props.paypalClientId
+        ? "paypal"
+        : props.vorkasseMoeglich
+          ? "vorkasse"
+          : "paypal",
   );
   const [formular, setFormular] = useState<Formular>(LEER);
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
@@ -98,6 +107,16 @@ export function CheckoutFluss(props: Props) {
       : null;
   const fastlaneCent = fastlane && angebot ? angebot.preis_cent * anzahl : 0;
   const gesamtMitFastlane = gesamt + fastlaneCent;
+  // Vorkasse-Rabatt = die Servicegebühren. Ein Nachlass für diese
+  // Zahlungsart, kein Aufschlag auf die anderen (§ 270a BGB) — deshalb
+  // steht er als eigene Minuszeile da und nicht als "ohne Gebühr".
+  const rabattCent = zahlweg === "vorkasse" && schritt === 3 ? gebuehren : 0;
+  const gesamtEndCent = gesamtMitFastlane - rabattCent;
+  const wege = [
+    props.stripeAktiv ? "karte" : null,
+    props.paypalClientId ? "paypal" : null,
+    props.vorkasseMoeglich ? "vorkasse" : null,
+  ].filter(Boolean);
 
   // Einmal beim Betreten der Kasse. Erst nach dem ersten Zeichnen, weil
   // showModal() ein fertiges Element braucht.
@@ -177,6 +196,25 @@ export function CheckoutFluss(props: Props) {
     });
     zaehle("daten_erfasst", props.eventId);
     setSchritt(3);
+  }
+
+  async function perUeberweisung() {
+    if (!bestellung) return;
+    setLaeuft(true);
+    setStoerung(null);
+    const ergebnis = await waehleVorkasse(bestellung.id);
+    if (!ergebnis.ok) {
+      setLaeuft(false);
+      setStoerung(
+        ergebnis.fehler === "zu_kurzfristig"
+          ? "Für dieses Event ist es für eine Überweisung zu knapp. Bitte wähle eine andere Zahlungsart."
+          : ergebnis.fehler === "abgelaufen"
+            ? "Die Reservierung ist abgelaufen. Bitte wähle die Tickets noch einmal."
+            : t("fehler"),
+      );
+      return;
+    }
+    router.push(`/checkout/bestaetigung?b=${bestellung.id}`);
   }
 
   async function kaufen() {
@@ -356,35 +394,78 @@ export function CheckoutFluss(props: Props) {
 
             {/* Die Auswahl erscheint nur, wenn es wirklich etwas zu wählen
                 gibt — bei einem einzigen Weg wäre sie ein leerer Klick. */}
-            {props.stripeAktiv && props.paypalClientId ? (
+            {wege.length > 1 ? (
               <div className={css.zahlarten}>
-                <label
-                  className={`${css.zahlart} ${zahlweg === "karte" ? css.zahlartGewaehlt : ""}`}
-                >
-                  <input
-                    type="radio"
-                    name="zahlweg"
-                    checked={zahlweg === "karte"}
-                    onChange={() => setZahlweg("karte")}
-                  />
-                  <span className={css.zahlartName}>{t("karte")}</span>
-                  <span className={css.zahlartNotiz}>Apple Pay · Google Pay · SEPA</span>
-                </label>
-                <label
-                  className={`${css.zahlart} ${zahlweg === "paypal" ? css.zahlartGewaehlt : ""}`}
-                >
-                  <input
-                    type="radio"
-                    name="zahlweg"
-                    checked={zahlweg === "paypal"}
-                    onChange={() => setZahlweg("paypal")}
-                  />
-                  <span className={css.zahlartName}>{t("paypal")}</span>
-                </label>
+                {props.stripeAktiv ? (
+                  <label
+                    className={`${css.zahlart} ${zahlweg === "karte" ? css.zahlartGewaehlt : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zahlweg"
+                      checked={zahlweg === "karte"}
+                      onChange={() => setZahlweg("karte")}
+                    />
+                    <span className={css.zahlartName}>{t("karte")}</span>
+                    <span className={css.zahlartNotiz}>Apple Pay · Google Pay · SEPA</span>
+                  </label>
+                ) : null}
+                {props.paypalClientId ? (
+                  <label
+                    className={`${css.zahlart} ${zahlweg === "paypal" ? css.zahlartGewaehlt : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zahlweg"
+                      checked={zahlweg === "paypal"}
+                      onChange={() => setZahlweg("paypal")}
+                    />
+                    <span className={css.zahlartName}>{t("paypal")}</span>
+                  </label>
+                ) : null}
+                {props.vorkasseMoeglich ? (
+                  <label
+                    className={`${css.zahlart} ${zahlweg === "vorkasse" ? css.zahlartGewaehlt : ""}`}
+                  >
+                    <input
+                      type="radio"
+                      name="zahlweg"
+                      checked={zahlweg === "vorkasse"}
+                      onChange={() => setZahlweg("vorkasse")}
+                    />
+                    <span className={css.zahlartName}>Überweisung (Vorkasse)</span>
+                    <span className={css.zahlartNotiz}>
+                      {gebuehren > 0
+                        ? `${preisText(gebuehren, locale)} Rabatt · Tickets nach Zahlungseingang`
+                        : "Tickets nach Zahlungseingang"}
+                    </span>
+                  </label>
+                ) : null}
               </div>
             ) : null}
 
-            {props.stripeAktiv && zahlweg === "karte" ? (
+            {zahlweg === "vorkasse" && props.vorkasseMoeglich ? (
+              <>
+                <p className={css.hinweis}>
+                  Du bekommst gleich die Bankverbindung. Deine Plätze bleiben
+                  einige Tage reserviert; die Tickets erscheinen, sobald die
+                  Überweisung angekommen ist.
+                  {gebuehren > 0
+                    ? ` Für die Überweisung ziehen wir ${preisText(gebuehren, locale)} ab.`
+                    : ""}
+                </p>
+                {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
+                <div className={css.knoepfe}>
+                  <Knopf
+                    onClick={perUeberweisung}
+                    disabled={!agb || !widerruf || laeuft}
+                    groesse="gross"
+                  >
+                    {laeuft ? "…" : "Verbindlich per Überweisung bestellen"}
+                  </Knopf>
+                </div>
+              </>
+            ) : props.stripeAktiv && zahlweg === "karte" ? (
               <StripeZahlung
                 bestellungId={bestellung.id}
                 rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
@@ -465,13 +546,19 @@ export function CheckoutFluss(props: Props) {
               <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
             </div>
           ) : null}
+          {rabattCent > 0 ? (
+            <div className={css.zfZeile}>
+              <span className={css.zfName}>Vorkasse-Rabatt</span>
+              <span className={css.zfWert}>− {preisText(rabattCent, locale)}</span>
+            </div>
+          ) : null}
         </div>
 
         <div className={css.zfTrenner} />
 
         <div className={css.zfSumme}>
           <span className={css.zfSummeLabel}>{t("gesamt")}</span>
-          <span className={css.zfSummeWert}>{preisText(gesamtMitFastlane, locale)}</span>
+          <span className={css.zfSummeWert}>{preisText(gesamtEndCent, locale)}</span>
         </div>
 
         {schritt === 1 ? (

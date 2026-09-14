@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Aufraeumknopf } from "@/components/Aufraeumknopf";
+import { VorkasseEingang } from "@/components/VorkasseEingang";
 import { holeBestellungen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
 import css from "../backoffice.module.css";
@@ -83,15 +84,33 @@ async function Inhalt({ locale }: { locale: string }) {
                   <td className={css.zahl}>{b.tickets}</td>
                   <td className={css.zahl}>{preisText(b.gesamtCent, locale)}</td>
                   <td className={css.nebensache}>
-                    {b.zahlungsart === "frei" ? "Testkauf" : (b.zahlungsart ?? "—")}
+                    {b.zahlungsart === "frei"
+                      ? "Testkauf"
+                      : b.vorkasse
+                        ? "Überweisung"
+                        : (b.zahlungsart ?? "—")}
                   </td>
                   <td className={css.nebensache}>
                     {f.dateTime(new Date(b.erstelltAm), "kurz")}
                   </td>
                   <td>
                     <span className={`${css.marke_} ${marke(b.status)}`}>
-                      {b.status}
+                      {b.status === "offen" && b.vorkasse ? "wartet auf Überweisung" : b.status}
                     </span>
+                    {b.status === "offen" && b.vorkasse ? (
+                      <div style={{ marginTop: 8 }}>
+                        {b.reserviertBis ? (
+                          <div className={css.nebensache}>
+                            Frist {f.dateTime(new Date(b.reserviertBis), "kurz")}
+                          </div>
+                        ) : null}
+                        <VorkasseEingang
+                          bestellungId={b.id}
+                          nummer={b.nummer}
+                          betrag={preisText(b.gesamtCent, locale)}
+                        />
+                      </div>
+                    ) : null}
                   </td>
                 </tr>
               ))
