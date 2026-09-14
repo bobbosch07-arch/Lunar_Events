@@ -1,7 +1,7 @@
 import type { Phase, Veranstaltung } from "./typen";
 import { BEISPIEL_EVENTS, beispielPhasen } from "./beispieldaten";
 import { datenbankVerbunden, serverClient } from "./supabase/server";
-import { phasenZustand } from "./typen";
+import { phasenZustaende } from "./typen";
 
 /**
  * Eine Stelle, an der Events herkommen.
@@ -54,7 +54,8 @@ function bauePhase(z: Zeile): Phase {
 
 function baueEvent(z: Zeile): Veranstaltung {
   const phasen = ((z.phasen as Zeile[]) ?? []).map(bauePhase);
-  const kaufbar = phasen.filter((p) => phasenZustand(p).art === "kaufbar");
+  const zustaende = phasenZustaende(phasen);
+  const kaufbar = phasen.filter((p) => zustaende.get(p.id)?.art === "kaufbar");
 
   const abPreis =
     kaufbar.length > 0

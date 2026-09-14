@@ -76,7 +76,11 @@
     "abendkasseText": "Online gekaufte Tickets garantieren den Einlass. Für die Abendkasse gilt das nicht.",
     "abendkasseKeine": "Keine Abendkasse. Tickets gibt es nur vorab.",
     "vergangen": "Dieses Event ist vorbei.",
-    "teilen": "Teilen"
+    "teilen": "Teilen",
+    "folgt": "Nach {phase}",
+    "fomoVerkauft": "{prozent} % verkauft",
+    "fomoDanach": "Danach {phase}: {preis}",
+    "fomoLetzte": "Letzte Phase"
   },
   "vip": {
     "eyebrow": "VIP Experience",

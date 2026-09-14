@@ -113,7 +113,9 @@ export type PhasenZustand =
   | { art: "ausverkauft" }
   | { art: "spaeter"; ab: string }
   | { art: "vorbei" }
-  | { art: "anfrage" };
+  | { art: "anfrage" }
+  /** Hätte Tickets, ist aber noch nicht dran: eine frühere Phase läuft. */
+  | { art: "folgt"; nach: string };
 
 export type Kunde = {
   id: string;
@@ -228,4 +230,79 @@ export function zeigeRest(z: PhasenZustand): number | null {
   if (z.art !== "kaufbar") return null;
   if (z.rest === null) return null;
   return z.rest <= KNAPP_AB ? z.rest : null;
+}
+
+/** Reihenfolge der Phasen — dieselbe wie in `reserviere()` (0010). */
+export function phasenFolge(a: Phase, b: Phase): number {
+  if (a.position !== b.position) return a.position - b.position;
+  return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+}
+
+/**
+ * Zustände aller Phasen eines Events, **mit** Reihenfolge.
+ *
+ * `phasenZustand` beurteilt eine Phase für sich allein und hielt deshalb
+ * Early Bird, Phase 2 und Standard gleichzeitig für kaufbar. Kaufbar ist
+ * aber immer nur die erste Standardphase, die noch Tickets hat — die
+ * späteren sind sichtbar und „folgen". Sonst nimmt niemand Phase 2 für
+ * 39 €, solange Early Bird für 29 € offen ist.
+ *
+ * Die Datenbank prüft dasselbe noch einmal (`reserviere`, 0010), denn die
+ * Auswahl steht in der Adresse und lässt sich von Hand ändern.
+ */
+export function phasenZustaende(
+  phasen: Phase[],
+  jetzt: Date = new Date(),
+): Map<string, PhasenZustand> {
+  const ergebnis = new Map<string, PhasenZustand>();
+  let aktuelle: Phase | null = null;
+
+  for (const p of [...phasen].sort(phasenFolge)) {
+    const zustand = phasenZustand(p, jetzt);
+    if (p.art !== "standard" || zustand.art !== "kaufbar") {
+      ergebnis.set(p.id, zustand);
+    } else if (aktuelle) {
+      ergebnis.set(p.id, { art: "folgt", nach: aktuelle.name });
+    } else {
+      aktuelle = p;
+      ergebnis.set(p.id, zustand);
+    }
+  }
+  return ergebnis;
+}
+
+/**
+ * Was die Verkaufsleiste unter der aktuellen Phase zeigt.
+ *
+ * Nur echte Zahlen (Briefing: Dringlichkeit „nur aus wahrheitsgemäßer
+ * Verfügbarkeit"). Erscheint erst ab der Hälfte — eine Leiste bei 8 %
+ * sagte „hier will keiner hin" und wäre das Gegenteil von dem, wofür sie
+ * da ist. Ohne Kontingent gibt es nichts zu füllen, also keine Leiste.
+ */
+export const LEISTE_AB = 0.5;
+
+export type Verkaufsstand = {
+  anteil: number;
+  rest: number;
+  /** Die Phase danach, mit ihrem Preis — der ehrlichste Grund, jetzt zu kaufen. */
+  naechste: Phase | null;
+};
+
+export function verkaufsstand(
+  phase: Phase,
+  phasen: Phase[],
+  zustaende: Map<string, PhasenZustand>,
+): Verkaufsstand | null {
+  if (zustaende.get(phase.id)?.art !== "kaufbar" || phase.kontingent === null) return null;
+  if (phase.kontingent === 0) return null;
+
+  const anteil = phase.verkauft / phase.kontingent;
+  if (anteil < LEISTE_AB) return null;
+
+  const naechste =
+    [...phasen]
+      .sort(phasenFolge)
+      .find((p) => p.art === "standard" && zustaende.get(p.id)?.art === "folgt") ?? null;
+
+  return { anteil, rest: phase.kontingent - phase.verkauft, naechste };
 }

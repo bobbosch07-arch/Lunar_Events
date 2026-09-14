@@ -6,7 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
-import { phasenZustand, zeigeRest, type Phase } from "@/lib/typen";
+import { phasenZustaende, verkaufsstand, zeigeRest, type Phase } from "@/lib/typen";
 import css from "./Ticketauswahl.module.css";
 
 type Props = {
@@ -29,10 +29,7 @@ export function Ticketauswahl(props: Props) {
   // herklickt, ist trotzdem ein Interessent, nicht fünf.
   const gezaehlt = useRef(false);
 
-  const zustaende = useMemo(
-    () => new Map(phasen.map((p) => [p.id, phasenZustand(p)])),
-    [phasen],
-  );
+  const zustaende = useMemo(() => phasenZustaende(phasen), [phasen]);
 
   const { summe, anzahl } = useMemo(() => {
     let summe = 0;
@@ -85,11 +82,14 @@ export function Ticketauswahl(props: Props) {
           const menge = auswahl[phase.id] ?? 0;
           const rest = zeigeRest(zustand);
           const gesperrt = zustand.art === "ausverkauft" || zustand.art === "vorbei";
+          const folgt = zustand.art === "folgt";
+          const stand = verkaufsstand(phase, phasen, zustaende);
 
           const klassen = [
             css.phase,
             menge > 0 ? css.gewaehlt : null,
             gesperrt ? css.aus : null,
+            folgt ? css.folgt : null,
             phase.art === "vip" ? css.vip : null,
           ]
             .filter(Boolean)
@@ -103,7 +103,9 @@ export function Ticketauswahl(props: Props) {
                   <span
                     className={`${css.zustand} ${rest !== null ? css.knapp : ""}`}
                   >
-                    {zustand.art === "ausverkauft"
+                    {zustand.art === "folgt"
+                      ? t("folgt", { phase: zustand.nach })
+                      : zustand.art === "ausverkauft"
                       ? t("ausverkauft")
                       : zustand.art === "vorbei"
                         ? t("ausverkauft")
@@ -121,6 +123,44 @@ export function Ticketauswahl(props: Props) {
                               : t("verfuegbar")}
                   </span>
                 </div>
+
+                {stand ? (
+                  <div
+                    className={`${css.stand} ${stand.anteil >= 0.8 ? css.standFast : ""}`}
+                  >
+                    <div
+                      className={css.standBalken}
+                      role="meter"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={Math.round(stand.anteil * 100)}
+                      aria-label={t("fomoVerkauft", {
+                        prozent: Math.round(stand.anteil * 100),
+                      })}
+                    >
+                      <span
+                        className={css.standFuellung}
+                        style={{ width: `${Math.max(4, Math.round(stand.anteil * 100))}%` }}
+                      />
+                    </div>
+                    <div className={css.standText}>
+                      <span>
+                        {t("fomoVerkauft", { prozent: Math.round(stand.anteil * 100) })}
+                      </span>
+                      <span>
+                        {stand.naechste
+                          ? t("fomoDanach", {
+                              phase: stand.naechste.name,
+                              preis: preisText(
+                                stand.naechste.preis_cent + stand.naechste.gebuehr_cent,
+                                locale,
+                              ),
+                            })
+                          : t("fomoLetzte")}
+                      </span>
+                    </div>
+                  </div>
+                ) : null}
 
                 {phase.beschreibung ? (
                   <p className={css.beschreibung}>{phase.beschreibung}</p>
@@ -162,7 +202,7 @@ export function Ticketauswahl(props: Props) {
                   >
                     {t("anfragen")}
                   </Knopf>
-                ) : gesperrt ? null : (
+                ) : gesperrt || folgt ? null : (
                   <div className={css.menge}>
                     <button
                       type="button"

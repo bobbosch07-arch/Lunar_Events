@@ -106,6 +106,20 @@ existiert haben. Die Funktion ist mehrfach aufrufbar, ohne doppelte
 Tickets zu erzeugen — Zahlungsanbieter melden denselben Vorgang gern
 zweimal.
 
+**Phasen laufen nacheinander.** Kaufbar ist immer nur die erste
+Standardphase (nach `position`, bei Gleichstand ID), die noch Tickets hat;
+spätere stehen sichtbar als „Nach Early Bird“ da. `phasenZustand` beurteilt
+eine Phase allein und reicht dafür nicht — Anzeigeflächen nehmen
+**`phasenZustaende(phasen)`** (`src/lib/typen.ts`). Die Datenbank prüft
+dasselbe in `reserviere()` (0010), weil die Auswahl in der Adresse steht.
+Eine Phase ohne Kontingent ist nie ausverkauft; danach kommt eine spätere
+nur über `bis`, `aktiv` oder ein Zeitfenster dran.
+
+**Die Verkaufsleiste zeigt nur echte Zahlen** (`verkaufsstand`): Anteil
+verkauft und Preis der nächsten Phase, erst ab 50 %, ab 80 % in
+Warnfarbe. Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer
+Verfügbarkeit — nie erfundene Zahlen, keine Countdowns.
+
 **Reservierungen verfallen** (`reserviert_bis`, voreingestellt 15 Minuten);
 `raeume_reservierungen_auf()` gibt die Kontingente zurück.
 

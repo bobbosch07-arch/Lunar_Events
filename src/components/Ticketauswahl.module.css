@@ -39,8 +39,66 @@
   text-decoration: line-through;
 }
 
+/* Noch nicht dran: sichtbar, aber zurückgenommen. Nicht durchgestrichen
+   wie "ausverkauft" — diese Phase kommt ja noch. */
+.folgt {
+  background: var(--grund-2);
+}
+
+.folgt .name,
+.folgt .preis {
+  color: var(--auf-grund-3);
+}
+
 .vip {
   border-color: var(--border-gold);
+}
+
+/* ---------- Verkaufsstand der aktuellen Phase ---------- */
+
+.stand {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  max-width: 380px;
+  margin-top: var(--space-1);
+}
+
+.standBalken {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--linie);
+  overflow: hidden;
+}
+
+.standFuellung {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--auf-grund);
+  transition: width var(--dur-langsam, 400ms) var(--ease);
+}
+
+/* Ab 80 % wechselt die Farbe. Die Zahl steht trotzdem daneben — Farbe
+   allein ist kein Merkmal (Briefing, Barrierefreiheit). */
+.standFast .standFuellung {
+  background: var(--warning);
+}
+
+.standText {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+}
+
+.standFast .standText span:first-child {
+  color: var(--warning);
 }
 
 .links {

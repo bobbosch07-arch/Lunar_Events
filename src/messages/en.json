@@ -76,7 +76,11 @@
     "abendkasseText": "Tickets bought online guarantee entry. Door sales do not.",
     "abendkasseKeine": "No door sales. Tickets in advance only.",
     "vergangen": "This event has passed.",
-    "teilen": "Share"
+    "teilen": "Share",
+    "folgt": "After {phase}",
+    "fomoVerkauft": "{prozent}% sold",
+    "fomoDanach": "Then {phase}: {preis}",
+    "fomoLetzte": "Final release"
   },
   "vip": {
     "eyebrow": "VIP Experience",

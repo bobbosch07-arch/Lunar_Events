@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { CheckoutFluss, type Posten } from "@/components/CheckoutFluss";
 import { holeEvent, holePhasen } from "@/lib/events";
-import { phasenZustand } from "@/lib/typen";
+import { phasenZustaende } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import { paypalEingerichtet } from "@/lib/paypal";
 import css from "@/components/Checkout.module.css";
@@ -61,10 +61,11 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   // kommen aus der Datenbank, nicht aus der URL, und was inzwischen
   // ausverkauft ist, fällt heraus.
   const posten: Posten[] = [];
+  const zustaende = phasenZustaende(phasen);
   for (const phase of phasen) {
     const menge = gewaehlt.get(phase.id);
     if (!menge) continue;
-    const zustand = phasenZustand(phase);
+    const zustand = zustaende.get(phase.id)!;
     if (zustand.art !== "kaufbar") continue;
     posten.push({
       phase_id: phase.id,
