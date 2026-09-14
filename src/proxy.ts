@@ -46,5 +46,10 @@ export default async function proxy(anfrage: NextRequest) {
 
 export const config = {
   // Alles ausser Next-Interna, API-Routen und Dateien mit Endung.
-  matcher: "/((?!api|_next|_vercel|.*\\..*).*)",
+  //
+  // "auth" muss mit heraus: Die Rückkehr vom Anmeldelink liegt außerhalb
+  // der Sprachordner. Ohne diese Ausnahme versucht next-intl, daraus
+  // eine Sprache zu machen, und jeder Anmeldelink endet auf 404 — die
+  // Anmeldung funktioniert dann überhaupt nicht.
+  matcher: "/((?!api|auth|_next|_vercel|.*\\..*).*)",
 };
