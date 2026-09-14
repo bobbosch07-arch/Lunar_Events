@@ -138,6 +138,25 @@ kostenpflichtiges Extra muss der Gast selbst wählen (§ 312a Abs. 3 BGB).
 Das Briefing schließt Pop-ups eigentlich aus; es ist ausdrücklich
 gewünscht und deshalb so zurückhaltend gebaut.
 
+**Datenbankfunktionen sind für niemanden aufrufbar, dem sie nicht
+ausdrücklich gewährt werden** (Migration 0012). Anlass: `bestaetige_zahlung()`
+ließ sich mit dem öffentlichen Schlüssel aufrufen — PostgreSQL gibt EXECUTE
+standardmäßig an alle, Supabase macht jede Funktion in `public` über die API
+erreichbar, und als `security definer` greifen darin keine Zugriffsregeln.
+Wer eine Bestellung reserviert hatte (ID in der Adresse), konnte sich Tickets
+ohne Zahlung ausstellen. Seither:
+
+- `reserviere`, `bestaetige_zahlung`: nur `service_role` (Kasse, Webhooks)
+- `entwerte_ticket`, `raeume_reservierungen_auf`, `auswertung_je_event`:
+  `authenticated` — die Funktion prüft die Rolle selbst.
+  `auswertung_je_event` tat das vorher nicht und lieferte jedem die Zahlen.
+- `ist_mitarbeiter`, `ist_eigener_kunde` bleiben für alle: Sie stecken in
+  den Zugriffsregeln und laufen mit den Rechten des Aufrufers.
+- Die Voreinstellung für **neue** Funktionen ist abgeschaltet. Wer eine
+  anlegt — oder eine per `drop` + `create` neu anlegt, was die Rechte
+  zurücksetzt —, muss `grant execute` selbst schreiben. Sonst ist sie
+  unerreichbar, und das ist der sichere Fehler.
+
 **Reservierungen verfallen** (`reserviert_bis`, voreingestellt 15 Minuten);
 `raeume_reservierungen_auf()` gibt die Kontingente zurück.
 
