@@ -180,7 +180,7 @@ es Vorkasse nicht. Solange kein Mailversand läuft, stehen die Bankdaten nur
 auf der Bestätigungsseite und unter dem Ticketlink.
 
 **Personal-Anmeldungen gelten nur begrenzt** (Migration 0014): Admin und
-Team 8 Stunden, Einlass 12 Stunden, gemessen ab der echten Anmeldung. Die
+Team 8 Stunden, Einlass 24 Stunden (0015), gemessen ab der echten Anmeldung. Die
 Grenze steht in `ist_mitarbeiter()`, also greift sie in jeder Zugriffsregel,
 im Scanner und in der Auswertung. Gemessen wird am `amr`-Zeitpunkt im
 Token, nicht an `iat`: Supabase frischt Tokens stündlich auf und setzt
@@ -193,8 +193,8 @@ prüfen die Rolle über `rpc("ist_mitarbeiter")`**, nicht über die
 Mitarbeitertabelle — die eigene Zeile bleibt absichtlich immer lesbar, sonst
 wüsste die Oberfläche die Rolle nicht.
 
-**Passwörter** (`src/lib/passwort.ts`): mindestens 12 Zeichen, keine
-Allerweltswörter (auch nicht mit Zahlen dran), keine Folgen wie 123456,
+**Passwörter** (`src/lib/passwort.ts`): mindestens 12 Zeichen mit Groß-, Kleinbuchstabe,
+Zahl und Sonderzeichen, keine Allerweltswörter (auch nicht mit Zahlen dran), keine Folgen wie 123456,
 nicht die eigene Mailadresse. Die Prüfung gilt nur über unser Formular —
 dieselbe Mindestlänge muss im Supabase-Dashboard stehen, sonst ließe sich
 ein kurzes Passwort direkt über die Schnittstelle setzen.

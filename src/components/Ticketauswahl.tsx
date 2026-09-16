@@ -15,9 +15,10 @@ type Props = {
   phasen: Phase[];
 };
 
-/** Mehr als zehn Tickets auf einmal ist keine Bestellung, das ist eine
- *  Gruppenanfrage — die läuft über VIP. */
-const MAX_JE_PHASE = 10;
+/** Mehr als zwanzig Tickets auf einmal ist keine Bestellung, das ist eine
+ *  Gruppenanfrage — die läuft über VIP. Zwanzig laut Fragebogen vom
+ *  16.09.2026; dieselbe Grenze prüft die Kasse (checkout/page.tsx). */
+const MAX_JE_PHASE = 20;
 
 export function Ticketauswahl(props: Props) {
   const { eventSlug, phasen } = props;

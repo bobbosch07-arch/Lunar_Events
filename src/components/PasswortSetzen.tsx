@@ -80,8 +80,9 @@ export function PasswortSetzen({
           onChange={aendern(setErstes)}
         />
         <span className={css.hinweis}>
-          Mindestens {PASSWORT_MINDESTLAENGE} Zeichen. Am sichersten ist ein kurzer
-          Satz, den nur du kennst — Länge schlägt Sonderzeichen.
+          Mindestens {PASSWORT_MINDESTLAENGE} Zeichen mit Groß- und
+          Kleinbuchstaben, Zahl und Sonderzeichen. Am leichtesten zu merken ist
+          ein kurzer Satz, z. B. „3 grüne Tassen Kaffee!“.
         </span>
       </div>
 

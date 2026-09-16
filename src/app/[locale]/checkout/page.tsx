@@ -30,7 +30,7 @@ function leseAuswahl(roh: string | undefined): Map<string, number> {
   for (const teil of roh.split(",")) {
     const [id, menge] = teil.split(":");
     const zahl = Number(menge);
-    if (id && Number.isInteger(zahl) && zahl > 0 && zahl <= 10) {
+    if (id && Number.isInteger(zahl) && zahl > 0 && zahl <= 20) {
       karte.set(id, zahl);
     }
   }

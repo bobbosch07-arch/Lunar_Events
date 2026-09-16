@@ -5,7 +5,7 @@ import { serverClient } from "./supabase/server";
  * Anmeldung, nicht ab der letzten Aktivität.
  *
  * Die eigentliche Grenze zieht die Datenbank (`ist_mitarbeiter`, Migration
- * 0014): Danach sieht eine alte Sitzung keine Personal-Daten mehr. Diese
+ * 0014, Dauer für Einlass in 0015): Danach sieht eine alte Sitzung keine Personal-Daten mehr. Diese
  * Datei sorgt nur dafür, dass die Oberfläche das merkt und zur Anmeldung
  * schickt, statt leere Seiten zu zeigen. Die Zahlen müssen mit der
  * Migration übereinstimmen.
@@ -13,7 +13,8 @@ import { serverClient } from "./supabase/server";
 export const SITZUNG_STUNDEN = {
   admin: 8,
   team: 8,
-  einlass: 12,
+  // 24 statt 12 Stunden: Fragebogen vom 16.09.2026.
+  einlass: 24,
 } as const;
 
 export type PersonalRolle = keyof typeof SITZUNG_STUNDEN;

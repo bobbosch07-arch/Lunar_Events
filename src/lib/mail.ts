@@ -282,7 +282,7 @@ ${zeilen.map(([n, w]) => `${n}: ${w}`).join("\n")}
 ${daten.nachricht ? `\nNachricht:\n${daten.nachricht}\n` : ""}
 Im Backoffice: ${eigeneAdresse()}/backoffice/vip`;
 
-  const ziel = process.env.MAIL_TEAM ?? "lunar.eventsss.de@gmail.com";
+  const ziel = process.env.MAIL_TEAM ?? "kontakt@lunar-events.de";
 
   return versende({
     an: ziel,

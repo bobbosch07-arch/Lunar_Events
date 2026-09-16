@@ -1,10 +1,11 @@
 /**
  * Passwortregeln fürs Personal.
  *
- * Länge schützt mehr als Sonderzeichen-Pflicht: „Sommer2026!" erfüllt jede
- * Zeichenregel und steht trotzdem in jeder Liste. Deshalb mindestens
- * 12 Zeichen, dazu werden die häufigsten Passwörter, einfache Muster und
- * die eigene Mailadresse abgelehnt.
+ * Mindestens 12 Zeichen mit Groß- und Kleinbuchstaben, Zahl und
+ * Sonderzeichen (Fragebogen vom 16.09.2026). Die Zeichenregel allein
+ * reicht nicht: „Sommer2026!" erfüllt sie und steht trotzdem in jeder
+ * Liste. Deshalb werden zusätzlich die häufigsten Passwörter, einfache
+ * Muster und Teile der eigenen Mailadresse abgelehnt.
  *
  * Läuft auf dem Server (verbindlich) und im Formular (sofortige Rückmeldung)
  * — deshalb ohne Abhängigkeiten.
@@ -30,6 +31,16 @@ export function pruefePasswort(passwort: string, email?: string | null): string 
 
   if (passwort.length < PASSWORT_MINDESTLAENGE) {
     return `Mindestens ${PASSWORT_MINDESTLAENGE} Zeichen.`;
+  }
+
+  const fehlt = [
+    /[a-zäöüß]/.test(passwort) ? null : "einen Kleinbuchstaben",
+    /[A-ZÄÖÜ]/.test(passwort) ? null : "einen Großbuchstaben",
+    /[0-9]/.test(passwort) ? null : "eine Zahl",
+    /[^A-Za-z0-9äöüÄÖÜß]/.test(passwort) ? null : "ein Sonderzeichen",
+  ].filter(Boolean);
+  if (fehlt.length > 0) {
+    return `Es fehlt noch ${fehlt.join(", ").replace(/, ([^,]*)$/, " und $1")}.`;
   }
 
   // Ein Zeichen oder zwei im Wechsel: "aaaaaaaaaaaa", "abababababab"
