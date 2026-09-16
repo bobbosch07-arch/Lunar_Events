@@ -28,7 +28,10 @@ export default async function Zugang({
       <p className={css.notiz} style={{ marginTop: 0, marginBottom: "1.5rem" }}>
         Angemeldet als <strong>{nutzer?.email}</strong>.
       </p>
-      <PasswortSetzen hatPasswort={Boolean(nutzer?.user_metadata?.passwort_gesetzt)} />
+      <PasswortSetzen
+        hatPasswort={Boolean(nutzer?.user_metadata?.passwort_gesetzt)}
+        email={nutzer?.email}
+      />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { serverClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
+import { pruefePasswort } from "@/lib/passwort";
 
 export type AnmeldeErgebnis =
   | { ok: true }
@@ -56,18 +57,24 @@ export async function meldeAb() {
 
 export type PasswortErgebnis =
   | { ok: true }
-  | { ok: false; fehler: "falsch" | "zu_oft" | "kein_team" | "zu_kurz" | "unbekannt" };
+  | {
+      ok: false;
+      fehler: "falsch" | "zu_oft" | "kein_team" | "zu_kurz" | "zu_schwach" | "unbekannt";
+      /** Bei "zu_schwach": was genau nicht passt. */
+      grund?: string;
+    };
 
-/** Ist die angemeldete Person aktives Personal mit Backoffice-Zugang? */
+/**
+ * Ist die angemeldete Person aktives Personal mit Backoffice-Zugang — und
+ * ist die Anmeldung jung genug? Gefragt wird die Datenbank
+ * (`ist_mitarbeiter`), nicht die Mitarbeitertabelle direkt: Nur dort steht
+ * die Zeitgrenze (Migration 0014).
+ */
 async function istTeam(db: Awaited<ReturnType<typeof serverClient>>): Promise<boolean> {
   const { data: nutzer } = await db.auth.getUser();
   if (!nutzer.user) return false;
-  const { data } = await db
-    .from("mitarbeiter")
-    .select("rolle, aktiv")
-    .eq("user_id", nutzer.user.id)
-    .maybeSingle();
-  return Boolean(data?.aktiv && (data.rolle === "admin" || data.rolle === "team"));
+  const { data, error } = await db.rpc("ist_mitarbeiter", { mindestens: "team" });
+  return !error && data === true;
 }
 
 /**
@@ -108,10 +115,12 @@ export async function meldeMitPasswortAn(
 
 /** Passwort setzen oder ändern. Nur für angemeldetes Team-Personal. */
 export async function setzePasswort(passwort: string): Promise<PasswortErgebnis> {
-  if (passwort.length < 10) return { ok: false, fehler: "zu_kurz" };
-
   const db = await serverClient();
   if (!(await istTeam(db))) return { ok: false, fehler: "kein_team" };
+
+  const { data: nutzer } = await db.auth.getUser();
+  const grund = pruefePasswort(passwort, nutzer.user?.email);
+  if (grund) return { ok: false, fehler: "zu_schwach", grund };
 
   // Supabase verrät nirgends, ob ein Konto ein Passwort hat. Deshalb
   // merken wir es uns selbst — nur für die Beschriftung "festlegen" oder

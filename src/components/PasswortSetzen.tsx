@@ -3,9 +3,16 @@
 import { useState } from "react";
 import { Knopf } from "./Knopf";
 import { setzePasswort } from "@/app/aktionen/konto";
+import { PASSWORT_MINDESTLAENGE, pruefePasswort } from "@/lib/passwort";
 import css from "./Anmeldung.module.css";
 
-export function PasswortSetzen({ hatPasswort }: { hatPasswort: boolean }) {
+export function PasswortSetzen({
+  hatPasswort,
+  email,
+}: {
+  hatPasswort: boolean;
+  email?: string | null;
+}) {
   const [erstes, setErstes] = useState("");
   const [zweites, setZweites] = useState("");
   const [laeuft, setLaeuft] = useState(false);
@@ -17,7 +24,8 @@ export function PasswortSetzen({ hatPasswort }: { hatPasswort: boolean }) {
     if (laeuft) return;
     setFehler(null);
 
-    if (erstes.length < 10) return setFehler("Mindestens 10 Zeichen.");
+    const grund = pruefePasswort(erstes, email);
+    if (grund) return setFehler(grund);
     if (erstes !== zweites) return setFehler("Die beiden Eingaben sind nicht gleich.");
 
     setLaeuft(true);
@@ -31,8 +39,10 @@ export function PasswortSetzen({ hatPasswort }: { hatPasswort: boolean }) {
       return;
     }
     setFehler(
-      antwort.fehler === "zu_kurz"
-        ? "Mindestens 10 Zeichen."
+      antwort.fehler === "zu_schwach"
+        ? (antwort.grund ?? "Das Passwort ist zu schwach.")
+        : antwort.fehler === "zu_kurz"
+        ? `Mindestens ${PASSWORT_MINDESTLAENGE} Zeichen.`
         : antwort.fehler === "kein_team"
           ? "Nur Team-Konten können ein Passwort setzen."
           : antwort.fehler === "zu_oft"
@@ -69,7 +79,10 @@ export function PasswortSetzen({ hatPasswort }: { hatPasswort: boolean }) {
           value={erstes}
           onChange={aendern(setErstes)}
         />
-        <span className={css.hinweis}>Mindestens 10 Zeichen.</span>
+        <span className={css.hinweis}>
+          Mindestens {PASSWORT_MINDESTLAENGE} Zeichen. Am sichersten ist ein kurzer
+          Satz, den nur du kennst — Länge schlägt Sonderzeichen.
+        </span>
       </div>
 
       <div className={css.feld}>

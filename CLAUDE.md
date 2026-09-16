@@ -1,7 +1,7 @@
 # Lunar Events — Ticketing
 
 Website und Handy-Oberflächen für **Lunar Events**, ein Veranstalter für
-gehobene Nightlife-Events (Frankfurt, Mannheim, Stuttgart). Zielgruppe
+gehobene Nightlife-Events (Darmstadt). Zielgruppe
 18–30. Tickets werden online verkauft, am Einlass gescannt, VIP wird
 angefragt statt gekauft.
 
@@ -178,6 +178,26 @@ Die Bankverbindung steht nur in der Umgebung (`VORKASSE_KONTOINHABER`,
 `VORKASSE_IBAN`, optional `VORKASSE_BIC`, `VORKASSE_BANK`). Fehlt sie, gibt
 es Vorkasse nicht. Solange kein Mailversand läuft, stehen die Bankdaten nur
 auf der Bestätigungsseite und unter dem Ticketlink.
+
+**Personal-Anmeldungen gelten nur begrenzt** (Migration 0014): Admin und
+Team 8 Stunden, Einlass 12 Stunden, gemessen ab der echten Anmeldung. Die
+Grenze steht in `ist_mitarbeiter()`, also greift sie in jeder Zugriffsregel,
+im Scanner und in der Auswertung. Gemessen wird am `amr`-Zeitpunkt im
+Token, nicht an `iat`: Supabase frischt Tokens stündlich auf und setzt
+`iat` dabei neu, `amr` bleibt gleich. Im kostenlosen Tarif lässt sich die
+Sitzungsdauer bei Supabase selbst nicht begrenzen. `src/lib/sitzung.ts`
+hält dieselben Zahlen für die Oberfläche: Backoffice und Einlass schicken
+eine zu alte Sitzung über `/auth/abmelden` zur neuen Anmeldung, statt leere
+Seiten zu zeigen. **Aktionen, die mit dem Dienstschlüssel weiterarbeiten,
+prüfen die Rolle über `rpc("ist_mitarbeiter")`**, nicht über die
+Mitarbeitertabelle — die eigene Zeile bleibt absichtlich immer lesbar, sonst
+wüsste die Oberfläche die Rolle nicht.
+
+**Passwörter** (`src/lib/passwort.ts`): mindestens 12 Zeichen, keine
+Allerweltswörter (auch nicht mit Zahlen dran), keine Folgen wie 123456,
+nicht die eigene Mailadresse. Die Prüfung gilt nur über unser Formular —
+dieselbe Mindestlänge muss im Supabase-Dashboard stehen, sonst ließe sich
+ein kurzes Passwort direkt über die Schnittstelle setzen.
 
 **Reservierungen verfallen** (`reserviert_bis`, voreingestellt 15 Minuten);
 `raeume_reservierungen_auf()` gibt die Kontingente zurück.

@@ -38,9 +38,9 @@ function inTagen(tage, stunde = 23, minute = 0) {
 }
 
 const ORTE = [
-  { name: "Alte Werft", stadt: "Frankfurt", strasse: "Hanauer Landstraße 188", plz: "60314" },
-  { name: "Rooftop 12", stadt: "Mannheim", strasse: "P7 12", plz: "68161" },
-  { name: "Halle Nord", stadt: "Stuttgart", strasse: "Nordbahnhofstraße 34", plz: "70191" },
+  { name: "Alte Werft", stadt: "Darmstadt", strasse: "Rheinstraße 1", plz: "64283" },
+  { name: "Rooftop 12", stadt: "Darmstadt", strasse: "Luisenstraße 12", plz: "64289" },
+  { name: "Halle Nord", stadt: "Darmstadt", strasse: "Frankfurter Straße 34", plz: "64293" },
 ];
 
 const EVENTS = [
@@ -81,7 +81,7 @@ const EVENTS = [
     slug: PRAEFIX + "moonrise-rooftop-opening",
     titel: "MOONRISE",
     untertitel: "Rooftop Opening",
-    teaser: "Sonnenuntergang über Mannheim, danach die ganze Nacht.",
+    teaser: "Sonnenuntergang über Darmstadt, danach die ganze Nacht.",
     beschreibung:
       "Wir eröffnen die Dachterrasse. Ab 20 Uhr Apéro mit Blick über die Stadt, ab Mitternacht drinnen weiter.",
     kategorie: "rooftop",

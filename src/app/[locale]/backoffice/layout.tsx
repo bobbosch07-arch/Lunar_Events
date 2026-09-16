@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { redirect } from "next/navigation";
+import { sitzungAbgelaufen } from "@/lib/sitzung";
 import { setRequestLocale } from "next-intl/server";
 import { Anmeldung } from "@/components/Anmeldung";
 import { BackofficeReiter } from "@/components/BackofficeReiter";
@@ -71,6 +73,13 @@ export default async function BackofficeLayout({
         ) : null}
       </main>
     );
+  }
+
+  // Älter als erlaubt: abmelden und neu anmelden lassen. Die Datenbank
+  // würde die Daten ohnehin verweigern — ohne diesen Schritt sähe man nur
+  // leere Seiten.
+  if (await sitzungAbgelaufen(rolle)) {
+    redirect("/auth/abmelden?weiter=/backoffice");
   }
 
   return (

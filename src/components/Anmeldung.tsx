@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
 import { Knopf } from "./Knopf";
 import { useRouter } from "@/i18n/navigation";
 import { meldeMitPasswortAn, sendeAnmeldelink } from "@/app/aktionen/konto";
@@ -21,6 +22,8 @@ export function Anmeldung({
 }) {
   const t = useTranslations("konto");
   const router = useRouter();
+  // Gesetzt von /auth/abmelden, wenn eine Personal-Sitzung zu alt war.
+  const abgelaufen = useSearchParams().get("abgelaufen") === "1";
   const [art, setArt] = useState<"passwort" | "link">(mitPasswort ? "passwort" : "link");
   const [passwort, setPasswort] = useState("");
   const [email, setEmail] = useState("");
@@ -99,6 +102,12 @@ export function Anmeldung({
       <p className={css.text}>
         {mitPasswort ? "Nur für das Lunar-Team." : t("anmeldenText")}
       </p>
+      {abgelaufen ? (
+        <p className={css.fehlertext} role="status">
+          Deine Anmeldung ist abgelaufen. Aus Sicherheitsgründen gilt sie nur
+          einige Stunden — bitte melde dich neu an.
+        </p>
+      ) : null}
 
       <div className={css.feld}>
         <label className={css.beschriftung} htmlFor="anmelde-email">

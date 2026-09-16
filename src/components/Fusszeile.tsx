@@ -18,7 +18,7 @@ export function Fusszeile() {
           <div className={css.marke}>
             <Logo ton="ivory" hoehe={38} />
             <p className={css.markeSatz}>
-              Ausgewählte Nächte in Frankfurt, Mannheim und Stuttgart.
+              Ausgewählte Nächte in Darmstadt.
             </p>
             <Newsletter />
           </div>

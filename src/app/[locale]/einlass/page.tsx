@@ -6,6 +6,8 @@ import { Logo } from "@/components/Logo";
 import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
 import { holeKommendeEvents } from "@/lib/events";
+import { redirect } from "next/navigation";
+import { sitzungAbgelaufen, type PersonalRolle } from "@/lib/sitzung";
 import css from "./einlass.module.css";
 
 export const metadata: Metadata = {
@@ -58,6 +60,10 @@ export default async function Einlass({
         </div>
       </main>
     );
+  }
+
+  if (await sitzungAbgelaufen(mitarbeiter.rolle as PersonalRolle)) {
+    redirect("/auth/abmelden?weiter=/einlass");
   }
 
   const [events, f] = await Promise.all([

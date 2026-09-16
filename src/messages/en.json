@@ -2,7 +2,7 @@
   "meta": {
     "titel": "Lunar Events",
     "titelVorlage": "{seite} — Lunar Events",
-    "beschreibung": "Selected nights in Frankfurt, Mannheim and Stuttgart. Tickets and VIP tables straight from Lunar Events."
+    "beschreibung": "Selected nights in Darmstadt. Tickets and VIP tables straight from Lunar Events."
   },
   "nav": {
     "events": "Events",
@@ -19,7 +19,7 @@
   },
   "start": {
     "heroTitel": "YOUR NIGHT.\nELEVATED.",
-    "heroText": "Selected nights in Frankfurt, Mannheim and Stuttgart.",
+    "heroText": "Selected nights in Darmstadt.",
     "heroCta": "Discover events",
     "heroCtaZwei": "Learn more",
     "featuredEyebrow": "Selected",

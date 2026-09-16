@@ -5,7 +5,7 @@ import { Textseite, Block, Absatz, Luecke } from "@/components/Textseite";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Lunar Events macht ein paar Nächte im Jahr in Frankfurt, Mannheim und Stuttgart. Und die sitzen.",
+    "Lunar Events macht ein paar Nächte im Jahr in Darmstadt. Und die sitzen.",
 };
 
 export default async function About({
@@ -27,7 +27,7 @@ export default async function About({
     >
       <Block titel="Was wir machen">
         <Absatz>
-          Ausgewählte Nächte in Frankfurt, Mannheim und Stuttgart. Wir suchen
+          Ausgewählte Nächte in Darmstadt. Wir suchen
           die Räume, das Line-up und die Leute — und lassen alles weg, was die
           Nacht nicht besser macht.
         </Absatz>

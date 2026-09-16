@@ -76,12 +76,13 @@ export async function bestaetigeVorkasse(bestellungId: string): Promise<EingangE
   const { data: nutzer } = await sitzung.auth.getUser();
   if (!nutzer.user) return { ok: false, fehler: "kein_team" };
 
-  const { data: m } = await sitzung
-    .from("mitarbeiter")
-    .select("rolle, aktiv")
-    .eq("user_id", nutzer.user.id)
-    .maybeSingle();
-  if (!m?.aktiv || (m.rolle !== "admin" && m.rolle !== "team")) {
+  // Über die Datenbank, nicht über die Mitarbeitertabelle: Nur dort gilt
+  // die Zeitgrenze der Anmeldung (Migration 0014). Danach läuft alles mit
+  // dem Dienstschlüssel — eine alte Sitzung darf hier nicht durchrutschen.
+  const { data: istTeam, error: rollenFehler } = await sitzung.rpc("ist_mitarbeiter", {
+    mindestens: "team",
+  });
+  if (rollenFehler || istTeam !== true) {
     return { ok: false, fehler: "kein_team" };
   }
 
