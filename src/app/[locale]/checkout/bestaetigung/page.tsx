@@ -7,6 +7,7 @@ import { Knopf } from "@/components/Knopf";
 import { Zaehler } from "@/components/Zaehler";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
 import { UeberweisungsDaten } from "@/components/UeberweisungsDaten";
+import { versandEingerichtet } from "@/lib/mail";
 import {
   holeEigeneBestellung,
   stelleZahlungSicher,
@@ -75,7 +76,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
     .eq("bestellung_id", b)
     .order("erstellt_am", { ascending: true });
 
-  const versandEingerichtet = Boolean(process.env.RESEND_API_KEY);
+  const versandLaeuft = versandEingerichtet();
   const walletEingerichtet = Boolean(
     process.env.APPLE_WALLET_TEAM_ID || process.env.GOOGLE_WALLET_ISSUER_ID,
   );
@@ -126,7 +127,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
             </p>
             {/* Solange kein Mailversand eingerichtet ist, darf hier nicht
                 stehen, die Tickets seien unterwegs — sie sind es nicht. */}
-            {versandEingerichtet ? (
+            {versandLaeuft ? (
               <p className={css.mail}>{t("mailHinweis", { email: kunde.email })}</p>
             ) : (
               <p className={css.mailFehlt}>

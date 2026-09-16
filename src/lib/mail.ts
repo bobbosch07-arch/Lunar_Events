@@ -1,21 +1,41 @@
 import { eigeneAdresse } from "./stripe";
 
 /**
- * Mailversand über Resend.
+ * Mailversand über Brevo oder Resend.
  *
- * Ohne API-Schlüssel wird nichts verschickt — und das wird auch nicht
+ * Zwei Anbieter, weil beide im kostenlosen Tarif nur **eine** eigene
+ * Domain zulassen und Resend hier schon für ein anderes Projekt belegt
+ * ist. Welcher genommen wird, entscheidet allein, welcher Schlüssel in
+ * der Umgebung steht; sind beide da, gewinnt Brevo.
+ *
+ * Ohne Schlüssel wird nichts verschickt — und das wird auch nicht
  * verschwiegen: Die Bestätigungsseite sagt dann ausdrücklich, dass sie
  * die einzige Stelle mit den Tickets ist, und im Protokoll steht, was
  * verschickt worden wäre.
  */
 
+type Anbieter = "brevo" | "resend";
+
+function anbieter(): Anbieter | null {
+  if (process.env.BREVO_API_KEY) return "brevo";
+  if (process.env.RESEND_API_KEY) return "resend";
+  return null;
+}
+
 export function versandEingerichtet(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  return anbieter() !== null;
+}
+
+/** "Lunar Events <tickets@…>" → Name und Adresse getrennt, für Brevo. */
+function zerlegeAbsender(roh: string): { name: string; email: string } {
+  const treffer = roh.match(/^\s*(.*?)\s*<([^>]+)>\s*$/);
+  if (treffer) return { name: treffer[1] || "Lunar Events", email: treffer[2] };
+  return { name: "Lunar Events", email: roh.trim() };
 }
 
 const ABSENDER =
   // Absender muss eine beim Mailanbieter bestätigte eigene Domain sein —
-  // eine Gmail-Adresse lehnt Resend ab. Kontaktadressen stehen woanders.
+  // eine Gmail-Adresse lehnen beide ab. Kontaktadressen stehen woanders.
   process.env.MAIL_ABSENDER ?? "Lunar Events <tickets@lunar-events.de>";
 
 type Anhang = { name: string; inhaltBase64: string };
@@ -30,37 +50,70 @@ type Nachricht = {
 };
 
 export async function versende(nachricht: Nachricht): Promise<boolean> {
-  if (!versandEingerichtet()) {
+  const weg = anbieter();
+  if (!weg) {
     console.warn(
-      `[mail] Nicht verschickt (kein RESEND_API_KEY): "${nachricht.betreff}" an ${nachricht.an}`,
+      `[mail] Nicht verschickt (kein BREVO_API_KEY oder RESEND_API_KEY): "${nachricht.betreff}" an ${nachricht.an}`,
     );
     return false;
   }
 
+  const absender = zerlegeAbsender(ABSENDER);
+
   try {
-    const antwort = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: ABSENDER,
-        to: [nachricht.an],
-        subject: nachricht.betreff,
-        html: nachricht.html,
-        text: nachricht.text,
-        reply_to: nachricht.antwortAn,
-        attachments: nachricht.anhaenge?.map((a) => ({
-          filename: a.name,
-          content: a.inhaltBase64,
-        })),
-      }),
-    });
+    const antwort =
+      weg === "brevo"
+        ? await fetch("https://api.brevo.com/v3/smtp/email", {
+            method: "POST",
+            headers: {
+              "api-key": process.env.BREVO_API_KEY!,
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+            body: JSON.stringify({
+              sender: absender,
+              to: [{ email: nachricht.an }],
+              subject: nachricht.betreff,
+              htmlContent: nachricht.html,
+              textContent: nachricht.text,
+              ...(nachricht.antwortAn ? { replyTo: { email: nachricht.antwortAn } } : {}),
+              // Brevo nennt das Feld anders als Resend und will den
+              // Dateinamen unter "name" statt "filename".
+              ...(nachricht.anhaenge?.length
+                ? {
+                    attachment: nachricht.anhaenge.map((a) => ({
+                      name: a.name,
+                      content: a.inhaltBase64,
+                    })),
+                  }
+                : {}),
+            }),
+          })
+        : await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: ABSENDER,
+              to: [nachricht.an],
+              subject: nachricht.betreff,
+              html: nachricht.html,
+              text: nachricht.text,
+              reply_to: nachricht.antwortAn,
+              attachments: nachricht.anhaenge?.map((a) => ({
+                filename: a.name,
+                content: a.inhaltBase64,
+              })),
+            }),
+          });
 
     if (!antwort.ok) {
       const grund = await antwort.text();
-      console.error(`[mail] Versand abgelehnt (${antwort.status}): ${grund.slice(0, 200)}`);
+      console.error(
+        `[mail] ${weg} hat abgelehnt (${antwort.status}): ${grund.slice(0, 200)}`,
+      );
       return false;
     }
     return true;

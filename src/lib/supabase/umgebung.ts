@@ -35,7 +35,9 @@ export function zugangVorhanden(): boolean {
  */
 export function verwandteNamen(): string[] {
   return Object.keys(process.env)
-    .filter((name) => /SUPABASE|STRIPE|PAYPAL|RESEND|WALLET/i.test(name))
+    .filter((name) =>
+      /SUPABASE|STRIPE|PAYPAL|RESEND|BREVO|MAIL|VORKASSE|WALLET|SITE_URL/i.test(name),
+    )
     .sort();
 }
 

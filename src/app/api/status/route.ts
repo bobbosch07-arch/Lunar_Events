@@ -2,6 +2,7 @@ import { vorkasseEingerichtet } from "@/lib/vorkasse";
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
 import { gefundeneNamen, verwandteNamen } from "@/lib/supabase/umgebung";
+import { versandEingerichtet } from "@/lib/mail";
 import { appleEingerichtet, zertifikatLaeuftAb } from "@/lib/wallet/apple";
 import { googleEingerichtet } from "@/lib/wallet/google";
 
@@ -71,7 +72,12 @@ export async function GET() {
         vorkasse: vorkasseEingerichtet(),
       },
       versand: {
-        mail: Boolean(process.env.RESEND_API_KEY),
+        mail: versandEingerichtet(),
+        mailAnbieter: process.env.BREVO_API_KEY
+          ? "brevo"
+          : process.env.RESEND_API_KEY
+            ? "resend"
+            : null,
         appleWallet: appleEingerichtet(),
         appleZertifikatBis: passAblauf ? passAblauf.toISOString() : null,
         googleWallet: googleEingerichtet(),
