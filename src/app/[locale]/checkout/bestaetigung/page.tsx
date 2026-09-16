@@ -148,6 +148,14 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
                   {preisText(bestellung.gesamt_cent as number, locale)}
                 </dd>
               </div>
+              {(bestellung.code_rabatt_cent as number) > 0 ? (
+                <div>
+                  <dt>Rabatt</dt>
+                  <dd className={css.tab}>
+                    − {preisText(bestellung.code_rabatt_cent as number, locale)}
+                  </dd>
+                </div>
+              ) : null}
               {/* "Tickets 0" verunsichert, solange die Überweisung aussteht —
                   die Tickets entstehen ja erst danach. */}
               {wartetAufUeberweisung ? null : (

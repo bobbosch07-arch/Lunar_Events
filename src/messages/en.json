@@ -141,7 +141,25 @@
     "fehler": "The payment didn't go through. Nothing was charged.",
     "abgelaufen": "Your reservation expired. Please pick your tickets again.",
     "reserviertNoch": "Held for {minuten}:{sekunden}",
-    "bestellnummer": "Order number"
+    "bestellnummer": "Order number",
+    "code": {
+      "frage": "Discount code?",
+      "feld": "Discount code",
+      "einloesen": "Apply",
+      "entfernen": "Remove",
+      "zeile": "Discount",
+      "teilweise": "Applies to {anzahl} of {gesamt} tickets.",
+      "unbekannt": "We don’t recognise this code.",
+      "noch_nicht": "This code is valid from {datum}.",
+      "abgelaufen": "This code has expired.",
+      "anderes_event": "This code is for a different event.",
+      "aufgebraucht": "This code has been used up.",
+      "passt_nicht": "This code doesn’t apply to the selected tickets.",
+      "schon_genutzt": "You’ve already used this code.",
+      "herausgenommen": "{grund} We’ve removed it — tap Continue again.",
+      "kostenlosText": "With your discount code this order is free. No payment needed.",
+      "kostenlosKnopf": "Order for free"
+    }
   },
   "bestaetigung": {
     "titel": "PURCHASE COMPLETE",

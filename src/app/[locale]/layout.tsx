@@ -5,6 +5,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Betriebshinweis } from "@/components/Betriebshinweis";
+import { CodeMerker } from "@/components/CodeMerker";
 import "../globals.css";
 
 /**
@@ -84,6 +85,7 @@ export default async function RootLayout({
       <body>
         <NextIntlClientProvider>
           <Betriebshinweis />
+          <CodeMerker />
           {children}
         </NextIntlClientProvider>
       </body>

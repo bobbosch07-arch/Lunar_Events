@@ -82,10 +82,19 @@ async function Inhalt({ locale }: { locale: string }) {
                     </div>
                   </td>
                   <td className={css.zahl}>{b.tickets}</td>
-                  <td className={css.zahl}>{preisText(b.gesamtCent, locale)}</td>
+                  <td className={css.zahl}>
+                    {preisText(b.gesamtCent, locale)}
+                    {b.rabattcode ? (
+                      <div className={css.nebensache}>
+                        {b.rabattcode} −{preisText(b.codeRabattCent, locale)}
+                      </div>
+                    ) : null}
+                  </td>
                   <td className={css.nebensache}>
                     {b.zahlungsart === "frei"
-                      ? "Testkauf"
+                      ? b.zahlungRef === "rabattcode"
+                        ? "kostenlos (Code)"
+                        : "Testkauf"
                       : b.vorkasse
                         ? "Überweisung"
                         : (b.zahlungsart ?? "—")}

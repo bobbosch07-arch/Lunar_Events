@@ -31,6 +31,10 @@ export type Zahlungsart = (typeof ZAHLUNGSART)[number];
 export const ANFRAGE_STATUS = ["neu", "in_bearbeitung", "angebot", "bestaetigt", "abgelehnt"] as const;
 export type AnfrageStatus = (typeof ANFRAGE_STATUS)[number];
 
+/** Rabattcodes wirken je Ticket und nur auf den Ticketpreis (0016). */
+export const RABATT_ART = ["prozent", "betrag"] as const;
+export type RabattArt = (typeof RABATT_ART)[number];
+
 /* ------------------------------------------------------------------ */
 
 export type Ort = {
@@ -182,6 +186,59 @@ export type Ticket = {
   /** Bei VIP: Tischnummer o.ae. */
   platz: string | null;
 };
+
+export type Rabattcode = {
+  id: string;
+  /** Immer in Großbuchstaben. */
+  code: string;
+  art: RabattArt;
+  /** Prozent 1–100 oder Cent je Ticket. */
+  wert: number;
+  /** null = alle Events */
+  event_id: string | null;
+  /** null = alle Phasen des Events */
+  phasen_ids: string[] | null;
+  gueltig_ab: string | null;
+  gueltig_bis: string | null;
+  /** Höchstzahl rabattierter Tickets, null = unbegrenzt */
+  max_tickets: number | null;
+  /** Rabattierte Tickets in offenen und bezahlten Bestellungen */
+  eingeloest: number;
+  /** Je E-Mail-Adresse — eine echte Sperre ist das nicht. */
+  einmal_pro_person: boolean;
+  aktiv: boolean;
+  notiz: string | null;
+  erstellt_am: string;
+};
+
+/**
+ * Was die Kasse über einen eingegebenen Code erfährt. Die Gründe decken
+ * sich mit den Meldungen von pruefe_rabattcode() und reserviere().
+ */
+export type CodeVorschau =
+  | {
+      ergebnis: "ok";
+      code: string;
+      art: RabattArt;
+      wert: number;
+      rabatt_cent: number;
+      /** Tickets mit Rabatt … */
+      tickets: number;
+      /** … von so vielen gewählten. Weniger, wenn die Obergrenze greift. */
+      tickets_gesamt: number;
+    }
+  | { ergebnis: "noch_nicht"; ab: string }
+  | {
+      ergebnis:
+        | "unbekannt"
+        | "abgelaufen"
+        | "anderes_event"
+        | "aufgebraucht"
+        | "passt_nicht"
+        | "schon_genutzt";
+    };
+
+export type CodeAblehnung = Exclude<CodeVorschau, { ergebnis: "ok" }>;
 
 export type VipAnfrage = {
   id: string;

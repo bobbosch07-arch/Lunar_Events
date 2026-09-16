@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
@@ -9,10 +9,13 @@ import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
 import { FastLaneAngebot } from "./FastLaneAngebot";
 import { waehleVorkasse } from "@/app/aktionen/vorkasse";
-import type { FastLane } from "@/lib/typen";
+import type { CodeAblehnung, CodeVorschau, FastLane } from "@/lib/typen";
 import { preisText } from "@/lib/format";
+import { merkeCode, normalisiereCode, vergissCode } from "@/lib/rabatt";
 import {
+  pruefeRabattcode,
   reserviereBestellung,
+  schliesseKostenlosAb,
   schliesseTestkaufAb,
   type ReservierungErgebnis,
 } from "@/app/aktionen/bestellung";
@@ -45,7 +48,11 @@ type Props = {
   fastlane: FastLane | null;
   /** Bankverbindung hinterlegt und das Event weit genug entfernt. */
   vorkasseMoeglich: boolean;
+  /** Code aus dem Link, auf dem Server schon geprüft. */
+  startCode: { text: string; vorschau: CodeVorschau } | null;
 };
+
+type GueltigerCode = Extract<CodeVorschau, { ergebnis: "ok" }>;
 
 type Formular = {
   vorname: string;
@@ -85,7 +92,24 @@ export function CheckoutFluss(props: Props) {
     id: string;
     nummer: string;
     bis: string;
+    /** Verbindlich aus der Datenbank, sobald reserviert ist. */
+    codeRabattCent: number;
   } | null>(null);
+
+  // Rabattcode. Ein gültiger Code aus dem Link ist sofort eingelöst; ein
+  // ungültiger klappt das Feld auf und sagt, warum.
+  const startGueltig =
+    props.startCode?.vorschau.ergebnis === "ok" ? props.startCode.vorschau : null;
+  const [code, setCode] = useState<GueltigerCode | null>(startGueltig);
+  const [codeOffen, setCodeOffen] = useState(Boolean(props.startCode && !startGueltig));
+  const [codeEingabe, setCodeEingabe] = useState(props.startCode?.text ?? "");
+  const [codeFehler, setCodeFehler] = useState<string | null>(() =>
+    props.startCode && props.startCode.vorschau.ergebnis !== "ok"
+      ? codeGrund(props.startCode.vorschau)
+      : null,
+  );
+  const [codePrueft, setCodePrueft] = useState(false);
+  const codeFeld = useRef<HTMLInputElement>(null);
 
   const { zwischensumme, gebuehren, gesamt, anzahl } = useMemo(() => {
     let zwischensumme = 0;
@@ -112,7 +136,13 @@ export function CheckoutFluss(props: Props) {
   // Zahlungsart, kein Aufschlag auf die anderen (§ 270a BGB) — deshalb
   // steht er als eigene Minuszeile da und nicht als "ohne Gebühr".
   const rabattCent = zahlweg === "vorkasse" && schritt === 3 ? gebuehren : 0;
-  const gesamtEndCent = gesamtMitFastlane - rabattCent;
+  // Vor der Reservierung die Vorschau, danach der Betrag, den die Datenbank
+  // tatsächlich abzieht.
+  const codeCent = bestellung ? bestellung.codeRabattCent : (code?.rabatt_cent ?? 0);
+  const gesamtEndCent = Math.max(0, gesamtMitFastlane - codeCent - rabattCent);
+  // Kostet die Bestellung dank Code nichts, gibt es nichts zu bezahlen —
+  // weder Karte noch Überweisung.
+  const kostenlos = codeCent > 0 && gesamtMitFastlane - codeCent <= 0;
   const wege = [
     props.stripeAktiv ? "karte" : null,
     props.paypalClientId ? "paypal" : null,
@@ -148,6 +178,78 @@ export function CheckoutFluss(props: Props) {
     return true;
   }
 
+  /** Warum ein Code nicht gilt, in einem Satz. */
+  function codeGrund(v: CodeAblehnung): string {
+    if (v.ergebnis === "noch_nicht") {
+      return t("code.noch_nicht", {
+        datum: new Intl.DateTimeFormat(locale, {
+          day: "2-digit",
+          month: "long",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "Europe/Berlin",
+        }).format(new Date(v.ab)),
+      });
+    }
+    return t(`code.${v.ergebnis}`);
+  }
+
+  const auswahlFuerDb = () =>
+    props.posten.map((p) => ({ phase_id: p.phase_id, menge: p.menge }));
+
+  async function einloesen(e: FormEvent) {
+    e.preventDefault();
+    const text = normalisiereCode(codeEingabe);
+    if (!text) return;
+    setCodePrueft(true);
+    setCodeFehler(null);
+    const vorschau = await pruefeRabattcode({
+      eventId: props.eventId,
+      code: text,
+      auswahl: auswahlFuerDb(),
+      fastlane: fastlane && angebot ? anzahl : 0,
+    });
+    setCodePrueft(false);
+    if (vorschau.ergebnis === "ok") {
+      setCode(vorschau);
+      setCodeOffen(false);
+      merkeCode(vorschau.code);
+    } else {
+      setCodeFehler(codeGrund(vorschau));
+    }
+  }
+
+  function entferneCode() {
+    setCode(null);
+    setCodeEingabe("");
+    setCodeFehler(null);
+    vergissCode();
+    // Sonst käme er beim Neuladen der Seite aus der Adresse zurück.
+    const adresse = new URL(window.location.href);
+    if (adresse.searchParams.has("code")) {
+      adresse.searchParams.delete("code");
+      window.history.replaceState(window.history.state, "", adresse);
+    }
+  }
+
+  /**
+   * Fast Lane ändert den Rabatt selbst nicht — er wirkt nur auf Tickets.
+   * Nachgefragt wird trotzdem: Bliebe ohne Fast Lane ein Restbetrag unter
+   * 50 Cent, erlässt die Datenbank ihn; mit Fast Lane nicht mehr.
+   */
+  function waehleFastlane(wahl: boolean) {
+    setFastlane(wahl);
+    if (!code) return;
+    void pruefeRabattcode({
+      eventId: props.eventId,
+      code: code.code,
+      auswahl: auswahlFuerDb(),
+      fastlane: wahl && angebot ? anzahl : 0,
+    }).then((vorschau) => {
+      if (vorschau.ergebnis === "ok") setCode(vorschau);
+    });
+  }
+
   async function zurZahlung() {
     if (!pruefe()) return;
     setLaeuft(true);
@@ -155,20 +257,34 @@ export function CheckoutFluss(props: Props) {
 
     const ergebnis: ReservierungErgebnis = await reserviereBestellung({
       eventId: props.eventId,
-      auswahl: props.posten.map((p) => ({ phase_id: p.phase_id, menge: p.menge })),
+      auswahl: auswahlFuerDb(),
       email: formular.email,
       vorname: formular.vorname,
       nachname: formular.nachname,
       telefon: formular.telefon,
       fastlane: fastlane && angebot ? anzahl : 0,
+      code: code?.code ?? null,
     });
 
     setLaeuft(false);
 
+    if (!ergebnis.ok && ergebnis.fehler === "code") {
+      // Wie bei Fast Lane: Am Code soll der Kauf nicht scheitern. Er fliegt
+      // heraus, und der Gast sieht den neuen Betrag, bevor er weitergeht.
+      const grund = codeGrund(
+        ergebnis.code && ergebnis.code !== "noch_nicht"
+          ? { ergebnis: ergebnis.code }
+          : { ergebnis: "unbekannt" },
+      );
+      entferneCode();
+      setStoerung(t("code.herausgenommen", { grund }));
+      return;
+    }
+
     if (!ergebnis.ok && ergebnis.fehler === "fastlane_aus") {
       // Die Tickets gibt es noch, nur die Fast-Lane-Plätze nicht mehr.
       // Den ganzen Kauf daran scheitern zu lassen wäre falsch.
-      setFastlane(false);
+      waehleFastlane(false);
       setStoerung(
         "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
       );
@@ -194,9 +310,29 @@ export function CheckoutFluss(props: Props) {
       id: ergebnis.bestellung_id,
       nummer: ergebnis.nummer,
       bis: ergebnis.reserviert_bis,
+      codeRabattCent: ergebnis.code_rabatt_cent,
     });
+    // Zwischen Vorschau und Reservierung kann die Obergrenze erreicht
+    // worden sein — dann gilt der Code für weniger Tickets als angezeigt.
+    if (code && ergebnis.code_tickets !== code.tickets) {
+      setCode({ ...code, tickets: ergebnis.code_tickets, rabatt_cent: ergebnis.code_rabatt_cent });
+    }
     zaehle("daten_erfasst", props.eventId);
     setSchritt(3);
+  }
+
+  async function kostenlosBestellen() {
+    if (!bestellung) return;
+    setLaeuft(true);
+    setStoerung(null);
+    const ergebnis = await schliesseKostenlosAb(bestellung.id);
+    if (!ergebnis.ok) {
+      setLaeuft(false);
+      setStoerung(ergebnis.fehler === "abgelaufen" ? t("abgelaufen") : t("fehler"));
+      return;
+    }
+    vergissCode();
+    router.push(`/checkout/bestaetigung?b=${bestellung.id}`);
   }
 
   async function perUeberweisung() {
@@ -245,7 +381,7 @@ export function CheckoutFluss(props: Props) {
           anzahl={anzahl}
           gewaehlt={fastlane}
           uebernehmen={(wahl) => {
-            setFastlane(wahl);
+            waehleFastlane(wahl);
             setAngebotOffen(false);
           }}
           schliessen={() => setAngebotOffen(false)}
@@ -283,7 +419,7 @@ export function CheckoutFluss(props: Props) {
                   <input
                     type="checkbox"
                     checked={fastlane}
-                    onChange={(e) => setFastlane(e.target.checked)}
+                    onChange={(e) => waehleFastlane(e.target.checked)}
                   />
                   <span>
                     <strong>Fast Lane</strong> — nicht anstehen, eigene Spur am
@@ -299,6 +435,81 @@ export function CheckoutFluss(props: Props) {
                 </label>
               </div>
             ) : null}
+
+            {/* Bewusst zurückhaltend: ein Verweis statt eines offenen Feldes.
+                Ein großes Codefeld schickt Gäste auf die Suche nach Codes
+                (Briefing: keine Rabattschlacht). Wer einen hat, findet ihn. */}
+            {code ? (
+              <div className={css.codeAktiv}>
+                <span className={css.codeHaken} aria-hidden="true">
+                  ✓
+                </span>
+                <span className={css.codeText}>
+                  <span>
+                    <strong>{code.code}</strong> · − {preisText(code.rabatt_cent, locale)}
+                  </span>
+                  {code.tickets < code.tickets_gesamt ? (
+                    <span className={css.codeZusatz}>
+                      {t("code.teilweise", {
+                        anzahl: code.tickets,
+                        gesamt: code.tickets_gesamt,
+                      })}
+                    </span>
+                  ) : null}
+                </span>
+                <button type="button" className={css.zfAendern} onClick={entferneCode}>
+                  {t("code.entfernen")}
+                </button>
+              </div>
+            ) : codeOffen ? (
+              <form className={css.codeForm} onSubmit={einloesen} noValidate>
+                <label className={css.beschriftung} htmlFor="rabattcode">
+                  {t("code.feld")}
+                </label>
+                <div className={css.codeReihe}>
+                  <input
+                    id="rabattcode"
+                    name="rabattcode"
+                    className={`${css.eingabe} ${codeFehler ? css.eingabeFehler : ""}`}
+                    value={codeEingabe}
+                    onChange={(e) => {
+                      setCodeEingabe(e.target.value);
+                      // Die alte Meldung gilt für den alten Code.
+                      setCodeFehler(null);
+                    }}
+                    autoComplete="off"
+                    autoCapitalize="characters"
+                    spellCheck={false}
+                    enterKeyHint="done"
+                    aria-invalid={codeFehler ? true : undefined}
+                    aria-describedby={codeFehler ? "rabattcode-fehler" : undefined}
+                    ref={codeFeld}
+                  />
+                  <Knopf type="submit" stil="linie" disabled={codePrueft || !codeEingabe.trim()}>
+                    {codePrueft ? "…" : t("code.einloesen")}
+                  </Knopf>
+                </div>
+                {codeFehler ? (
+                  <span id="rabattcode-fehler" className={css.fehlertext} role="alert">
+                    {codeFehler}
+                  </span>
+                ) : null}
+              </form>
+            ) : (
+              <button
+                type="button"
+                className={`${css.zfAendern} ${css.codeFrage}`}
+                onClick={() => {
+                  setCodeOffen(true);
+                  // Wer aufklappt, will tippen — auf dem Handy sonst ein
+                  // zweites Antippen. Das Feld steht erst nach dem Zeichnen.
+                  requestAnimationFrame(() => codeFeld.current?.focus());
+                }}
+              >
+                {t("code.frage")}
+              </button>
+            )}
+
             <div className={css.knoepfe}>
               <Knopf onClick={() => setSchritt(2)} groesse="gross">
                 {t("weiter")}
@@ -397,109 +608,127 @@ export function CheckoutFluss(props: Props) {
               </label>
             </div>
 
-            {/* Die Auswahl erscheint nur, wenn es wirklich etwas zu wählen
-                gibt — bei einem einzigen Weg wäre sie ein leerer Klick. */}
-            {wege.length > 1 ? (
-              <div className={css.zahlarten}>
-                {props.stripeAktiv ? (
-                  <label
-                    className={`${css.zahlart} ${zahlweg === "karte" ? css.zahlartGewaehlt : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="zahlweg"
-                      checked={zahlweg === "karte"}
-                      onChange={() => setZahlweg("karte")}
-                    />
-                    <span className={css.zahlartName}>{t("karte")}</span>
-                    <span className={css.zahlartNotiz}>Apple Pay · Google Pay · SEPA</span>
-                  </label>
-                ) : null}
-                {props.paypalClientId ? (
-                  <label
-                    className={`${css.zahlart} ${zahlweg === "paypal" ? css.zahlartGewaehlt : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="zahlweg"
-                      checked={zahlweg === "paypal"}
-                      onChange={() => setZahlweg("paypal")}
-                    />
-                    <span className={css.zahlartName}>{t("paypal")}</span>
-                  </label>
-                ) : null}
-                {props.vorkasseMoeglich ? (
-                  <label
-                    className={`${css.zahlart} ${zahlweg === "vorkasse" ? css.zahlartGewaehlt : ""}`}
-                  >
-                    <input
-                      type="radio"
-                      name="zahlweg"
-                      checked={zahlweg === "vorkasse"}
-                      onChange={() => setZahlweg("vorkasse")}
-                    />
-                    <span className={css.zahlartName}>Überweisung (Vorkasse)</span>
-                    <span className={css.zahlartNotiz}>
-                      {gebuehren > 0
-                        ? `${preisText(gebuehren, locale)} Rabatt · Tickets nach Zahlungseingang`
-                        : "Tickets nach Zahlungseingang"}
-                    </span>
-                  </label>
-                ) : null}
-              </div>
-            ) : null}
-
-            {zahlweg === "vorkasse" && props.vorkasseMoeglich ? (
+            {kostenlos ? (
               <>
-                <p className={css.hinweis}>
-                  Du bekommst gleich die Bankverbindung. Deine Plätze bleiben
-                  einige Tage reserviert; die Tickets erscheinen, sobald die
-                  Überweisung angekommen ist.
-                  {gebuehren > 0
-                    ? ` Für die Überweisung ziehen wir ${preisText(gebuehren, locale)} ab.`
-                    : ""}
-                </p>
+                <p className={css.hinweis}>{t("code.kostenlosText")}</p>
                 {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
                 <div className={css.knoepfe}>
                   <Knopf
-                    onClick={perUeberweisung}
+                    onClick={kostenlosBestellen}
                     disabled={!agb || !widerruf || laeuft}
                     groesse="gross"
                   >
-                    {laeuft ? "…" : "Verbindlich per Überweisung bestellen"}
+                    {laeuft ? "…" : t("code.kostenlosKnopf")}
                   </Knopf>
                 </div>
               </>
-            ) : props.stripeAktiv && zahlweg === "karte" ? (
-              <StripeZahlung
-                bestellungId={bestellung.id}
-                rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
-                freigegeben={agb && widerruf}
-              />
-            ) : props.paypalClientId ? (
-              <PaypalZahlung
-                bestellungId={bestellung.id}
-                clientId={props.paypalClientId}
-                freigegeben={agb && widerruf}
-              />
             ) : (
               <>
-                <p className={css.testhinweis}>
-                  Es ist noch kein Zahlungsanbieter eingerichtet. Der Kauf lässt
-                  sich hier ohne Zahlung abschließen, damit der Ablauf geprüft
-                  werden kann. Sobald Stripe oder PayPal Schlüssel haben,
-                  verschwindet dieser Weg von selbst.
-                </p>
-                {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
-                <div className={css.knoepfe}>
-                  <Knopf
-                    onClick={kaufen}
-                    disabled={!agb || !widerruf || laeuft || !props.testmodus}
-                    groesse="gross"
-                  >
-                    {laeuft ? "…" : t("jetztKaufen")}
-                  </Knopf>
-                </div>
+                {/* Die Auswahl erscheint nur, wenn es wirklich etwas zu wählen
+                    gibt — bei einem einzigen Weg wäre sie ein leerer Klick. */}
+                {wege.length > 1 ? (
+                  <div className={css.zahlarten}>
+                    {props.stripeAktiv ? (
+                      <label
+                        className={`${css.zahlart} ${zahlweg === "karte" ? css.zahlartGewaehlt : ""}`}
+                      >
+                        <input
+                          type="radio"
+                          name="zahlweg"
+                          checked={zahlweg === "karte"}
+                          onChange={() => setZahlweg("karte")}
+                        />
+                        <span className={css.zahlartName}>{t("karte")}</span>
+                        <span className={css.zahlartNotiz}>Apple Pay · Google Pay · SEPA</span>
+                      </label>
+                    ) : null}
+                    {props.paypalClientId ? (
+                      <label
+                        className={`${css.zahlart} ${zahlweg === "paypal" ? css.zahlartGewaehlt : ""}`}
+                      >
+                        <input
+                          type="radio"
+                          name="zahlweg"
+                          checked={zahlweg === "paypal"}
+                          onChange={() => setZahlweg("paypal")}
+                        />
+                        <span className={css.zahlartName}>{t("paypal")}</span>
+                      </label>
+                    ) : null}
+                    {props.vorkasseMoeglich ? (
+                      <label
+                        className={`${css.zahlart} ${zahlweg === "vorkasse" ? css.zahlartGewaehlt : ""}`}
+                      >
+                        <input
+                          type="radio"
+                          name="zahlweg"
+                          checked={zahlweg === "vorkasse"}
+                          onChange={() => setZahlweg("vorkasse")}
+                        />
+                        <span className={css.zahlartName}>Überweisung (Vorkasse)</span>
+                        <span className={css.zahlartNotiz}>
+                          {gebuehren > 0
+                            ? `${preisText(gebuehren, locale)} Rabatt · Tickets nach Zahlungseingang`
+                            : "Tickets nach Zahlungseingang"}
+                        </span>
+                      </label>
+                    ) : null}
+                  </div>
+                ) : null}
+
+                {zahlweg === "vorkasse" && props.vorkasseMoeglich ? (
+                  <>
+                    <p className={css.hinweis}>
+                      Du bekommst gleich die Bankverbindung. Deine Plätze bleiben
+                      einige Tage reserviert; die Tickets erscheinen, sobald die
+                      Überweisung angekommen ist.
+                      {gebuehren > 0
+                        ? ` Für die Überweisung ziehen wir ${preisText(gebuehren, locale)} ab.`
+                        : ""}
+                    </p>
+                    {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
+                    <div className={css.knoepfe}>
+                      <Knopf
+                        onClick={perUeberweisung}
+                        disabled={!agb || !widerruf || laeuft}
+                        groesse="gross"
+                      >
+                        {laeuft ? "…" : "Verbindlich per Überweisung bestellen"}
+                      </Knopf>
+                    </div>
+                  </>
+                ) : props.stripeAktiv && zahlweg === "karte" ? (
+                  <StripeZahlung
+                    bestellungId={bestellung.id}
+                    rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
+                    freigegeben={agb && widerruf}
+                  />
+                ) : props.paypalClientId ? (
+                  <PaypalZahlung
+                    bestellungId={bestellung.id}
+                    clientId={props.paypalClientId}
+                    freigegeben={agb && widerruf}
+                  />
+                ) : (
+                  <>
+                    <p className={css.testhinweis}>
+                      Es ist noch kein Zahlungsanbieter eingerichtet. Der Kauf lässt
+                      sich hier ohne Zahlung abschließen, damit der Ablauf geprüft
+                      werden kann. Sobald Stripe oder PayPal Schlüssel haben,
+                      verschwindet dieser Weg von selbst.
+                    </p>
+                    {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
+                    <div className={css.knoepfe}>
+                      <Knopf
+                        onClick={kaufen}
+                        disabled={!agb || !widerruf || laeuft || !props.testmodus}
+                        groesse="gross"
+                      >
+                        {laeuft ? "…" : t("jetztKaufen")}
+                      </Knopf>
+                    </div>
+                  </>
+                )}
               </>
             )}
 
@@ -575,6 +804,14 @@ export function CheckoutFluss(props: Props) {
                     Fast Lane <span className={css.zfMenge}>× {anzahl}</span>
                   </span>
                   <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
+                </div>
+              ) : null}
+              {codeCent > 0 && code ? (
+                <div className={css.zfZeile}>
+                  <span className={css.zfName}>
+                    {t("code.zeile")} <span className={css.zfMenge}>{code.code}</span>
+                  </span>
+                  <span className={css.zfWert}>− {preisText(codeCent, locale)}</span>
                 </div>
               ) : null}
               {rabattCent > 0 ? (

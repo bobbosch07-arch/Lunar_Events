@@ -32,6 +32,7 @@ node scripts/mitarbeiter.mjs  # Personal auflisten/anlegen
 node scripts/zahlung-testen.mjs    # Stripe-Kauf ohne Browser durchspielen
 node scripts/einlass-testen.mjs    # Entwerten mit echter Anmeldung
 node scripts/backoffice-testen.mjs # Zugriffsregeln fürs Backoffice
+node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbst auf
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -234,6 +235,55 @@ Fehler niemandem, die Person am Gerät muss sofort sehen, was los ist.
 Bestellungen sind über die Zugriffsregeln **nicht** lesbar; die
 Bestätigungsseite läuft serverseitig mit dem Dienstschlüssel.
 
+### Rabattcodes (Migration 0016)
+
+Entschieden am 17.09.2026: **Ein Code wirkt nur auf den Ticketpreis**,
+Servicegebühr und Fast Lane bleiben voll. Prozent oder fester Betrag,
+**beides je Ticket**; ein Betrag über dem Preis macht das Ticket kostenlos,
+nie negativ. Alle Grenzen sind freiwillig: Event, Phasen, Zeitraum,
+Obergrenze, einmal je Person.
+
+**Die Obergrenze zählt rabattierte Tickets, nicht Bestellungen.** Reicht der
+Rest nicht für die ganze Bestellung, bekommen so viele Tickets den Rabatt,
+wie übrig sind (die teuersten zuerst). `rabattcodes.eingeloest` wird
+behandelt wie ein Kontingent: `reserviere(… p_code)` zählt unter Sperre hoch,
+`raeume_reservierungen_auf` gibt beim Verfall zurück, und die Grenze steht
+als `check`-Regel in der Tabelle. **`waehle_vorkasse` setzt den
+Gesamtbetrag neu** und muss den Code-Rabatt abziehen — die erste Fassung aus
+0013 hätte ihn still wieder aufgeschlagen. Wer einen dieser Wege anfasst,
+denkt an alle vier.
+
+**Gerechnet wird nur in `code_rabatt()`.** Die Vorschau in der Kasse
+(`pruefe_rabattcode`, nur `service_role` — öffentlich ließen sich Codes
+in Serie durchprobieren) und die Reservierung rufen dieselbe Funktion. Der
+Browser zeigt vor der Reservierung die Vorschau, danach den Betrag, den die
+Datenbank zurückgibt. Gilt ein Code bei der Reservierung nicht mehr, fliegt
+er heraus und der Gast tippt noch einmal auf Weiter — wie bei Fast Lane.
+
+**Einmal je Person heißt je E-Mail-Adresse**, gezählt werden bezahlte
+Bestellungen und ausstehende Überweisungen. Eine liegen gelassene
+Kartenreservierung zählt bewusst nicht, sonst sperrte sich aus, wer in der
+Kasse zurückgeht und neu anfängt.
+
+**Unter 50 Cent wird erlassen** (`rabatt_ohne_kleinstbetrag`): Stripe bucht
+so wenig nicht ab. Kostet eine Bestellung dank Code 0 €, schließt
+`schliesseKostenlosAb` sie ohne Zahlung ab (Zahlungsart `frei`, Referenz
+`rabattcode` — im Backoffice „kostenlos (Code)“ statt „Testkauf“).
+
+**Code und Betrag werden in die Bestellung kopiert** (`rabattcode`,
+`code_rabatt_cent`, `code_tickets`); gelöscht wird ein Code deshalb ohne
+Rücksicht auf alte Bestellungen. `gesamt = summe + gebühr − rabatt −
+code_rabatt`, wobei `rabatt_cent` der Vorkasse-Rabatt bleibt.
+
+**Links mit `?code=`** merkt sich `CodeMerker` im Layout für die Sitzung
+(`sessionStorage`, kein Cookie), die Ticketauswahl reicht den Code an die
+Kasse weiter. So funktioniert ein Link auf die Startseite genauso wie einer
+aufs Event. In der Kasse steht nur ein unauffälliger Verweis „Rabattcode?“ —
+ein offenes Feld schickt Gäste auf Codesuche (Briefing: keine Rabattschlacht).
+
+Im Backoffice unter „Rabattcodes“: lesen darf das Team, anlegen, ändern und
+löschen nur ein Admin (Zugriffsregel, nicht Oberfläche).
+
 ## Zahlung
 
 **Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
@@ -434,6 +484,7 @@ Fertig und geprüft:
   Fehlerseite
 - Sitemap, robots, Vorschaubilder für geteilte Links
 - Abgelaufene Reservierungen werden alle fünf Minuten freigegeben (pg_cron)
+- Rabattcodes: Kasse (Link und Eingabe), Backoffice mit Einlösungen
 
 Offen:
 

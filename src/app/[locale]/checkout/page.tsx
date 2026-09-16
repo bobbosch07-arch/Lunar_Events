@@ -9,11 +9,12 @@ import { phasenZustaende } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import { paypalEingerichtet } from "@/lib/paypal";
 import { vorkasseMoeglich } from "@/lib/vorkasse";
+import { pruefeRabattcode } from "@/app/aktionen/bestellung";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ event?: string; p?: string }>;
+  searchParams: Promise<{ event?: string; p?: string; code?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -41,7 +42,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { event: slug, p } = await searchParams;
+  const { event: slug, p, code } = await searchParams;
   // Wer hier ohne Auswahl landet, hat sich verlaufen oder einen alten Link
   // geöffnet. Eine 404 wäre technisch richtig und trotzdem unfreundlich —
   // die Eventliste ist das, was diese Person sucht.
@@ -90,6 +91,20 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const testmodus =
     !process.env.STRIPE_SECRET_KEY && !process.env.PAYPAL_CLIENT_SECRET;
 
+  // Ein Code aus dem Link wird vorab geprüft, damit die Zusammenfassung
+  // den Rabatt vom ersten Bild an zeigt — oder gleich sagt, warum nicht.
+  // Fast Lane ist hier noch nicht gewählt; die Kasse fragt beim Wechsel neu.
+  const startCode = code?.trim()
+    ? {
+        text: code.trim().toUpperCase(),
+        vorschau: await pruefeRabattcode({
+          eventId: event.id,
+          code,
+          auswahl: posten.map((x) => ({ phase_id: x.phase_id, menge: x.menge })),
+        }),
+      }
+    : null;
+
   return (
     <div className={css.rahmen}>
       <header className={css.kopf}>
@@ -118,6 +133,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             stripeAktiv={stripeAktiv}
             paypalClientId={paypalClientId}
             rueckkehrBasis={eigeneAdresse()}
+            startCode={startCode}
           />
         </div>
       </main>

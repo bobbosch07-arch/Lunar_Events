@@ -141,7 +141,25 @@
     "fehler": "Die Zahlung ist nicht durchgegangen. Es wurde nichts abgebucht.",
     "abgelaufen": "Deine Reservierung ist abgelaufen. Bitte wähle die Tickets neu.",
     "reserviertNoch": "Reserviert für {minuten}:{sekunden}",
-    "bestellnummer": "Bestellnummer"
+    "bestellnummer": "Bestellnummer",
+    "code": {
+      "frage": "Rabattcode?",
+      "feld": "Rabattcode",
+      "einloesen": "Einlösen",
+      "entfernen": "Entfernen",
+      "zeile": "Rabatt",
+      "teilweise": "Gilt für {anzahl} von {gesamt} Tickets.",
+      "unbekannt": "Diesen Code kennen wir nicht.",
+      "noch_nicht": "Dieser Code gilt erst ab {datum}.",
+      "abgelaufen": "Dieser Code ist abgelaufen.",
+      "anderes_event": "Dieser Code gilt für ein anderes Event.",
+      "aufgebraucht": "Dieser Code ist schon aufgebraucht.",
+      "passt_nicht": "Dieser Code gilt nicht für die gewählten Tickets.",
+      "schon_genutzt": "Diesen Code hast du schon einmal eingelöst.",
+      "herausgenommen": "{grund} Wir haben ihn herausgenommen — tippe noch einmal auf Weiter.",
+      "kostenlosText": "Mit deinem Rabattcode kostet diese Bestellung nichts. Eine Zahlung ist nicht nötig.",
+      "kostenlosKnopf": "Kostenlos bestellen"
+    }
   },
   "bestaetigung": {
     "titel": "KAUF ERFOLGREICH",

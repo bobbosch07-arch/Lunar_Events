@@ -6,6 +6,7 @@ import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
+import { gemerkterCode } from "@/lib/rabatt";
 import { phasenZustaende, verkaufsstand, zeigeRest, type Phase } from "@/lib/typen";
 import css from "./Ticketauswahl.module.css";
 
@@ -72,7 +73,11 @@ export function Ticketauswahl(props: Props) {
     const teile = Object.entries(auswahl)
       .map(([id, menge]) => `${id}:${menge}`)
       .join(",");
-    router.push(`/checkout?event=${eventSlug}&p=${teile}`);
+    // Ein Code aus einem Link reist mit; eintragen muss ihn niemand.
+    const code = gemerkterCode();
+    router.push(
+      `/checkout?event=${eventSlug}&p=${teile}${code ? `&code=${encodeURIComponent(code)}` : ""}`,
+    );
   }
 
   return (

@@ -1,4 +1,5 @@
 import { serverClient } from "./supabase/server";
+import type { Rabattcode } from "./typen";
 
 /**
  * Abfragen fürs Backoffice. Alle laufen über die Sitzung des Mitarbeiters,
@@ -177,6 +178,10 @@ export type BestellZeile = {
   /** Vorkasse: wartet auf Überweisung, solange status "offen" ist. */
   vorkasse: boolean;
   reserviertBis: string | null;
+  /** "rabattcode" bei einer Bestellung, die dank Code nichts kostete. */
+  zahlungRef: string | null;
+  rabattcode: string | null;
+  codeRabattCent: number;
 };
 
 export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
@@ -185,7 +190,8 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
   const { data, error } = await db
     .from("bestellungen")
     .select(
-      `id, nummer, status, gesamt_cent, zahlungsart, erstellt_am, vorkasse, reserviert_bis,
+      `id, nummer, status, gesamt_cent, zahlungsart, zahlung_ref, erstellt_am, vorkasse, reserviert_bis,
+       rabattcode, code_rabatt_cent,
        kunde:kunden(vorname, nachname, email),
        event:events(titel),
        tickets(id)`,
@@ -220,6 +226,9 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       tickets: ((b.tickets ?? []) as unknown[]).length,
       vorkasse: Boolean(b.vorkasse),
       reserviertBis: (b.reserviert_bis as string | null) ?? null,
+      zahlungRef: (b.zahlung_ref as string | null) ?? null,
+      rabattcode: (b.rabattcode as string | null) ?? null,
+      codeRabattCent: (b.code_rabatt_cent as number | null) ?? 0,
     };
   });
 }
@@ -416,4 +425,180 @@ export async function holeHochrechnung(): Promise<HochEvent[]> {
     },
     bezahltCent: jeEvent.get(e.id as string) ?? 0,
   }));
+}
+
+/* ------------------------------------------------------------------ */
+/* Rabattcodes                                                         */
+/* ------------------------------------------------------------------ */
+
+export type RabattcodeZeile = Rabattcode & {
+  eventTitel: string | null;
+  eventSlug: string | null;
+  /** Nur bezahlte Bestellungen — eingeloest zählt offene mit. */
+  bezahltTickets: number;
+  bezahltRabattCent: number;
+};
+
+export type Einloesung = {
+  id: string;
+  nummer: string;
+  status: string;
+  vorkasse: boolean;
+  erstelltAm: string;
+  kunde: string;
+  email: string;
+  tickets: number;
+  rabattCent: number;
+  gesamtCent: number;
+};
+
+export type EventWahl = {
+  id: string;
+  titel: string;
+  slug: string;
+  beginn: string;
+  /** Nur Standardphasen — VIP wird angefragt, nicht mit Code gekauft. */
+  phasen: Array<{ id: string; name: string }>;
+};
+
+const CODE_SPALTEN = `id, code, art, wert, event_id, phasen_ids, gueltig_ab, gueltig_bis,
+  max_tickets, eingeloest, einmal_pro_person, aktiv, notiz, erstellt_am,
+  event:events(titel, slug)`;
+
+function alsCodeZeile(
+  z: Record<string, unknown>,
+  bezahlt: Map<string, { tickets: number; cent: number }>,
+): RabattcodeZeile {
+  const event = z.event as { titel: string; slug: string } | null;
+  const summe = bezahlt.get(z.id as string);
+  return {
+    id: z.id as string,
+    code: z.code as string,
+    art: z.art as Rabattcode["art"],
+    wert: z.wert as number,
+    event_id: (z.event_id as string | null) ?? null,
+    phasen_ids: (z.phasen_ids as string[] | null) ?? null,
+    gueltig_ab: (z.gueltig_ab as string | null) ?? null,
+    gueltig_bis: (z.gueltig_bis as string | null) ?? null,
+    max_tickets: (z.max_tickets as number | null) ?? null,
+    eingeloest: z.eingeloest as number,
+    einmal_pro_person: Boolean(z.einmal_pro_person),
+    aktiv: Boolean(z.aktiv),
+    notiz: (z.notiz as string | null) ?? null,
+    erstellt_am: z.erstellt_am as string,
+    eventTitel: event?.titel ?? null,
+    eventSlug: event?.slug ?? null,
+    bezahltTickets: summe?.tickets ?? 0,
+    bezahltRabattCent: summe?.cent ?? 0,
+  };
+}
+
+/** Was die Codes bisher wirklich gekostet haben — nur bezahlte Bestellungen. */
+async function bezahlteEinloesungen(codeId?: string) {
+  const db = await serverClient();
+  let abfrage = db
+    .from("bestellungen")
+    .select("rabattcode_id, code_tickets, code_rabatt_cent")
+    .eq("status", "bezahlt")
+    .not("rabattcode_id", "is", null);
+  if (codeId) abfrage = abfrage.eq("rabattcode_id", codeId);
+  const { data } = await abfrage;
+
+  const karte = new Map<string, { tickets: number; cent: number }>();
+  for (const b of data ?? []) {
+    const id = b.rabattcode_id as string;
+    const alt = karte.get(id) ?? { tickets: 0, cent: 0 };
+    karte.set(id, {
+      tickets: alt.tickets + (b.code_tickets as number),
+      cent: alt.cent + (b.code_rabatt_cent as number),
+    });
+  }
+  return karte;
+}
+
+export async function holeRabattcodes(): Promise<RabattcodeZeile[]> {
+  const db = await serverClient();
+  const [{ data, error }, bezahlt] = await Promise.all([
+    db.from("rabattcodes").select(CODE_SPALTEN).order("erstellt_am", { ascending: false }),
+    bezahlteEinloesungen(),
+  ]);
+
+  if (error || !data) {
+    console.error("[backoffice] Rabattcodes laden fehlgeschlagen:", error?.message);
+    return [];
+  }
+  return data.map((z) => alsCodeZeile(z as Record<string, unknown>, bezahlt));
+}
+
+export async function holeRabattcode(
+  id: string,
+): Promise<{ code: RabattcodeZeile; einloesungen: Einloesung[] } | null> {
+  const db = await serverClient();
+  const [{ data: zeile }, bezahlt, { data: bestellungen }] = await Promise.all([
+    db.from("rabattcodes").select(CODE_SPALTEN).eq("id", id).maybeSingle(),
+    bezahlteEinloesungen(id),
+    db
+      .from("bestellungen")
+      .select(
+        `id, nummer, status, vorkasse, erstellt_am, code_tickets, code_rabatt_cent, gesamt_cent,
+         kunde:kunden(vorname, nachname, email)`,
+      )
+      .eq("rabattcode_id", id)
+      .order("erstellt_am", { ascending: false })
+      .limit(300),
+  ]);
+
+  if (!zeile) return null;
+
+  return {
+    code: alsCodeZeile(zeile as Record<string, unknown>, bezahlt),
+    einloesungen: (bestellungen ?? []).map((b) => {
+      const kunde = b.kunde as unknown as {
+        vorname: string | null;
+        nachname: string | null;
+        email: string;
+      } | null;
+      return {
+        id: b.id as string,
+        nummer: b.nummer as string,
+        status: b.status as string,
+        vorkasse: Boolean(b.vorkasse),
+        erstelltAm: b.erstellt_am as string,
+        kunde: [kunde?.vorname, kunde?.nachname].filter(Boolean).join(" ") || "—",
+        email: kunde?.email ?? "—",
+        tickets: b.code_tickets as number,
+        rabattCent: b.code_rabatt_cent as number,
+        gesamtCent: b.gesamt_cent as number,
+      };
+    }),
+  };
+}
+
+/** Events für die Auswahl im Code-Formular, die jüngsten zuerst. */
+export async function holeEventWahl(): Promise<EventWahl[]> {
+  const db = await serverClient();
+  const { data } = await db
+    .from("events")
+    .select("id, titel, slug, beginn, phasen(id, name, art, position)")
+    .in("status", ["entwurf", "veroeffentlicht"])
+    .order("beginn", { ascending: false })
+    .limit(50);
+
+  return (data ?? []).map((e) => ({
+    id: e.id as string,
+    titel: e.titel as string,
+    slug: e.slug as string,
+    beginn: e.beginn as string,
+    phasen: ((e.phasen ?? []) as Array<{ id: string; name: string; art: string; position: number }>)
+      .filter((p) => p.art === "standard")
+      .sort((a, b) => a.position - b.position)
+      .map((p) => ({ id: p.id, name: p.name })),
+  }));
+}
+
+/** Lesen darf das Team, ändern nur ein Admin — wie in den Zugriffsregeln. */
+export async function darfCodesAendern(): Promise<boolean> {
+  const db = await serverClient();
+  const { data } = await db.rpc("ist_mitarbeiter", { mindestens: "admin" });
+  return data === true;
 }
