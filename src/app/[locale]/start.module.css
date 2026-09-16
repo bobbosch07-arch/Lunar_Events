@@ -144,6 +144,12 @@
     margin-top: -72px;
     padding-top: 72px;
   }
+  /* Die Kopfzeile trägt das Logo schon, eine Handbreit darüber. Doppelt
+     hätte es auf dem Handy den ersten Bildschirm gefüllt, und vom
+     Weiter-unten wäre nichts mehr zu sehen gewesen. */
+  .heroLogo {
+    display: none;
+  }
   .kopfzeile {
     flex-direction: column;
     align-items: flex-start;
@@ -152,5 +158,14 @@
   .marke {
     grid-template-columns: 1fr;
     gap: var(--space-8);
+  }
+}
+
+/* Untereinander gleich breit: Zwei Knöpfe, die je nach Beschriftung
+   verschieden weit reichen, sehen nach Zufall aus. */
+@media (max-width: 520px) {
+  .heroKnoepfe {
+    flex-direction: column;
+    align-self: stretch;
   }
 }

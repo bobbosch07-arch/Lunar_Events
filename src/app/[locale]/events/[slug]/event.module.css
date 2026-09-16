@@ -25,15 +25,20 @@
   object-fit: cover;
 }
 
+/* Unten traegt der Verlauf die Schrift des Heros, oben die Kopfzeile:
+   Sie liegt durchsichtig auf dem Foto, und auf einem hellen Motiv war
+   "Meine Tickets" weiss auf hellgrau kaum zu lesen. */
 .heroSchleier {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(7, 17, 31, 0.94) 0%,
-    rgba(7, 17, 31, 0.62) 40%,
-    rgba(7, 17, 31, 0.2) 100%
-  );
+  background:
+    linear-gradient(180deg, rgba(7, 17, 31, 0.6) 0%, transparent 160px),
+    linear-gradient(
+      0deg,
+      rgba(7, 17, 31, 0.94) 0%,
+      rgba(7, 17, 31, 0.62) 40%,
+      rgba(7, 17, 31, 0.2) 100%
+    );
 }
 
 .heroInhalt {
@@ -105,11 +110,15 @@
   gap: var(--space-5);
 }
 
+/* Absätze trennt eine Leerzeile, einfache Umbrüche aus dem Backoffice
+   bleiben stehen — sonst wird aus "Samstag, 14.11. | Darmstadt" in
+   eigener Zeile ein Satzfetzen mitten im Fließtext. */
 .absatz {
   font-size: var(--fs-body-l);
   line-height: var(--lh-weit);
   color: var(--auf-grund-2);
   max-width: var(--breite-text);
+  white-space: pre-line;
 }
 
 .infoliste {

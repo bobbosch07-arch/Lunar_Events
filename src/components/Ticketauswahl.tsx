@@ -241,7 +241,9 @@ export function Ticketauswahl(props: Props) {
         })}
       </div>
 
-      <div className={css.summe}>
+      {/* Schwebt erst, wenn es etwas zu bezahlen gibt. Leer stünde sie nur
+          im Weg, über den Phasen, die man gerade lesen will. */}
+      <div className={css.summe} data-leer={anzahl === 0 ? "" : undefined}>
         <div className={css.summeLinks}>
           {anzahl > 0 ? (
             <>
@@ -259,7 +261,8 @@ export function Ticketauswahl(props: Props) {
         </div>
 
         <Knopf onClick={weiter} disabled={anzahl === 0} groesse="gross">
-          {t("weiter")}
+          <span className={css.weiterLang}>{t("weiter")}</span>
+          <span className={css.weiterKurz}>{t("weiterKurz")}</span>
         </Knopf>
       </div>
     </div>

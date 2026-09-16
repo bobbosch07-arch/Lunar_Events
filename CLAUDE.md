@@ -78,6 +78,29 @@ Seite über `preview_start` mit `url` öffnen.
   echt knapp sind (`KNAPP_AB` in `src/lib/typen.ts`). Ausverkaufte Phasen
   bleiben sichtbar — das ist Transparenz, nicht Druck.
 
+### Handy (geprüft bei 375 px)
+
+Die meisten Gäste kaufen am Telefon. Was dort anders ist, ist Absicht:
+
+- **Kein großes Logo im Hero der Startseite** (unter 860 px). Die
+  Kopfzeile trägt es eine Handbreit darüber; doppelt füllte es den ersten
+  Bildschirm, und vom Weiter-unten war nichts zu sehen.
+- **Die Summenleiste der Ticketauswahl schwebt erst mit Auswahl**
+  (`data-leer`, auf allen Breiten). Auf dem Handy ist sie eine
+  Leiste über die volle Breite, Summe und „Zur Kasse" in einer Zeile.
+- **Die Bestell-Zusammenfassung der Kasse ist eingeklappt** (unter
+  900 px): eine Zeile „Deine Bestellung" mit der Summe, antippen klappt
+  auf. Aufgeklappt begann das Formular erst am unteren Bildschirmrand.
+- Die Schrittleiste zeigt auf dem Handy nur beim aktuellen Schritt den
+  Namen; die anderen bleiben für Screenreader lesbar.
+- Der Hero der Eventseite hat **oben** einen dunklen Verlauf: Die Kopfzeile
+  liegt durchsichtig auf dem Foto, und auf hellen Motiven war sie sonst
+  kaum lesbar.
+- **Lokal testen zählt in die echte Auswertung**, weil `.env.local` an der
+  Live-Datenbank hängt. Vor dem Durchklicken im Browser `sendBeacon`
+  stummschalten — auf einer Seite ohne Zähler (Startseite), dann per Klick
+  weiter, damit es beim Seitenwechsel bestehen bleibt.
+
 ## Daten
 
 - **Alle Texte liegen in `src/messages/{de,en}.json`.** Keine Zeichenkette

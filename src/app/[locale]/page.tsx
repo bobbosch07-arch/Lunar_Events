@@ -37,7 +37,9 @@ export default async function Startseite({
           <div className={css.heroGrund} aria-hidden="true" />
           <div className={css.heroSchleier} aria-hidden="true" />
           <div className={`seitenbreite ${css.heroInhalt}`}>
-            <Logo ton="ivory" hoehe={128} prioritaet />
+            <div className={css.heroLogo}>
+              <Logo ton="ivory" hoehe={128} prioritaet />
+            </div>
             <h1 className={css.heroTitel}>{t("heroTitel")}</h1>
             <p className={css.heroText}>{t("heroText")}</p>
             <div className={css.heroKnoepfe}>
@@ -69,29 +71,34 @@ export default async function Startseite({
           </section>
         ) : null}
 
-        <section className="abschnitt" data-grund="gedaempft">
-          <div className="seitenbreite">
-            <div className={css.kopfzeile}>
-              <div className={css.kopfLinks}>
-                <span className="eyebrow">{t("kommendEyebrow")}</span>
-                <h2>{t("kommendTitel")}</h2>
+        {/* Stehen alle kommenden Events schon oben, bleibt der Kalender weg.
+            Sonst stünde direkt unter "Die nächsten Nächte" der Satz, dass
+            keine Events angekündigt sind. */}
+        {uebrig.length > 0 || featured.length === 0 ? (
+          <section className="abschnitt" data-grund="gedaempft">
+            <div className="seitenbreite">
+              <div className={css.kopfzeile}>
+                <div className={css.kopfLinks}>
+                  <span className="eyebrow">{t("kommendEyebrow")}</span>
+                  <h2>{t("kommendTitel")}</h2>
+                </div>
+                <Knopf href="/events" stil="linie" groesse="klein">
+                  {t("alleEvents")}
+                </Knopf>
               </div>
-              <Knopf href="/events" stil="linie" groesse="klein">
-                {t("alleEvents")}
-              </Knopf>
-            </div>
 
-            {uebrig.length > 0 ? (
-              <div className={css.raster}>
-                {uebrig.map((e) => (
-                  <EventKarte key={e.id} event={e} />
-                ))}
-              </div>
-            ) : (
-              <p className={css.leer}>{t("kommendLeer")}</p>
-            )}
-          </div>
-        </section>
+              {uebrig.length > 0 ? (
+                <div className={css.raster}>
+                  {uebrig.map((e) => (
+                    <EventKarte key={e.id} event={e} />
+                  ))}
+                </div>
+              ) : (
+                <p className={css.leer}>{t("kommendLeer")}</p>
+              )}
+            </div>
+          </section>
+        ) : null}
 
         <section className="abschnitt">
           <div className="seitenbreite">

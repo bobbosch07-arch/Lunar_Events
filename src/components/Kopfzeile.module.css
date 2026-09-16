@@ -181,7 +181,9 @@
   /* Der Weg zu den eigenen Tickets bleibt sichtbar — er darf nie hinter
      das Menue rutschen (Briefing 20). */
   .rechts .ticketPunkt {
-    display: block;
+    display: flex;
+    align-items: center;
+    min-height: var(--tap);
     font-size: var(--fs-caption);
   }
   .menuKnopf {

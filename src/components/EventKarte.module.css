@@ -24,12 +24,15 @@
 }
 
 /* Leichter Goldschimmer ueber dem Motiv haelt Karten mit und ohne Foto
-   in derselben Welt. */
+   in derselben Welt. Der Schatten am Fuss traegt das Datum: Auf einem
+   hellen Foto verschwand es sonst, der Textschatten allein reichte nicht. */
 .bildfeld::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(80% 60% at 70% 22%, rgba(198, 161, 91, 0.2), transparent 62%);
+  background:
+    linear-gradient(0deg, rgba(7, 17, 31, 0.55) 0%, transparent 38%),
+    radial-gradient(80% 60% at 70% 22%, rgba(198, 161, 91, 0.2), transparent 62%);
   pointer-events: none;
 }
 

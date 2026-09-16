@@ -188,6 +188,53 @@
   background: var(--ivory-100);
 }
 
+.zfInhalt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+/* Der Klappknopf existiert nur auf schmalen Schirmen, siehe unten. */
+.zfKnopf {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  text-align: left;
+}
+
+.zfKnopfName {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.zfPfeil {
+  flex: none;
+  transition: transform var(--dur-normal) var(--ease);
+}
+
+.zusammenfassung[data-offen] .zfPfeil {
+  transform: rotate(180deg);
+}
+
+.zfKnopfSumme {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  font-variant-numeric: tabular-nums;
+}
+
 .zfEvent {
   display: flex;
   flex-direction: column;
@@ -378,9 +425,22 @@
     grid-template-columns: 1fr;
     gap: var(--space-8);
   }
+  /* Über dem Formular und eingeklappt: Aufgeklappt war sie gut 400 px hoch,
+     und "Deine Daten" begann erst am unteren Bildschirmrand. Die Summe
+     steht im Klappknopf, das Briefing verlangt sie deutlich. */
   .zusammenfassung {
     position: static;
     order: -1;
+    padding: var(--space-2) var(--space-5);
+  }
+  .zusammenfassung[data-offen] {
+    padding-bottom: var(--space-5);
+  }
+  .zfKnopf {
+    display: flex;
+  }
+  .zusammenfassung:not([data-offen]) .zfInhalt {
+    display: none;
   }
   .felder {
     grid-template-columns: 1fr;
@@ -393,6 +453,50 @@
   }
   .schritte {
     gap: var(--space-4);
+  }
+}
+
+@media (max-width: 600px) {
+  .inhalt {
+    padding-block: var(--space-6) var(--space-16);
+  }
+  .spalten {
+    gap: var(--space-6);
+  }
+  .haupt {
+    gap: var(--space-6);
+  }
+  /* Vier Namen passten nicht in eine Zeile, der vierte brach um. Der
+     aktuelle Schritt behält seinen Namen, die anderen zeigen nur die
+     Nummer — vorgelesen werden trotzdem alle. */
+  .schritte {
+    flex-wrap: nowrap;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+  }
+  .schritt:not([aria-current]) .schrittName {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+  /* Untereinander und gleich breit, der Weg nach vorn zuerst. */
+  .knoepfe {
+    flex-direction: column;
+  }
+  /* Der Hinweis zur Zahlart rutscht unter den Namen, statt sich
+     daneben auf drei Zeilen zu quetschen. */
+  .zahlart {
+    display: grid;
+    grid-template-columns: 20px 1fr;
+    gap: 2px var(--space-4);
+  }
+  .zahlartNotiz {
+    grid-column: 2;
+    margin-left: 0;
   }
 }
 

@@ -255,6 +255,17 @@
   box-shadow: var(--schatten-hoch);
 }
 
+/* Ohne Auswahl steht die Leiste still am Ende der Liste — dort findet
+   man sie, wenn man fertig gelesen hat. */
+.summe[data-leer] {
+  position: static;
+  box-shadow: none;
+}
+
+.weiterKurz {
+  display: none;
+}
+
 .summeLinks {
   display: flex;
   flex-direction: column;
@@ -302,12 +313,37 @@
     justify-content: space-between;
     width: 100%;
   }
+  /* Auf dem Handy eine Leiste über die volle Breite, Summe und Knopf in
+     einer Zeile. Als Karte mit Summe über dem Knopf belegte sie ein
+     Sechstel des Bildschirms. */
   .summe {
-    flex-direction: column;
-    align-items: stretch;
+    flex-wrap: nowrap;
+    gap: var(--space-4);
+    margin-inline: calc(var(--rand-seite) * -1);
+    padding: var(--space-3) var(--rand-seite);
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    border-inline: 0;
+    border-radius: 0;
   }
-  .summe > :global(a),
+  .summeLinks {
+    min-width: 0;
+  }
+  .summeLabel {
+    display: none;
+  }
+  .summeDetail,
+  .leerHinweis {
+    font-size: var(--fs-caption);
+    line-height: var(--lh-eng);
+  }
   .summe > :global(button) {
-    width: 100%;
+    flex: none;
+    padding: 14px var(--space-6);
+  }
+  .weiterLang {
+    display: none;
+  }
+  .weiterKurz {
+    display: inline;
   }
 }

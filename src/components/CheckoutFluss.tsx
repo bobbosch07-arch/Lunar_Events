@@ -80,6 +80,7 @@ export function CheckoutFluss(props: Props) {
   const [stoerung, setStoerung] = useState<string | null>(null);
   const [fastlane, setFastlane] = useState(false);
   const [angebotOffen, setAngebotOffen] = useState(false);
+  const [zfOffen, setZfOffen] = useState(false);
   const [bestellung, setBestellung] = useState<{
     id: string;
     nummer: string;
@@ -256,9 +257,13 @@ export function CheckoutFluss(props: Props) {
           const klasse =
             nr === schritt ? css.schrittAktiv : nr < schritt ? css.schrittFertig : "";
           return (
-            <li key={name} className={`${css.schritt} ${klasse}`}>
+            <li
+              key={name}
+              className={`${css.schritt} ${klasse}`}
+              aria-current={nr === schritt ? "step" : undefined}
+            >
               <span className={css.schrittNr}>{String(nr).padStart(2, "0")}</span>
-              <span>{name}</span>
+              <span className={css.schrittName}>{name}</span>
             </li>
           );
         })}
@@ -505,67 +510,88 @@ export function CheckoutFluss(props: Props) {
         ) : null}
       </div>
 
-        <aside className={css.zusammenfassung}>
-        <div className={css.zfEvent}>
-          <span className={css.zfTitel}>{props.eventTitel}</span>
-          <span className={css.zfDetail}>{props.eventWann}</span>
-          <span className={css.zfDetail}>{props.eventOrt}</span>
-        </div>
+        <aside className={css.zusammenfassung} data-offen={zfOffen ? "" : undefined}>
+          {/* Nur auf dem Handy zu sehen: Dort steht die Zusammenfassung über
+              dem Formular und ist eingeklappt, damit das Formular im ersten
+              Bildschirm beginnt. Die Summe bleibt auch eingeklappt stehen. */}
+          <button
+            type="button"
+            className={css.zfKnopf}
+            aria-expanded={zfOffen}
+            aria-controls="bestellung-details"
+            onClick={() => setZfOffen((o) => !o)}
+          >
+            <span className={css.zfKnopfName}>
+              {t("uebersicht")}
+              <svg
+                className={css.zfPfeil}
+                width="12"
+                height="12"
+                viewBox="0 0 12 12"
+                aria-hidden="true"
+              >
+                <path d="M2 4.5 6 8.5 10 4.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
+              </svg>
+            </span>
+            <span className={css.zfKnopfSumme}>{preisText(gesamtEndCent, locale)}</span>
+          </button>
 
-        <div className={css.zfPosten}>
-          {props.posten.map((p) => (
-            <div key={p.phase_id} className={css.zfZeile}>
-              <span className={css.zfName}>
-                {p.phase_name} <span className={css.zfMenge}>× {p.menge}</span>
-              </span>
-              <span className={css.zfWert}>
-                {preisText(p.einzelpreis_cent * p.menge, locale)}
-              </span>
+          <div id="bestellung-details" className={css.zfInhalt}>
+            <div className={css.zfEvent}>
+              <span className={css.zfTitel}>{props.eventTitel}</span>
+              <span className={css.zfDetail}>{props.eventWann}</span>
+              <span className={css.zfDetail}>{props.eventOrt}</span>
             </div>
-          ))}
-        </div>
 
-        <div className={css.zfTrenner} />
+            <div className={css.zfPosten}>
+              {props.posten.map((p) => (
+                <div key={p.phase_id} className={css.zfZeile}>
+                  <span className={css.zfName}>
+                    {p.phase_name} <span className={css.zfMenge}>× {p.menge}</span>
+                  </span>
+                  <span className={css.zfWert}>
+                    {preisText(p.einzelpreis_cent * p.menge, locale)}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-        <div className={css.zfPosten}>
-          <div className={css.zfZeile}>
-            <span className={css.zfName}>{t("zwischensumme")}</span>
-            <span className={css.zfWert}>{preisText(zwischensumme, locale)}</span>
+            <div className={css.zfTrenner} />
+
+            <div className={css.zfPosten}>
+              <div className={css.zfZeile}>
+                <span className={css.zfName}>{t("zwischensumme")}</span>
+                <span className={css.zfWert}>{preisText(zwischensumme, locale)}</span>
+              </div>
+              {gebuehren > 0 ? (
+                <div className={css.zfZeile}>
+                  <span className={css.zfName}>{t("gebuehr")}</span>
+                  <span className={css.zfWert}>{preisText(gebuehren, locale)}</span>
+                </div>
+              ) : null}
+              {fastlaneCent > 0 ? (
+                <div className={css.zfZeile}>
+                  <span className={css.zfName}>
+                    Fast Lane <span className={css.zfMenge}>× {anzahl}</span>
+                  </span>
+                  <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
+                </div>
+              ) : null}
+              {rabattCent > 0 ? (
+                <div className={css.zfZeile}>
+                  <span className={css.zfName}>Vorkasse-Rabatt</span>
+                  <span className={css.zfWert}>− {preisText(rabattCent, locale)}</span>
+                </div>
+              ) : null}
+            </div>
+
+            <div className={css.zfTrenner} />
+
+            <div className={css.zfSumme}>
+              <span className={css.zfSummeLabel}>{t("gesamt")}</span>
+              <span className={css.zfSummeWert}>{preisText(gesamtEndCent, locale)}</span>
+            </div>
           </div>
-          {gebuehren > 0 ? (
-            <div className={css.zfZeile}>
-              <span className={css.zfName}>{t("gebuehr")}</span>
-              <span className={css.zfWert}>{preisText(gebuehren, locale)}</span>
-            </div>
-          ) : null}
-          {fastlaneCent > 0 ? (
-            <div className={css.zfZeile}>
-              <span className={css.zfName}>
-                Fast Lane <span className={css.zfMenge}>× {anzahl}</span>
-              </span>
-              <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
-            </div>
-          ) : null}
-          {rabattCent > 0 ? (
-            <div className={css.zfZeile}>
-              <span className={css.zfName}>Vorkasse-Rabatt</span>
-              <span className={css.zfWert}>− {preisText(rabattCent, locale)}</span>
-            </div>
-          ) : null}
-        </div>
-
-        <div className={css.zfTrenner} />
-
-        <div className={css.zfSumme}>
-          <span className={css.zfSummeLabel}>{t("gesamt")}</span>
-          <span className={css.zfSummeWert}>{preisText(gesamtEndCent, locale)}</span>
-        </div>
-
-        {schritt === 1 ? (
-          <Link href={`/events/${props.eventSlug}`} className={css.zfAendern}>
-            {t("zurueck")}
-          </Link>
-        ) : null}
         </aside>
       </div>
     </>
