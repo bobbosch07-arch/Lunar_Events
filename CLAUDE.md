@@ -38,6 +38,7 @@ node scripts/presale-testen.mjs     # Presale, Einladungen, Abmelden, räumt sel
 node scripts/warteliste-testen.mjs  # Warteliste: Reihenfolge, Frist, Freigeben, räumt selbst auf
 node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/Bar/Einlass), räumt selbst auf
 node scripts/rollen-testen.mjs      # Rollen und zweiter Faktor, mit echten Einmalcodes
+node scripts/schichtplan-testen.mjs # Schichtplan: einteilen, sehen, ein- und auschecken
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -609,6 +610,38 @@ brauchen — deshalb nur die Zugänge, bei denen es zählt.
 Personal legt weiterhin `scripts/mitarbeiter.mjs` an; die Liste zeigt, wer
 einen zweiten Faktor eingerichtet hat.
 
+### Schichtplan (Migrationen 0023, 0024)
+
+Admins teilen ein (`/backoffice/schichtplan`), alle anderen sehen ihren
+eigenen Plan (`/plan`) — dafür meldet sich das Personal überhaupt an. Je
+Schicht: Rolle, Person, Beginn und Ende, Station, Pause, Notiz.
+
+**Die Rolle steht an der Schicht, nicht nur an der Person:** Wer sonst an der
+Bar steht, kann heute Runner sein. Rechte vergibt der Plan keine — die hängen
+weiter an `mitarbeiter.rolle`.
+
+**Ein- und auschecken macht ein Admin für alle** (Rückfrage 17.09.2026);
+die Zugriffsregeln lassen niemanden sonst schreiben, auch nicht an der
+eigenen Schicht. „Zurücksetzen" räumt einen Fehlgriff weg.
+
+**Stunden: gemessen wird nur, wenn ein- *und* ausgecheckt ist**, sonst gilt
+die geplante Zeit, Pause immer abgezogen (`schicht_stunden`, 0024, und
+`schichtStunden` in `typen.ts` — dieselbe Regel zweimal, einmal für die
+Datenbank, einmal für die Anzeige). Die erste Fassung rechnete vom Einchecken
+bis zum *geplanten* Ende; beim Durchklicken standen dann 148 Stunden im Plan,
+weil jemand Tage vor seiner Schicht eingecheckt wurde.
+
+**„Mein Plan" liest mit dem Dienstschlüssel**, nachdem die Rolle geprüft ist:
+Die eigene Schicht wäre über die Zugriffsregeln sichtbar, das Event dahinter
+aber nicht, solange es ein Entwurf ist — und geplant wird meist vor dem
+Veröffentlichen.
+
+Die Mail („Plan verschicken") enthält die Schichten **und** den Link auf
+„Mein Plan": Dort steht immer der aktuelle Stand, eine Mail von gestern soll
+niemanden in die falsche Schicht schicken. Wer aus dem Team genommen wird,
+behält seine Schicht in der Abrechnung (`schichten.user_id` hängt an
+`auth.users`, nicht an `mitarbeiter`).
+
 ### Anmeldung fürs Team
 
 **Gäste melden sich per Link an, das Team zusätzlich mit Passwort.** Das
@@ -697,6 +730,7 @@ Fertig und geprüft:
 - Warteliste: Bestätigungslink, Angebote mit Frist, Kasse, Freigeben, Backoffice
 - Gästeliste: Backoffice-Reiter, Tickets je Person, Mail/Link, Namensliste im Scanner (offline)
 - Rollen (admin, kasse, einlass, bar, security, runner, toiletten), zweiter Faktor für admin und kasse, Anmelde-Mail
+- Schichtplan: einteilen, Plan per Mail, „Mein Plan“, Ein- und Auschecken, Stunden
 
 Offen:
 

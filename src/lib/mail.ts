@@ -634,3 +634,82 @@ Lunar Events`;
 
   return versende({ an: daten.an, betreff: `Anmeldung im Backoffice: ${daten.name}`, html, text });
 }
+
+/* ------------------------------------------------------------------ */
+
+export type SchichtplanMail = {
+  an: string;
+  name: string;
+  eventTitel: string;
+  wann: string;
+  ort: string;
+  schichten: Array<{
+    rolle: string;
+    station: string | null;
+    von: string;
+    bis: string;
+    pauseMin: number;
+    stunden: number;
+    notiz: string | null;
+  }>;
+  planLink: string;
+};
+
+/** Der eigene Schichtplan für ein Event. */
+export async function sendeSchichtplan(daten: SchichtplanMail): Promise<boolean> {
+  const anrede = daten.name ? `Hallo ${daten.name.split(" ")[0]},` : "Hallo,";
+  const zeilen = daten.schichten
+    .map(
+      (s) => `<tr><td style="padding:14px 18px;border-bottom:1px solid #e4e0d7;font-size:15px;">
+<strong>${maskiere(s.rolle)}</strong>${s.station ? ` · ${maskiere(s.station)}` : ""}<br />
+${s.von} – ${s.bis} Uhr · ${s.stunden.toString().replace(".", ",")} Std${s.pauseMin > 0 ? ` (inkl. ${s.pauseMin} Min Pause)` : ""}
+${s.notiz ? `<br /><span style="color:#5e6268;">${maskiere(s.notiz)}</span>` : ""}
+</td></tr>`,
+    )
+    .join("");
+
+  const html = huelle(`
+${kopfBalken("Dein Plan")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 24px;">hier ist deine Einteilung für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}${daten.ort ? `, ${maskiere(daten.ort)}` : ""}).</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+${zeilen}
+</table>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:8px;">
+<a href="${daten.planLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Mein Plan</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Unter „Mein Plan" steht immer der aktuelle Stand — wenn sich etwas ändert, gilt das dort.
+Passt dir eine Schicht nicht, meld dich einfach.
+</p>
+</td></tr>`);
+
+  const text = `${anrede}
+
+hier ist deine Einteilung für ${daten.eventTitel} (${daten.wann}${daten.ort ? `, ${daten.ort}` : ""}).
+
+${daten.schichten
+  .map(
+    (s) =>
+      `${s.rolle}${s.station ? ` · ${s.station}` : ""}\n${s.von} – ${s.bis} Uhr · ${s.stunden} Std${s.pauseMin > 0 ? ` (inkl. ${s.pauseMin} Min Pause)` : ""}${s.notiz ? `\n${s.notiz}` : ""}`,
+  )
+  .join("\n\n")}
+
+Mein Plan: ${daten.planLink}
+
+Dort steht immer der aktuelle Stand.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `Dein Plan: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}

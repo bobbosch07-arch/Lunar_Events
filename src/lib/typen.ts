@@ -1,3 +1,5 @@
+import type { Rolle } from "./rollen";
+
 /**
  * Die Begriffe der Anwendung. Diese Typen sind die Wahrheit — die
  * Datenbank-Migrationen bilden genau sie ab, nicht umgekehrt.
@@ -532,4 +534,57 @@ export function verkaufsstand(
       .find((p) => p.art === "standard" && zustaende.get(p.id)?.art === "folgt") ?? null;
 
   return { anteil, rest: phase.kontingent - phase.verkauft, naechste };
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Eine Schicht (Migration 0023). Die Rolle steht an der Schicht, nicht nur
+ * an der Person: Wer sonst an der Bar steht, kann heute Runner sein. Rechte
+ * vergibt ein Schichtplan keine — die hängen an `mitarbeiter.rolle`.
+ */
+export type Schicht = {
+  id: string;
+  event_id: string;
+  user_id: string;
+  rolle: Rolle;
+  station: string | null;
+  beginn: string;
+  ende: string;
+  pause_min: number;
+  notiz: string | null;
+  eingecheckt_am: string | null;
+  ausgecheckt_am: string | null;
+  plan_gesendet_am: string | null;
+};
+
+/**
+ * Stunden einer Schicht — dieselbe Rechnung wie `schicht_stunden()` in der
+ * Datenbank (0024): Gemessen wird nur, wenn ein- **und** ausgecheckt ist,
+ * sonst gilt die geplante Zeit. Sonst stünden 148 Stunden im Plan, wenn
+ * jemand versehentlich Tage zu früh eingecheckt wird. Pause geht immer ab,
+ * nie unter null.
+ */
+export function schichtStunden(s: {
+  beginn: string;
+  ende: string;
+  pause_min: number;
+  eingecheckt_am?: string | null;
+  ausgecheckt_am?: string | null;
+}): number {
+  const gemessen = Boolean(s.eingecheckt_am && s.ausgecheckt_am);
+  const von = new Date(gemessen ? s.eingecheckt_am! : s.beginn).getTime();
+  const bis = new Date(gemessen ? s.ausgecheckt_am! : s.ende).getTime();
+  const stunden = (bis - von) / 3_600_000 - s.pause_min / 60;
+  return Math.max(0, Math.round(stunden * 100) / 100);
+}
+
+/** Geplant, angefangen oder fertig — für die Anzeige. */
+export function schichtStand(s: {
+  eingecheckt_am?: string | null;
+  ausgecheckt_am?: string | null;
+}): "geplant" | "laeuft" | "fertig" {
+  if (s.ausgecheckt_am) return "fertig";
+  if (s.eingecheckt_am) return "laeuft";
+  return "geplant";
 }

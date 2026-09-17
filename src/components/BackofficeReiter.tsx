@@ -11,6 +11,7 @@ const ZIELE = [
   { href: "/backoffice/rabattcodes", name: "Rabattcodes" },
   { href: "/backoffice/promoter", name: "Promoter" },
   { href: "/backoffice/gaesteliste", name: "Gästeliste" },
+  { href: "/backoffice/schichtplan", name: "Schichtplan" },
   { href: "/backoffice/vip", name: "VIP" },
   { href: "/backoffice/auswertung", name: "Auswertung" },
   { href: "/backoffice/hochrechnung", name: "Hochrechnung" },
@@ -48,6 +49,7 @@ export function BackofficeReiter() {
           </Link>
         );
       })}
+      <Link href="/plan">Mein Plan</Link>
       <Link href="/einlass">Einlass</Link>
       <Link href="/">Zur Website</Link>
     </nav>
