@@ -347,3 +347,117 @@
     display: inline;
   }
 }
+
+/* ---------- Presale und Verkaufsstart ---------- */
+
+/* Zugang freigeschaltet: Haken UND Satz, nie nur Farbe. */
+.presaleZugang {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  padding: 10px 14px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
+  background: var(--grund);
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund);
+}
+
+.presaleHaken {
+  color: var(--success);
+  font-weight: var(--fw-bold);
+}
+
+/* Statt der Summenleiste: Wann es losgeht. Die feine Goldkante markiert den
+   Presale als etwas Besonderes — Schmuck, keine Fläche. */
+.presale {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-top: var(--space-6);
+  padding: var(--space-5) var(--space-6);
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+}
+
+.presaleTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund);
+}
+
+.presaleText {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--auf-grund-2);
+  max-width: 56ch;
+}
+
+.presaleFrage {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+  text-decoration: underline;
+  text-decoration-color: var(--border-gold);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.presaleForm {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 420px;
+  margin-top: var(--space-2);
+}
+
+.presaleBeschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund-2);
+}
+
+.presaleReihe {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.presaleEingabe {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 12px 14px;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-md);
+  background: var(--grund);
+  color: var(--auf-grund);
+  font-size: var(--fs-body);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.presaleEingabe:focus {
+  border-color: var(--auf-grund);
+  outline: 2px solid var(--gold-400);
+  outline-offset: 1px;
+}
+
+.presaleFehler {
+  font-size: var(--fs-body-s);
+  color: var(--error);
+}

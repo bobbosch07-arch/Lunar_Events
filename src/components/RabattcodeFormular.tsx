@@ -62,8 +62,9 @@ export function RabattcodeFormular({
     setFehler(null);
     setErfolg(null);
 
-    const wert =
-      stand.art === "prozent" ? Number(stand.wertText.trim()) : centAus(stand.wertText);
+    // Leer heißt 0 — erlaubt, wenn der Code nur den Presale öffnet.
+    const wertText = stand.wertText.trim() === "" ? "0" : stand.wertText;
+    const wert = stand.art === "prozent" ? Number(wertText.trim()) : centAus(wertText);
     if (!Number.isFinite(wert)) {
       setFehler("Der Rabatt ist keine Zahl.");
       return;
@@ -86,6 +87,7 @@ export function RabattcodeFormular({
         aktiv: stand.aktiv,
         notiz: stand.notiz || null,
         promoter_id: stand.promoterId || null,
+        oeffnet_presale: stand.oeffnetPresale,
       });
 
       if (!antwort.ok) {
@@ -244,6 +246,20 @@ export function RabattcodeFormular({
             Wirkt nur auf den Ticketpreis. Servicegebühr und Fast Lane zahlt der
             Gast voll. Ein Betrag über dem Ticketpreis macht das Ticket kostenlos,
             nie negativ.
+          </span>
+          <label className={css.schalter}>
+            <input
+              type="checkbox"
+              checked={stand.oeffnetPresale}
+              onChange={(e) => setze("oeffnetPresale", e.target.checked)}
+            />
+            Öffnet den Presale
+          </label>
+          <span className={css.hinweis}>
+            Wer den Code hat, kann schon im Presale kaufen (Zeiten stehen am Event).
+            Der Rabatt darf dann auch leer bleiben. Mit „Höchstens so viele Tickets“
+            wird daraus ein Presale-Kontingent, mit dem Link zum Teilen ein
+            Newsletter-Link.
           </span>
         </section>
 

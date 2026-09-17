@@ -43,6 +43,8 @@ function vorlage(): EventStand {
     fastlaneKontingent: "50",
     fastlaneBeschreibung: "",
     fastlaneVerkauft: 0,
+    presaleAb: "",
+    verkaufAb: "",
     phasen: [
       { ...LEERE_PHASE, name: "Early Bird", preisEuro: "29,00", kontingent: "100" },
       { ...LEERE_PHASE, name: "Standard", preisEuro: "39,00" },

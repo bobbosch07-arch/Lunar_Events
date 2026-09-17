@@ -52,6 +52,10 @@ type Props = {
   startCode: { text: string; vorschau: CodeVorschau } | null;
   /** Kürzel eines Promoters aus dem Link — nur für die Zuordnung. */
   promo: string | null;
+  /** Presale über eine persönliche Einladung: nur mit dieser Adresse. */
+  einladung: { token: string; email: string } | null;
+  /** Der Code, der den Presale öffnet — er darf nicht herausfliegen. */
+  presaleCode: string | null;
 };
 
 type GueltigerCode = Extract<CodeVorschau, { ergebnis: "ok" }>;
@@ -81,7 +85,9 @@ export function CheckoutFluss(props: Props) {
           ? "vorkasse"
           : "paypal",
   );
-  const [formular, setFormular] = useState<Formular>(LEER);
+  const [formular, setFormular] = useState<Formular>(
+    props.einladung ? { ...LEER, email: props.einladung.email } : LEER,
+  );
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
   const [agb, setAgb] = useState(false);
   const [widerruf, setWiderruf] = useState(false);
@@ -112,6 +118,16 @@ export function CheckoutFluss(props: Props) {
   );
   const [codePrueft, setCodePrueft] = useState(false);
   const codeFeld = useRef<HTMLInputElement>(null);
+  // Nur nach einem Klick auf "Rabattcode?" fokussieren — nicht, wenn das Feld
+  // wegen eines ungültigen Codes aus dem Link schon offen ist: Das öffnete
+  // auf dem Handy ungefragt die Tastatur.
+  const codeFokus = useRef(false);
+  useEffect(() => {
+    if (codeOffen && codeFokus.current) {
+      codeFokus.current = false;
+      codeFeld.current?.focus();
+    }
+  }, [codeOffen]);
 
   const { zwischensumme, gebuehren, gesamt, anzahl } = useMemo(() => {
     let zwischensumme = 0;
@@ -267,9 +283,24 @@ export function CheckoutFluss(props: Props) {
       fastlane: fastlane && angebot ? anzahl : 0,
       code: code?.code ?? null,
       promo: props.promo,
+      einladung: props.einladung?.token ?? null,
     });
 
     setLaeuft(false);
+
+    if (
+      !ergebnis.ok &&
+      ["presale_zugang", "presale_adresse", "verkauf_noch_nicht"].includes(ergebnis.fehler)
+    ) {
+      setStoerung(
+        ergebnis.fehler === "presale_adresse"
+          ? t("presaleAndereAdresse")
+          : ergebnis.fehler === "verkauf_noch_nicht"
+            ? t("verkaufNochNicht")
+            : t("presaleZugangFehlt"),
+      );
+      return;
+    }
 
     if (!ergebnis.ok && ergebnis.fehler === "code") {
       // Wie bei Fast Lane: Am Code soll der Kauf nicht scheitern. Er fliegt
@@ -449,7 +480,10 @@ export function CheckoutFluss(props: Props) {
                 </span>
                 <span className={css.codeText}>
                   <span>
-                    <strong>{code.code}</strong> · − {preisText(code.rabatt_cent, locale)}
+                    <strong>{code.code}</strong> ·{" "}
+                    {code.rabatt_cent === 0 && code.oeffnet_presale
+                      ? t("presaleZugang")
+                      : `− ${preisText(code.rabatt_cent, locale)}`}
                   </span>
                   {code.tickets < code.tickets_gesamt ? (
                     <span className={css.codeZusatz}>
@@ -460,9 +494,13 @@ export function CheckoutFluss(props: Props) {
                     </span>
                   ) : null}
                 </span>
-                <button type="button" className={css.zfAendern} onClick={entferneCode}>
-                  {t("code.entfernen")}
-                </button>
+                {/* Öffnet dieser Code den Presale, wäre ohne ihn kein Kauf
+                    möglich — dann gibt es nichts zu entfernen. */}
+                {code.code === props.presaleCode && !props.einladung ? null : (
+                  <button type="button" className={css.zfAendern} onClick={entferneCode}>
+                    {t("code.entfernen")}
+                  </button>
+                )}
               </div>
             ) : codeOffen ? (
               <form className={css.codeForm} onSubmit={einloesen} noValidate>
@@ -503,10 +541,8 @@ export function CheckoutFluss(props: Props) {
                 type="button"
                 className={`${css.zfAendern} ${css.codeFrage}`}
                 onClick={() => {
+                  codeFokus.current = true;
                   setCodeOffen(true);
-                  // Wer aufklappt, will tippen — auf dem Handy sonst ein
-                  // zweites Antippen. Das Feld steht erst nach dem Zeichnen.
-                  requestAnimationFrame(() => codeFeld.current?.focus());
                 }}
               >
                 {t("code.frage")}
@@ -552,7 +588,8 @@ export function CheckoutFluss(props: Props) {
                   beschriftung={t("email")}
                   wert={formular.email}
                   fehler={fehler.email}
-                  hinweis={t("emailHinweis")}
+                  hinweis={props.einladung ? t("einladungAdresse") : t("emailHinweis")}
+                  nurLesen={Boolean(props.einladung)}
                   autoComplete="email"
                   aendern={(v) => setFormular((f) => ({ ...f, email: v }))}
                 />
@@ -568,6 +605,12 @@ export function CheckoutFluss(props: Props) {
                 />
               </div>
             </div>
+
+            {/* Pflicht für spätere Einladungen per Mail (§ 7 Abs. 3 UWG): Der
+                Hinweis muss beim Erheben der Adresse stehen. Der Server
+                vermerkt ihn an der Bestellung (werbehinweis) — wer ihn hier
+                entfernt, muss auch das entfernen. */}
+            <p className={css.hinweis}>{t("werbehinweis")}</p>
 
             {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
 
@@ -849,6 +892,7 @@ function Feld({
   fehler,
   hinweis,
   autoComplete,
+  nurLesen = false,
 }: {
   name: string;
   beschriftung: string;
@@ -858,6 +902,8 @@ function Feld({
   fehler?: string;
   hinweis?: string;
   autoComplete?: string;
+  /** Vorgegeben, z. B. durch eine Presale-Einladung */
+  nurLesen?: boolean;
 }) {
   return (
     <div className={css.feld}>
@@ -872,6 +918,7 @@ function Feld({
         // sinnlos rot.
         spellCheck={false}
         value={wert}
+        readOnly={nurLesen}
         autoComplete={autoComplete}
         aria-invalid={fehler ? true : undefined}
         aria-describedby={fehler ? `${name}-fehler` : hinweis ? `${name}-hinweis` : undefined}

@@ -91,6 +91,8 @@ export function EventFormular({
       fastlane_kontingent:
         stand.fastlaneKontingent.trim() === "" ? null : Number(stand.fastlaneKontingent),
       fastlane_beschreibung: stand.fastlaneBeschreibung || null,
+      presale_ab: stand.presaleAb || null,
+      verkauf_ab: stand.verkaufAb || null,
       phasen: stand.phasen.map((p, i) => ({
         id: p.id,
         name: p.name,
@@ -477,6 +479,45 @@ export function EventFormular({
               </div>
             </>
           ) : null}
+        </div>
+      </section>
+
+      {/* ---------- Verkaufsstart und Presale ---------- */}
+      <section className={css.gruppe}>
+        <h2 className={css.gruppenTitel}>Verkaufsstart und Presale</h2>
+        <div className={css.raster}>
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="presale-ab">
+              Presale ab
+            </label>
+            <input
+              id="presale-ab"
+              type="datetime-local"
+              className={css.eingabe}
+              value={stand.presaleAb}
+              onChange={(e) => setze("presaleAb", e.target.value)}
+            />
+            <span className={css.hinweis}>
+              Leer = kein Presale. Zugang haben Codes mit „Öffnet den Presale“ und
+              frühere Gäste mit Einladung.
+            </span>
+          </div>
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="verkauf-ab">
+              Öffentlicher Verkauf ab
+            </label>
+            <input
+              id="verkauf-ab"
+              type="datetime-local"
+              className={css.eingabe}
+              value={stand.verkaufAb}
+              onChange={(e) => setze("verkaufAb", e.target.value)}
+            />
+            <span className={css.hinweis}>
+              Leer = sofort. Bis dahin sehen Besucher Phasen und Preise, aber
+              kaufen nur mit Presale-Zugang.
+            </span>
+          </div>
         </div>
       </section>
 

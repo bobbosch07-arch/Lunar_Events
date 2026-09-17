@@ -81,7 +81,19 @@
     "folgt": "After {phase}",
     "fomoVerkauft": "{prozent}% sold",
     "fomoDanach": "Then {phase}: {preis}",
-    "fomoLetzte": "Final release"
+    "fomoLetzte": "Final release",
+    "presaleLaeuft": "Presale is on",
+    "oeffentlichAb": "General sale from {datum}",
+    "verkaufAb": "Tickets available from {datum}",
+    "presaleAb": "Presale from {presale}, general sale from {verkauf}",
+    "presaleText": "With a presale code or an invitation you can buy now.",
+    "presaleFrage": "Presale code?",
+    "presaleFeld": "Presale code",
+    "presaleOeffnen": "Unlock",
+    "presaleUnbekannt": "This code doesn’t unlock the presale.",
+    "presaleAufgebraucht": "The presale tickets for this code are gone.",
+    "presaleMitCode": "Presale · unlocked with {code}",
+    "presaleMitEinladung": "Presale · your invitation for {email}"
   },
   "vip": {
     "eyebrow": "VIP Experience",
@@ -159,7 +171,13 @@
       "herausgenommen": "{grund} We’ve removed it — tap Continue again.",
       "kostenlosText": "With your discount code this order is free. No payment needed.",
       "kostenlosKnopf": "Order for free"
-    }
+    },
+    "werbehinweis": "We’ll invite you by email to upcoming Lunar events, for example to presales. You can unsubscribe any time via the link in every email.",
+    "einladungAdresse": "Your presale invitation is valid for this address.",
+    "presaleZugang": "Presale access",
+    "presaleZugangFehlt": "You need presale access. Go back to the event and enter your presale code.",
+    "presaleAndereAdresse": "Your presale invitation only works with the address it was sent to.",
+    "verkaufNochNicht": "Sales haven’t started yet."
   },
   "bestaetigung": {
     "titel": "PURCHASE COMPLETE",
@@ -244,5 +262,13 @@
     "keineZahlen": "No numbers yet. As soon as someone opens your link, you’ll see it here.",
     "hinweis": "Clicks are page views, not people: opening twice counts twice. Tickets count once they’re paid.",
     "geheim": "This link is just for you. Anyone who has it can see your numbers."
+  },
+  "werbung": {
+    "titel": "No more invitations?",
+    "text": "We invite you by email to upcoming Lunar events, for example to presales. One click and you won’t hear about them anymore. Your tickets and ticket emails are not affected.",
+    "knopf": "No more invitations",
+    "erledigt": "Done. You won’t receive any more invitations from us.",
+    "fehler": "That didn’t work. Drop us a line at kontakt@lunar-events.de and we’ll remove you by hand.",
+    "zurueck": "Back to home"
   }
 }

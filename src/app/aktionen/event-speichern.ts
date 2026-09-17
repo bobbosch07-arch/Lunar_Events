@@ -44,6 +44,9 @@ export type EventEingabe = {
   fastlane_preis_cent: number;
   fastlane_kontingent: number | null;
   fastlane_beschreibung: string | null;
+  /** Ortszeit aus dem Formular, "" oder null = nicht gesetzt */
+  presale_ab: string | null;
+  verkauf_ab: string | null;
   phasen: PhasenEingabe[];
 };
 
@@ -65,6 +68,17 @@ export async function speichereEvent(
   if (!slug) return { ok: false, fehler: "Die Adresse (Slug) fehlt." };
   if (!eingabe.titel.trim()) return { ok: false, fehler: "Der Titel fehlt." };
   if (!eingabe.beginn) return { ok: false, fehler: "Der Beginn fehlt." };
+
+  // Presale braucht einen Zeitpunkt, an dem er endet — den öffentlichen
+  // Verkaufsstart. Dieselbe Regel steht in der Tabelle (events_presale_gueltig).
+  const presaleAb = eingabe.presale_ab ? berlinNachUtc(eingabe.presale_ab) : null;
+  const verkaufAb = eingabe.verkauf_ab ? berlinNachUtc(eingabe.verkauf_ab) : null;
+  if (presaleAb && !verkaufAb) {
+    return { ok: false, fehler: "Für den Presale fehlt der öffentliche Verkaufsstart." };
+  }
+  if (presaleAb && verkaufAb && presaleAb >= verkaufAb) {
+    return { ok: false, fehler: "Der Presale muss vor dem öffentlichen Verkauf beginnen." };
+  }
 
   // --- Ort ---
   let ortId = eingabe.ort_id;
@@ -113,6 +127,8 @@ export async function speichereEvent(
     fastlane_preis_cent: Math.max(0, eingabe.fastlane_preis_cent),
     fastlane_kontingent: eingabe.fastlane_kontingent,
     fastlane_beschreibung: eingabe.fastlane_beschreibung?.trim() || null,
+    presale_ab: presaleAb,
+    verkauf_ab: verkaufAb,
     veranstalter: "Lunar Events",
     geaendert_am: new Date().toISOString(),
   };

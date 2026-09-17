@@ -28,6 +28,7 @@ export type RabattcodeEingabe = {
   aktiv: boolean;
   notiz: string | null;
   promoter_id: string | null;
+  oeffnet_presale: boolean;
 };
 
 export type CodeSpeicherErgebnis = { ok: true; id: string } | { ok: false; fehler: string };
@@ -45,8 +46,12 @@ export async function speichereRabattcode(
         "Der Code braucht 3 bis 32 Zeichen: Buchstaben ohne Umlaute, Ziffern, Bindestrich oder Unterstrich.",
     };
   }
-  if (!Number.isInteger(eingabe.wert) || eingabe.wert <= 0) {
-    return { ok: false, fehler: "Der Rabatt muss größer als 0 sein." };
+  if (!Number.isInteger(eingabe.wert) || eingabe.wert < 0) {
+    return { ok: false, fehler: "Der Rabatt ist keine gültige Zahl." };
+  }
+  // Ein Code ohne Rabatt täte nichts — außer er öffnet den Presale.
+  if (eingabe.wert === 0 && !eingabe.oeffnet_presale) {
+    return { ok: false, fehler: "Der Rabatt muss größer als 0 sein — oder der Code öffnet den Presale." };
   }
   if (eingabe.art === "prozent" && eingabe.wert > 100) {
     return { ok: false, fehler: "Mehr als 100 % geht nicht." };
@@ -79,6 +84,7 @@ export async function speichereRabattcode(
     aktiv: eingabe.aktiv,
     notiz: eingabe.notiz?.trim() || null,
     promoter_id: eingabe.promoter_id,
+    oeffnet_presale: eingabe.oeffnet_presale,
   };
 
   const db = await serverClient();

@@ -465,6 +465,7 @@ export type EventWahl = {
 
 const CODE_SPALTEN = `id, code, art, wert, event_id, phasen_ids, gueltig_ab, gueltig_bis,
   max_tickets, eingeloest, einmal_pro_person, aktiv, notiz, erstellt_am, promoter_id,
+  oeffnet_presale,
   event:events(titel, slug), promoter:promoter(name)`;
 
 function alsCodeZeile(
@@ -490,6 +491,7 @@ function alsCodeZeile(
     notiz: (z.notiz as string | null) ?? null,
     erstellt_am: z.erstellt_am as string,
     promoter_id: (z.promoter_id as string | null) ?? null,
+    oeffnet_presale: Boolean(z.oeffnet_presale),
     eventTitel: event?.titel ?? null,
     eventSlug: event?.slug ?? null,
     promoterName: promoter?.name ?? null,

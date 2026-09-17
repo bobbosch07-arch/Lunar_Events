@@ -86,7 +86,12 @@ async function Inhalt({ locale }: { locale: string }) {
                       ) : null}
                       {c.notiz ? <div className={css.nebensache}>{c.notiz}</div> : null}
                     </td>
-                    <td>{rabattText(c.art, c.wert)}</td>
+                    <td>
+                      {rabattText(c.art, c.wert)}
+                      {c.oeffnet_presale && c.wert > 0 ? (
+                        <div className={css.nebensache}>öffnet Presale</div>
+                      ) : null}
+                    </td>
                     <td>
                       {c.eventTitel ?? "Alle Events"}
                       {c.phasen_ids ? (

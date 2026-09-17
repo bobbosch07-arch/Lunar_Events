@@ -7,7 +7,10 @@ import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { EventFormular } from "@/components/EventFormular";
 import type { EventStand } from "@/lib/event-stand";
 import { holeOrte } from "@/app/aktionen/event-speichern";
-import { serverClient } from "@/lib/supabase/server";
+import { dienstClient, serverClient } from "@/lib/supabase/server";
+import { PresaleEinladungen, type EinladungStand } from "@/components/PresaleEinladungen";
+import { darfCodesAendern } from "@/lib/backoffice";
+import { verkaufsstartKommt } from "@/lib/typen";
 import { utcNachBerlinFeld } from "@/lib/zeit";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
@@ -46,7 +49,7 @@ async function Inhalt({ slug }: { slug: string }) {
        beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus,
        mindestalter, dresscode, abendkasse, abendkasse_hinweis, featured,
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
-       fastlane_beschreibung,
+       fastlane_beschreibung, presale_ab, verkauf_ab,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv)`,
     )
@@ -102,8 +105,37 @@ async function Inhalt({ slug }: { slug: string }) {
       event.fastlane_kontingent === null ? "" : String(event.fastlane_kontingent),
     fastlaneBeschreibung: (event.fastlane_beschreibung as string | null) ?? "",
     fastlaneVerkauft: (event.fastlane_verkauft as number) ?? 0,
+    presaleAb: event.presale_ab ? utcNachBerlinFeld(event.presale_ab as string) : "",
+    verkaufAb: event.verkauf_ab ? utcNachBerlinFeld(event.verkauf_ab as string) : "",
     phasen,
   };
 
-  return <EventFormular start={stand} orte={orte} />;
+  // Einladungen gibt es nur bei einem Event mit Presale. Die Zahlen liest der
+  // Server mit dem Dienstschlüssel — sichtbar ist diese Seite ohnehin nur
+  // fürs Team (Layout), verschicken darf nur ein Admin (Aktion prüft selbst).
+  const mitPresale = Boolean(event.presale_ab && event.verkauf_ab);
+  const [einladungStand, darfSenden] = mitPresale
+    ? await Promise.all([
+        dienstClient()
+          .rpc("presale_einladung_stand", { p_event_id: event.id })
+          .then(({ data }) => (data as EinladungStand | null) ?? { moeglich: 0, verschickt: 0, gekauft: 0 }),
+        darfCodesAendern(),
+      ])
+    : [null, false];
+
+  return (
+    <>
+      <EventFormular start={stand} orte={orte} />
+      {einladungStand ? (
+        <div style={{ maxWidth: 940, marginTop: "2rem" }}>
+          <PresaleEinladungen
+            eventId={event.id as string}
+            stand={einladungStand}
+            darfSenden={darfSenden}
+            presaleLaeuftNoch={verkaufsstartKommt({ verkauf_ab: event.verkauf_ab as string })}
+          />
+        </div>
+      ) : null}
+    </>
+  );
 }

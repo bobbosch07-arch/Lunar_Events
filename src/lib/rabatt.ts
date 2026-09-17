@@ -18,6 +18,7 @@ export function normalisiereCode(roh: string): string {
 
 /** "20 %" oder "5 € je Ticket" */
 export function rabattText(art: RabattArt, wert: number, locale = "de"): string {
+  if (wert === 0) return locale === "en" ? "presale only" : "nur Presale";
   if (art === "prozent") return `${wert} %`;
   return `${preisText(wert, locale)} ${locale === "en" ? "per ticket" : "je Ticket"}`;
 }
@@ -76,6 +77,28 @@ export function vergissCode(): void {
   } catch {}
 }
 
+/**
+ * Die persönliche Presale-Einladung aus der Mail (?einladung=…). Gemerkt wie
+ * ein Code: Der Gast hat sie selbst angeklickt, um zu kaufen — ohne Merken
+ * ginge sie beim Sprung auf „Tickets kaufen" verloren.
+ */
+const EINLADUNG = "lunar_einladung";
+
+export function merkeEinladungAusAdresse(): void {
+  try {
+    const roh = new URLSearchParams(window.location.search).get("einladung");
+    if (roh && /^[0-9a-f]{32,128}$/.test(roh)) sessionStorage.setItem(EINLADUNG, roh);
+  } catch {}
+}
+
+export function gemerkteEinladung(): string | null {
+  try {
+    return sessionStorage.getItem(EINLADUNG);
+  } catch {
+    return null;
+  }
+}
+
 /* ------------------------------------------------------------------ */
 /* Formularstand fürs Backoffice                                       */
 /* ------------------------------------------------------------------ */
@@ -104,6 +127,7 @@ export type RabattcodeStand = {
   notiz: string;
   /** "" = gehört keinem Promoter */
   promoterId: string;
+  oeffnetPresale: boolean;
 };
 
 export const LEERER_CODE: RabattcodeStand = {
@@ -119,6 +143,7 @@ export const LEERER_CODE: RabattcodeStand = {
   aktiv: true,
   notiz: "",
   promoterId: "",
+  oeffnetPresale: false,
 };
 
 export function codeStandAus(code: Rabattcode): RabattcodeStand {
@@ -137,5 +162,6 @@ export function codeStandAus(code: Rabattcode): RabattcodeStand {
     aktiv: code.aktiv,
     notiz: code.notiz ?? "",
     promoterId: code.promoter_id ?? "",
+    oeffnetPresale: code.oeffnet_presale,
   };
 }

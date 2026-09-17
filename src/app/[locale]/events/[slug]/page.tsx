@@ -12,11 +12,13 @@ import { holeEvent, holePhasen } from "@/lib/events";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
 import { pruefeKuerzel } from "@/lib/promoter";
+import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
+import { verkaufsstartKommt, type VerkaufsStand } from "@/lib/typen";
 import css from "./event.module.css";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
-  searchParams: Promise<{ promo?: string }>;
+  searchParams: Promise<{ promo?: string; code?: string; einladung?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -47,7 +49,8 @@ export default async function EventSeite({ params, searchParams }: Props) {
   const { locale, slug } = await params;
   // Der Knopf springt auf dieselbe Seite. Ohne das Kürzel in seinem Ziel
   // fiele der Promoter-Link dabei aus der Adresse — und damit die Zuordnung.
-  const promo = pruefeKuerzel((await searchParams).promo);
+  const suche = await searchParams;
+  const promo = pruefeKuerzel(suche.promo);
   setRequestLocale(locale);
 
   const event = await holeEvent(slug);
@@ -58,6 +61,17 @@ export default async function EventSeite({ params, searchParams }: Props) {
     getTranslations("event"),
     getFormatter(),
   ]);
+
+  // Presale oder Verkaufsstart? Ein Code oder eine Einladung aus dem Link
+  // wird gleich hier geprüft, damit die Mengenwahl ohne Flackern erscheint.
+  // Nur fragen, wenn das Event überhaupt einen Verkaufsstart hat.
+  const verkauf: VerkaufsStand = verkaufsstartKommt(event)
+    ? await pruefePresaleZugang({
+        eventId: event.id,
+        code: suche.code ?? null,
+        einladung: suche.einladung ?? null,
+      })
+    : { verkauf: "offen" };
 
   const beginn = new Date(event.beginn);
   const vergangen = beginn.getTime() < Date.now();
@@ -192,6 +206,7 @@ export default async function EventSeite({ params, searchParams }: Props) {
                   eventId={event.id}
                   eventSlug={event.slug}
                   phasen={phasen}
+                  verkauf={verkauf}
                 />
 
                 <div className={css.abendkasse}>

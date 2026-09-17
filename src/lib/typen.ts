@@ -86,7 +86,38 @@ export type Veranstaltung = {
   ausverkauft: boolean;
   /** Nur gesetzt, wenn Fast Lane angeboten wird und noch Plätze hat. */
   fastlane?: FastLane | null;
+  /** Ab hier kauft, wer Presale-Zugang hat (0019). */
+  presale_ab?: string | null;
+  /** Ab hier kauft jeder. null = Verkauf offen. */
+  verkauf_ab?: string | null;
 };
+
+/**
+ * Wie der Verkauf eines Events gerade steht und ob dieser Besuch Zugang
+ * hat — die Antwort von pruefe_presale_zugang().
+ */
+export type VerkaufsStand =
+  | { verkauf: "offen" }
+  | { verkauf: "bald"; presale_ab: string | null; verkauf_ab: string }
+  | { verkauf: "presale"; verkauf_ab: string; zugang: "einladung"; email: string }
+  | { verkauf: "presale"; verkauf_ab: string; zugang: "code"; code: string }
+  | {
+      verkauf: "presale";
+      verkauf_ab: string;
+      zugang: null;
+      grund?: "unbekannt" | "aufgebraucht" | null;
+    };
+
+/**
+ * Kommt der Verkaufsstart noch? Nur dann lohnt die Frage nach Presale und
+ * Zugang — ohne verkauf_ab verkauft ein Event wie bisher.
+ */
+export function verkaufsstartKommt(
+  event: { verkauf_ab?: string | null },
+  jetzt: number = Date.now(),
+): boolean {
+  return Boolean(event.verkauf_ab && new Date(event.verkauf_ab).getTime() > jetzt);
+}
 
 /** Das Fast-Lane-Upgrade, wie die Kasse es anbietet. */
 export type FastLane = {
@@ -211,6 +242,8 @@ export type Rabattcode = {
   erstellt_am: string;
   /** Gehört der Code einem Promoter, zählen seine Einlösungen für ihn. */
   promoter_id: string | null;
+  /** Öffnet den Presale; dann darf der Rabatt auch 0 sein. */
+  oeffnet_presale: boolean;
 };
 
 /**
@@ -261,6 +294,7 @@ export type CodeVorschau =
       tickets: number;
       /** … von so vielen gewählten. Weniger, wenn die Obergrenze greift. */
       tickets_gesamt: number;
+      oeffnet_presale: boolean;
     }
   | { ergebnis: "noch_nicht"; ab: string }
   | {

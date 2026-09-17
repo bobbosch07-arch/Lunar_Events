@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { merkeCodeAusAdresse } from "@/lib/rabatt";
+import { merkeCodeAusAdresse, merkeEinladungAusAdresse } from "@/lib/rabatt";
 
 /**
  * Merkt sich einen Rabattcode aus der Adresse (?code=…), egal auf welcher
@@ -12,6 +12,7 @@ import { merkeCodeAusAdresse } from "@/lib/rabatt";
 export function CodeMerker() {
   useEffect(() => {
     merkeCodeAusAdresse();
+    merkeEinladungAusAdresse();
   }, []);
   return null;
 }

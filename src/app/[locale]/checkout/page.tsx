@@ -5,17 +5,23 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { CheckoutFluss, type Posten } from "@/components/CheckoutFluss";
 import { holeEvent, holePhasen } from "@/lib/events";
-import { phasenZustaende } from "@/lib/typen";
+import { phasenZustaende, verkaufsstartKommt } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import { paypalEingerichtet } from "@/lib/paypal";
 import { vorkasseMoeglich } from "@/lib/vorkasse";
-import { pruefeRabattcode } from "@/app/aktionen/bestellung";
+import { pruefePresaleZugang, pruefeRabattcode } from "@/app/aktionen/bestellung";
 import { pruefeKuerzel } from "@/lib/promoter";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ event?: string; p?: string; code?: string; promo?: string }>;
+  searchParams: Promise<{
+    event?: string;
+    p?: string;
+    code?: string;
+    promo?: string;
+    einladung?: string;
+  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -43,7 +49,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { event: slug, p, code, promo } = await searchParams;
+  const { event: slug, p, code, promo, einladung } = await searchParams;
   // Wer hier ohne Auswahl landet, hat sich verlaufen oder einen alten Link
   // geöffnet. Eine 404 wäre technisch richtig und trotzdem unfreundlich —
   // die Eventliste ist das, was diese Person sucht.
@@ -82,6 +88,15 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   // Ohne gültige Auswahl gibt es nichts zu bezahlen — zurück zum Event,
   // statt eine leere Kasse zu zeigen.
   if (posten.length === 0) redirect(`/events/${event.slug}#tickets`);
+
+  // Vor dem öffentlichen Verkauf nur mit Presale-Zugang. Ohne ihn zurück zum
+  // Event: Dort steht, wann es losgeht, und das Feld für den Code.
+  const presale = verkaufsstartKommt(event)
+    ? await pruefePresaleZugang({ eventId: event.id, code: code ?? null, einladung: einladung ?? null })
+    : null;
+  if (presale && (presale.verkauf !== "presale" || presale.zugang === null)) {
+    redirect(`/events/${event.slug}#tickets`);
+  }
 
   const stripeAktiv = stripeEingerichtet();
   // Die Kennung ist öffentlich — sie steht ohnehin im Skript, das PayPal
@@ -136,6 +151,14 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
             rueckkehrBasis={eigeneAdresse()}
             startCode={startCode}
             promo={pruefeKuerzel(promo)}
+            einladung={
+              presale?.verkauf === "presale" && presale.zugang === "einladung"
+                ? { token: einladung!, email: presale.email }
+                : null
+            }
+            presaleCode={
+              presale?.verkauf === "presale" && presale.zugang === "code" ? presale.code : null
+            }
           />
         </div>
       </main>

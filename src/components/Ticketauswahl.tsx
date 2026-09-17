@@ -1,20 +1,29 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
-import { gemerkterCode } from "@/lib/rabatt";
+import { gemerkteEinladung, gemerkterCode, merkeCode, normalisiereCode } from "@/lib/rabatt";
 import { promoAusAdresse } from "@/lib/promoter";
-import { phasenZustaende, verkaufsstand, zeigeRest, type Phase } from "@/lib/typen";
+import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
+import {
+  phasenZustaende,
+  verkaufsstand,
+  zeigeRest,
+  type Phase,
+  type VerkaufsStand,
+} from "@/lib/typen";
 import css from "./Ticketauswahl.module.css";
 
 type Props = {
   eventId: string;
   eventSlug: string;
   phasen: Phase[];
+  /** Auf dem Server geprüft, mit Code oder Einladung aus der Adresse. */
+  verkauf: VerkaufsStand;
 };
 
 /** Mehr als zwanzig Tickets auf einmal ist keine Bestellung, das ist eine
@@ -31,6 +40,71 @@ export function Ticketauswahl(props: Props) {
   // Nur die erste Wahl zählt: Wer zwischen zwei Phasen hin- und
   // herklickt, ist trotzdem ein Interessent, nicht fünf.
   const gezaehlt = useRef(false);
+
+  // Presale: Solange kein Zugang da ist, stehen Phasen und Preise sichtbar da,
+  // aber ohne Mengenwahl (Rückfragen 17.09.2026).
+  const [verkauf, setVerkauf] = useState<VerkaufsStand>(props.verkauf);
+  const [presaleOffen, setPresaleOffen] = useState(false);
+  const [presaleEingabe, setPresaleEingabe] = useState("");
+  const [presaleFehler, setPresaleFehler] = useState<string | null>(null);
+  const [presalePrueft, setPresalePrueft] = useState(false);
+  const presaleFeld = useRef<HTMLInputElement>(null);
+  // Wer aufklappt, will tippen — auf dem Handy sonst ein zweites Antippen.
+  // Als Effekt nach dem Zeichnen, nicht über requestAnimationFrame: Das
+  // pausiert, solange der Tab nicht gezeichnet wird.
+  useEffect(() => {
+    if (presaleOffen) presaleFeld.current?.focus();
+  }, [presaleOffen]);
+  const kaufFrei =
+    verkauf.verkauf === "offen" || (verkauf.verkauf === "presale" && verkauf.zugang !== null);
+
+  // Wer schon einen Code oder eine Einladung mitgebracht hat (gemerkt aus
+  // einem Link, auch von einer anderen Seite), muss nichts eintippen.
+  const eventId = props.eventId;
+  const ohneZugang = props.verkauf.verkauf === "presale" && props.verkauf.zugang === null;
+  useEffect(() => {
+    if (!ohneZugang) return;
+    const code = gemerkterCode();
+    const einladung = gemerkteEinladung();
+    if (!code && !einladung) return;
+    let abgebrochen = false;
+    void pruefePresaleZugang({ eventId, code, einladung }).then((stand) => {
+      if (!abgebrochen && stand.verkauf === "presale" && stand.zugang !== null) setVerkauf(stand);
+    });
+    return () => {
+      abgebrochen = true;
+    };
+  }, [ohneZugang, eventId]);
+
+  async function presaleFreischalten(e: FormEvent) {
+    e.preventDefault();
+    const code = normalisiereCode(presaleEingabe);
+    if (!code) return;
+    setPresalePrueft(true);
+    setPresaleFehler(null);
+    const stand = await pruefePresaleZugang({ eventId, code, einladung: gemerkteEinladung() });
+    setPresalePrueft(false);
+    if (stand.verkauf === "offen" || (stand.verkauf === "presale" && stand.zugang !== null)) {
+      setVerkauf(stand);
+      if (stand.verkauf === "presale" && stand.zugang === "code") merkeCode(stand.code);
+      return;
+    }
+    setPresaleFehler(
+      stand.verkauf === "presale" && stand.zugang === null && stand.grund === "aufgebraucht"
+        ? t("presaleAufgebraucht")
+        : t("presaleUnbekannt"),
+    );
+  }
+
+  const datum = (iso: string) =>
+    new Intl.DateTimeFormat(locale, {
+      weekday: "short",
+      day: "numeric",
+      month: "long",
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "Europe/Berlin",
+    }).format(new Date(iso));
 
   const zustaende = useMemo(() => phasenZustaende(phasen), [phasen]);
 
@@ -78,15 +152,28 @@ export function Ticketauswahl(props: Props) {
     const code = gemerkterCode();
     // Das Promoter-Kürzel reist nur in der Adresse — gespeichert wird es nie.
     const promo = promoAusAdresse();
+    const einladung = verkauf.verkauf === "presale" ? gemerkteEinladung() : null;
     router.push(
       `/checkout?event=${eventSlug}&p=${teile}` +
         (code ? `&code=${encodeURIComponent(code)}` : "") +
-        (promo ? `&promo=${promo}` : ""),
+        (promo ? `&promo=${promo}` : "") +
+        (einladung ? `&einladung=${einladung}` : ""),
     );
   }
 
   return (
     <div>
+      {verkauf.verkauf === "presale" && verkauf.zugang !== null ? (
+        <p className={css.presaleZugang}>
+          <span className={css.presaleHaken} aria-hidden="true">
+            ✓
+          </span>
+          {verkauf.zugang === "einladung"
+            ? t("presaleMitEinladung", { email: verkauf.email })
+            : t("presaleMitCode", { code: verkauf.code })}
+        </p>
+      ) : null}
+
       <div className={css.liste}>
         {phasen.map((phase) => {
           const zustand = zustaende.get(phase.id)!;
@@ -213,7 +300,7 @@ export function Ticketauswahl(props: Props) {
                   >
                     {t("anfragen")}
                   </Knopf>
-                ) : gesperrt || folgt ? null : (
+                ) : gesperrt || folgt || !kaufFrei ? null : (
                   <div className={css.menge}>
                     <button
                       type="button"
@@ -251,30 +338,99 @@ export function Ticketauswahl(props: Props) {
         })}
       </div>
 
-      {/* Schwebt erst, wenn es etwas zu bezahlen gibt. Leer stünde sie nur
-          im Weg, über den Phasen, die man gerade lesen will. */}
-      <div className={css.summe} data-leer={anzahl === 0 ? "" : undefined}>
-        <div className={css.summeLinks}>
-          {anzahl > 0 ? (
+      {!kaufFrei ? (
+        <div className={css.presale}>
+          {verkauf.verkauf === "bald" ? (
+            <p className={css.presaleTitel}>
+              {verkauf.presale_ab
+                ? t("presaleAb", {
+                    presale: datum(verkauf.presale_ab),
+                    verkauf: datum(verkauf.verkauf_ab),
+                  })
+                : t("verkaufAb", { datum: datum(verkauf.verkauf_ab) })}
+            </p>
+          ) : verkauf.verkauf === "presale" ? (
             <>
-              <div className={css.summeZeile}>
-                <span className={css.summeLabel}>{t("summe")}</span>
-                <span className={css.summeWert}>{preisText(summe, locale)}</span>
-              </div>
-              <span className={css.summeDetail}>
-                {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} · inkl. Gebühren
-              </span>
+              <p className={css.presaleTitel}>{t("presaleLaeuft")}</p>
+              <p className={css.presaleText}>
+                {t("oeffentlichAb", { datum: datum(verkauf.verkauf_ab) })}. {t("presaleText")}
+              </p>
+              {presaleOffen ? (
+                <form className={css.presaleForm} onSubmit={presaleFreischalten} noValidate>
+                  <label className={css.presaleBeschriftung} htmlFor="presale-code">
+                    {t("presaleFeld")}
+                  </label>
+                  <div className={css.presaleReihe}>
+                    <input
+                      id="presale-code"
+                      ref={presaleFeld}
+                      className={css.presaleEingabe}
+                      value={presaleEingabe}
+                      onChange={(ev) => {
+                        setPresaleEingabe(ev.target.value);
+                        setPresaleFehler(null);
+                      }}
+                      autoComplete="off"
+                      autoCapitalize="characters"
+                      spellCheck={false}
+                      enterKeyHint="done"
+                      aria-invalid={presaleFehler ? true : undefined}
+                      aria-describedby={presaleFehler ? "presale-fehler" : undefined}
+                    />
+                    <Knopf
+                      type="submit"
+                      stil="linie"
+                      disabled={presalePrueft || !presaleEingabe.trim()}
+                    >
+                      {presalePrueft ? "…" : t("presaleOeffnen")}
+                    </Knopf>
+                  </div>
+                  {presaleFehler ? (
+                    <span id="presale-fehler" className={css.presaleFehler} role="alert">
+                      {presaleFehler}
+                    </span>
+                  ) : null}
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  className={css.presaleFrage}
+                  onClick={() => setPresaleOffen(true)}
+                >
+                  {t("presaleFrage")}
+                </button>
+              )}
             </>
-          ) : (
-            <span className={css.leerHinweis}>{t("nichtsGewaehlt")}</span>
-          )}
+          ) : null}
         </div>
+      ) : (
+        <>
+          {/* Schwebt erst, wenn es etwas zu bezahlen gibt. Leer stünde sie nur
+              im Weg, über den Phasen, die man gerade lesen will. */}
+          <div className={css.summe} data-leer={anzahl === 0 ? "" : undefined}>
+            <div className={css.summeLinks}>
+              {anzahl > 0 ? (
+                <>
+                  <div className={css.summeZeile}>
+                    <span className={css.summeLabel}>{t("summe")}</span>
+                    <span className={css.summeWert}>{preisText(summe, locale)}</span>
+                  </div>
+                  <span className={css.summeDetail}>
+                    {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} · inkl. Gebühren
+                  </span>
+                </>
+              ) : (
+                <span className={css.leerHinweis}>{t("nichtsGewaehlt")}</span>
+              )}
+            </div>
 
-        <Knopf onClick={weiter} disabled={anzahl === 0} groesse="gross">
-          <span className={css.weiterLang}>{t("weiter")}</span>
-          <span className={css.weiterKurz}>{t("weiterKurz")}</span>
-        </Knopf>
-      </div>
+            <Knopf onClick={weiter} disabled={anzahl === 0} groesse="gross">
+              <span className={css.weiterLang}>{t("weiter")}</span>
+              <span className={css.weiterKurz}>{t("weiterKurz")}</span>
+            </Knopf>
+          </div>
+        </>
+      )}
     </div>
   );
 }

@@ -34,6 +34,7 @@ node scripts/einlass-testen.mjs    # Entwerten mit echter Anmeldung
 node scripts/backoffice-testen.mjs # Zugriffsregeln fürs Backoffice
 node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbst auf
 node scripts/promoter-testen.mjs    # Promoter-Zuordnung und Statistik, räumt selbst auf
+node scripts/presale-testen.mjs     # Presale, Einladungen, Abmelden, räumt selbst auf
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -318,6 +319,46 @@ Das Backoffice benutzt dieselbe Funktion, damit beide Seiten dieselben Zahlen
 zeigen; die Links baut `teilLinks()` für beide. „Neuen Link erzeugen“
 tauscht den Token — der alte liefert sofort 404.
 
+### Presale (Migration 0019)
+
+Je Event **`presale_ab`** und **`verkauf_ab`**. Davor kauft niemand,
+dazwischen nur mit Zugang, danach alle; ohne `verkauf_ab` läuft der Verkauf
+wie bisher. Die Sperre steht in **`reserviere()`** (`VERKAUF_NOCH_NICHT`,
+`PRESALE_ZUGANG_FEHLT`, `PRESALE_ANDERE_ADRESSE`), weil die Auswahl in der
+Adresse steht. Die Anzeige fragt `pruefe_presale_zugang()` — antwortet immer
+mit `verkauf: offen | presale | bald` und, im Presale, dem Zugang.
+
+**Zugang Nr. 1: Codes.** Ein Rabattcode mit Häkchen `oeffnet_presale` öffnet
+den Presale und darf dann 0 € Rabatt haben (sonst nicht — Regel
+`rabattcodes_wert`). Der „Newsletter-Link“ ist einfach der Link mit Code;
+Obergrenze = Presale-Kontingent, Zählung je Kanal und Promoter kommen von
+den Rabattcodes mit. In der Kasse steht dann „Presale-Zugang“ statt „− 0 €“,
+und ein Code, der den Presale öffnet, lässt sich dort nicht entfernen.
+
+**Zugang Nr. 2: Einladungen an frühere Gäste** (`presale_einladungen`), im
+Backoffice auf der Bearbeiten-Seite des Events verschickt. Der Link
+`?einladung=<token>` **gilt nur für die eingeladene Adresse** — sonst reichte
+ein weitergeleiteter Link für beliebig viele. Die Kasse füllt die Adresse vor
+und sperrt das Feld. Pro Klick 60 Mails (Zeitgrenze der Serverfunktion);
+scheitert ein ganzer Stapel, ist meist Brevos Tageslimit (300) erreicht, der
+Rest geht beim nächsten Klick.
+
+**Einladungen sind Werbung (§ 7 Abs. 3 UWG).** Erlaubt nur, wenn beim Kauf
+darauf hingewiesen wurde und jede Mail einen Abmeldelink hat:
+- Die Kasse zeigt in Schritt 2 den Hinweis (`checkout.werbehinweis`), und
+  **`reserviereBestellung` vermerkt ihn** (`bestellungen.werbehinweis`).
+  Eingeladen wird nur, wer mit diesem Vermerk bezahlt hat — Käufe vor dem
+  17.09.2026 nie. **Wer den Hinweis aus der Kasse nimmt, muss auch den
+  Vermerk entfernen.**
+- Abmelden über `/werbung/abmelden/<token>` (setzt `kunden.keine_werbung`)
+  plus `List-Unsubscribe`-Kopfzeile. Die Seite ändert beim Aufruf nichts,
+  erst der Knopf — Mailvorschauen rufen Links selbst auf.
+- Die Datenschutzerklärung erwähnt das noch nicht; gehört zur Rechtsprüfung.
+
+Einladung und Code werden wie der Rabattcode für die Sitzung gemerkt
+(`sessionStorage`, `CodeMerker`): Der Gast hat sie selbst angeklickt, um zu
+kaufen. Anders als das Promoter-Kürzel, das nur Zählung ist.
+
 ## Zahlung
 
 **Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
@@ -520,6 +561,7 @@ Fertig und geprüft:
 - Abgelaufene Reservierungen werden alle fünf Minuten freigegeben (pg_cron)
 - Rabattcodes: Kasse (Link und Eingabe), Backoffice mit Einlösungen
 - Promoter: Zuordnung über Link oder Code, geheime Statistikseite, Backoffice
+- Presale: Verkaufsstart je Event, Zugang über Codes und Einladungen, Abmelden
 
 Offen:
 

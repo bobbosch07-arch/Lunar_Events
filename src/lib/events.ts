@@ -18,7 +18,7 @@ const AUSWAHL = `
   beginn, einlass, ende, bild_pfad, bild_alt, bild_fokus, mindestalter,
   dresscode, veranstalter, abendkasse, abendkasse_hinweis, featured,
   fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
-  fastlane_beschreibung,
+  fastlane_beschreibung, presale_ab, verkauf_ab,
   ort:orte(*),
   phasen(*)
 `;
@@ -114,6 +114,8 @@ function baueEvent(z: Zeile): Veranstaltung {
     // sondern noch nicht bepreist.
     ausverkauft: standard.length > 0 && kaufbar.length === 0,
     fastlane: fastlaneAus(z),
+    presale_ab: (z.presale_ab as string | null) ?? null,
+    verkauf_ab: (z.verkauf_ab as string | null) ?? null,
   };
 }
 

@@ -81,7 +81,19 @@
     "folgt": "Nach {phase}",
     "fomoVerkauft": "{prozent} % verkauft",
     "fomoDanach": "Danach {phase}: {preis}",
-    "fomoLetzte": "Letzte Phase"
+    "fomoLetzte": "Letzte Phase",
+    "presaleLaeuft": "Presale läuft",
+    "oeffentlichAb": "Öffentlicher Verkauf ab {datum}",
+    "verkaufAb": "Tickets gibt es ab {datum}",
+    "presaleAb": "Presale ab {presale}, öffentlicher Verkauf ab {verkauf}",
+    "presaleText": "Mit einem Presale-Code oder einer Einladung kannst du schon jetzt kaufen.",
+    "presaleFrage": "Presale-Code?",
+    "presaleFeld": "Presale-Code",
+    "presaleOeffnen": "Freischalten",
+    "presaleUnbekannt": "Mit diesem Code geht es nicht in den Presale.",
+    "presaleAufgebraucht": "Die Presale-Tickets für diesen Code sind vergeben.",
+    "presaleMitCode": "Presale · freigeschaltet mit {code}",
+    "presaleMitEinladung": "Presale · deine Einladung für {email}"
   },
   "vip": {
     "eyebrow": "VIP Experience",
@@ -159,7 +171,13 @@
       "herausgenommen": "{grund} Wir haben ihn herausgenommen — tippe noch einmal auf Weiter.",
       "kostenlosText": "Mit deinem Rabattcode kostet diese Bestellung nichts. Eine Zahlung ist nicht nötig.",
       "kostenlosKnopf": "Kostenlos bestellen"
-    }
+    },
+    "werbehinweis": "Wir laden dich per Mail zu kommenden Lunar-Events ein, zum Beispiel zum Presale. Abbestellen kannst du jederzeit über den Link in jeder Mail.",
+    "einladungAdresse": "Deine Presale-Einladung gilt für diese Adresse.",
+    "presaleZugang": "Presale-Zugang",
+    "presaleZugangFehlt": "Für den Presale fehlt der Zugang. Geh zurück zum Event und gib deinen Presale-Code ein.",
+    "presaleAndereAdresse": "Deine Presale-Einladung gilt nur für die Adresse, an die sie ging.",
+    "verkaufNochNicht": "Der Verkauf hat noch nicht begonnen."
   },
   "bestaetigung": {
     "titel": "KAUF ERFOLGREICH",
@@ -244,5 +262,13 @@
     "keineZahlen": "Noch keine Zahlen. Sobald jemand deinen Link öffnet, steht es hier.",
     "hinweis": "Klicks sind Aufrufe, keine Personen: Wer zweimal öffnet, zählt zweimal. Tickets zählen, sobald sie bezahlt sind.",
     "geheim": "Dieser Link ist nur für dich. Wer ihn hat, sieht deine Zahlen."
+  },
+  "werbung": {
+    "titel": "Keine Einladungen mehr?",
+    "text": "Wir laden dich per Mail zu kommenden Lunar-Events ein, zum Beispiel zum Presale. Mit einem Klick hörst du davon nichts mehr. Deine Tickets und Ticketmails betrifft das nicht.",
+    "knopf": "Keine Einladungen mehr",
+    "erledigt": "Erledigt. Du bekommst keine Einladungen mehr von uns.",
+    "fehler": "Das hat nicht geklappt. Schreib uns kurz an kontakt@lunar-events.de, dann tragen wir dich von Hand aus.",
+    "zurueck": "Zur Startseite"
   }
 }

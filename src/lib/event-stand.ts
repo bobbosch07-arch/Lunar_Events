@@ -57,6 +57,10 @@ export type EventStand = {
   fastlaneBeschreibung: string;
   /** Nur zur Anzeige: schon verkaufte Fast-Lane-Plätze. */
   fastlaneVerkauft: number;
+  /** datetime-local in Berliner Zeit, "" = kein Presale */
+  presaleAb: string;
+  /** datetime-local in Berliner Zeit, "" = Verkauf sofort offen */
+  verkaufAb: string;
   phasen: PhasenStand[];
 };
 

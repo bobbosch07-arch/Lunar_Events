@@ -5,7 +5,7 @@ import { dienstClient } from "@/lib/supabase/server";
 import { stripe, stripeEingerichtet } from "@/lib/stripe";
 import { verschickeTickets } from "./ticketmail";
 import { CODE_MUSTER, normalisiereCode } from "@/lib/rabatt";
-import type { CodeAblehnung, CodeVorschau } from "@/lib/typen";
+import type { CodeAblehnung, CodeVorschau, VerkaufsStand } from "@/lib/typen";
 
 /**
  * Der Kauf läuft über zwei Schritte, und beide gehören auf den Server:
@@ -71,6 +71,9 @@ function deuteFehler(meldung: string): ReservierungErgebnis {
     return { ok: false, fehler: "fastlane_aus" };
   const codeKennung = Object.keys(CODE_GRUENDE).find((k) => meldung.includes(k));
   if (codeKennung) return { ok: false, fehler: "code", code: CODE_GRUENDE[codeKennung] };
+  if (meldung.includes("PRESALE_ANDERE_ADRESSE")) return { ok: false, fehler: "presale_adresse" };
+  if (meldung.includes("PRESALE_ZUGANG_FEHLT")) return { ok: false, fehler: "presale_zugang" };
+  if (meldung.includes("VERKAUF_NOCH_NICHT")) return { ok: false, fehler: "verkauf_noch_nicht" };
   if (meldung.includes("EVENT_VORBEI")) return { ok: false, fehler: "vorbei" };
   if (meldung.includes("EVENT_NICHT_VERFUEGBAR"))
     return { ok: false, fehler: "nicht_verfuegbar" };
@@ -95,6 +98,8 @@ export async function reserviereBestellung(eingabe: {
   code?: string | null;
   /** Kürzel aus dem Link eines Promoters */
   promo?: string | null;
+  /** Token einer persönlichen Presale-Einladung */
+  einladung?: string | null;
 }): Promise<ReservierungErgebnis> {
   if (eingabe.auswahl.length === 0) return { ok: false, fehler: "leer" };
 
@@ -109,9 +114,20 @@ export async function reserviereBestellung(eingabe: {
     p_telefon: eingabe.telefon?.trim() || null,
     p_fastlane: Math.max(0, Math.floor(eingabe.fastlane ?? 0)),
     p_code: eingabe.code ? normalisiereCode(eingabe.code) : null,
+    p_einladung: eingabe.einladung ?? null,
   });
 
   if (error) return deuteFehler(error.message);
+
+  // Diese Kasse zeigt den Hinweis auf Einladungen zu künftigen Events
+  // (§ 7 Abs. 3 UWG). Nur Bestellungen mit diesem Vermerk dürfen später eine
+  // Presale-Einladung bekommen. Wer die Kasse ändert und den Hinweis
+  // entfernt, muss auch diese Zeile entfernen.
+  const { error: hinweis } = await db
+    .from("bestellungen")
+    .update({ werbehinweis: true })
+    .eq("id", bestellungId);
+  if (hinweis) console.error("[bestellung] Werbehinweis nicht vermerkt:", hinweis.message);
 
   // Promoter zuordnen — über seinen Code oder sein Kürzel. Scheitert das,
   // geht der Kauf trotzdem weiter: Die Zählung ist Beiwerk.
@@ -147,6 +163,34 @@ export async function reserviereBestellung(eingabe: {
     code_rabatt_cent: (bestellung?.code_rabatt_cent as number | undefined) ?? 0,
     code_tickets: (bestellung?.code_tickets as number | undefined) ?? 0,
   };
+}
+
+/**
+ * Steht der Verkauf offen, läuft der Presale, oder kommt beides erst? Und
+ * hat dieser Besuch Zugang — über einen Presale-Code oder eine Einladung?
+ * Wird von Eventseite und Kasse gefragt; verbindlich prüft reserviere().
+ */
+export async function pruefePresaleZugang(eingabe: {
+  eventId: string;
+  code?: string | null;
+  einladung?: string | null;
+}): Promise<VerkaufsStand> {
+  const db = dienstClient();
+  const code = eingabe.code ? normalisiereCode(eingabe.code) : null;
+  const { data, error } = await db.rpc("pruefe_presale_zugang", {
+    p_event_id: eingabe.eventId,
+    p_code: code && CODE_MUSTER.test(code) ? code : null,
+    p_einladung: eingabe.einladung && /^[0-9a-f]{32,128}$/.test(eingabe.einladung)
+      ? eingabe.einladung
+      : null,
+  });
+  if (error || !data) {
+    // Im Zweifel offen anzeigen: Die Reservierung prüft ohnehin selbst, und
+    // eine gesperrte Seite wegen eines Abfragefehlers wäre schlimmer.
+    console.error("[presale] Prüfen fehlgeschlagen:", error?.message);
+    return { verkauf: "offen" };
+  }
+  return data as VerkaufsStand;
 }
 
 /**
