@@ -27,6 +27,7 @@ export type RabattcodeEingabe = {
   einmal_pro_person: boolean;
   aktiv: boolean;
   notiz: string | null;
+  promoter_id: string | null;
 };
 
 export type CodeSpeicherErgebnis = { ok: true; id: string } | { ok: false; fehler: string };
@@ -77,6 +78,7 @@ export async function speichereRabattcode(
     einmal_pro_person: eingabe.einmal_pro_person,
     aktiv: eingabe.aktiv,
     notiz: eingabe.notiz?.trim() || null,
+    promoter_id: eingabe.promoter_id,
   };
 
   const db = await serverClient();

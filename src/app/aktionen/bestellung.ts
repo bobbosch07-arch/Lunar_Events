@@ -93,6 +93,8 @@ export async function reserviereBestellung(eingabe: {
   fastlane?: number;
   /** Rabattcode, so wie der Gast ihn eingegeben hat. */
   code?: string | null;
+  /** Kürzel aus dem Link eines Promoters */
+  promo?: string | null;
 }): Promise<ReservierungErgebnis> {
   if (eingabe.auswahl.length === 0) return { ok: false, fehler: "leer" };
 
@@ -110,6 +112,14 @@ export async function reserviereBestellung(eingabe: {
   });
 
   if (error) return deuteFehler(error.message);
+
+  // Promoter zuordnen — über seinen Code oder sein Kürzel. Scheitert das,
+  // geht der Kauf trotzdem weiter: Die Zählung ist Beiwerk.
+  const { error: zuordnung } = await db.rpc("ordne_promoter_zu", {
+    p_bestellung_id: bestellungId,
+    p_kuerzel: eingabe.promo ?? null,
+  });
+  if (zuordnung) console.error("[promoter] Zuordnung fehlgeschlagen:", zuordnung.message);
 
   const { data: bestellung } = await db
     .from("bestellungen")

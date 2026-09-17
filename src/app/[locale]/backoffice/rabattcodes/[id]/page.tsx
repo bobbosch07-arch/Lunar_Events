@@ -5,7 +5,12 @@ import { Suspense } from "react";
 import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { RabattcodeFormular } from "@/components/RabattcodeFormular";
-import { darfCodesAendern, holeEventWahl, holeRabattcode } from "@/lib/backoffice";
+import {
+  darfCodesAendern,
+  holeEventWahl,
+  holePromoterWahl,
+  holeRabattcode,
+} from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
 import { codeStandAus } from "@/lib/rabatt";
 import { eigeneAdresse } from "@/lib/stripe";
@@ -43,10 +48,11 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
   // Keine gültige ID: gleich 404, statt die Datenbank mit Unsinn zu fragen.
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
 
-  const [daten, events, darf, f] = await Promise.all([
+  const [daten, events, darf, promoter, f] = await Promise.all([
     holeRabattcode(id),
     holeEventWahl(),
     darfCodesAendern(),
+    holePromoterWahl(),
     getFormatter(),
   ]);
   if (!daten) notFound();
@@ -99,6 +105,7 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
         darfAendern={darf}
         eingeloest={code.eingeloest}
         adresse={eigeneAdresse()}
+        promoter={promoter}
       />
 
       <h2 className={css.seitentitel} style={{ marginTop: "3rem" }}>

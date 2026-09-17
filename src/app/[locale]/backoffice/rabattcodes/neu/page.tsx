@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { RabattcodeFormular } from "@/components/RabattcodeFormular";
-import { darfCodesAendern, holeEventWahl } from "@/lib/backoffice";
+import { darfCodesAendern, holeEventWahl, holePromoterWahl } from "@/lib/backoffice";
 import { LEERER_CODE } from "@/lib/rabatt";
 import { eigeneAdresse } from "@/lib/stripe";
 
@@ -32,7 +32,11 @@ export default async function NeuerRabattcode({
 }
 
 async function Inhalt() {
-  const [events, darf] = await Promise.all([holeEventWahl(), darfCodesAendern()]);
+  const [events, darf, promoter] = await Promise.all([
+    holeEventWahl(),
+    darfCodesAendern(),
+    holePromoterWahl(),
+  ]);
   return (
     <RabattcodeFormular
       start={LEERER_CODE}
@@ -40,6 +44,7 @@ async function Inhalt() {
       darfAendern={darf}
       eingeloest={0}
       adresse={eigeneAdresse()}
+      promoter={promoter}
     />
   );
 }

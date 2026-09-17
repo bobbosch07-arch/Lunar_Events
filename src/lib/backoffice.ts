@@ -1,5 +1,6 @@
 import { serverClient } from "./supabase/server";
-import type { Rabattcode } from "./typen";
+import { dienstClient } from "./supabase/server";
+import type { Promoter, PromoterStatistik, Rabattcode } from "./typen";
 
 /**
  * Abfragen fürs Backoffice. Alle laufen über die Sitzung des Mitarbeiters,
@@ -434,6 +435,7 @@ export async function holeHochrechnung(): Promise<HochEvent[]> {
 export type RabattcodeZeile = Rabattcode & {
   eventTitel: string | null;
   eventSlug: string | null;
+  promoterName: string | null;
   /** Nur bezahlte Bestellungen — eingeloest zählt offene mit. */
   bezahltTickets: number;
   bezahltRabattCent: number;
@@ -462,14 +464,15 @@ export type EventWahl = {
 };
 
 const CODE_SPALTEN = `id, code, art, wert, event_id, phasen_ids, gueltig_ab, gueltig_bis,
-  max_tickets, eingeloest, einmal_pro_person, aktiv, notiz, erstellt_am,
-  event:events(titel, slug)`;
+  max_tickets, eingeloest, einmal_pro_person, aktiv, notiz, erstellt_am, promoter_id,
+  event:events(titel, slug), promoter:promoter(name)`;
 
 function alsCodeZeile(
   z: Record<string, unknown>,
   bezahlt: Map<string, { tickets: number; cent: number }>,
 ): RabattcodeZeile {
   const event = z.event as { titel: string; slug: string } | null;
+  const promoter = z.promoter as { name: string } | null;
   const summe = bezahlt.get(z.id as string);
   return {
     id: z.id as string,
@@ -486,8 +489,10 @@ function alsCodeZeile(
     aktiv: Boolean(z.aktiv),
     notiz: (z.notiz as string | null) ?? null,
     erstellt_am: z.erstellt_am as string,
+    promoter_id: (z.promoter_id as string | null) ?? null,
     eventTitel: event?.titel ?? null,
     eventSlug: event?.slug ?? null,
+    promoterName: promoter?.name ?? null,
     bezahltTickets: summe?.tickets ?? 0,
     bezahltRabattCent: summe?.cent ?? 0,
   };
@@ -601,4 +606,113 @@ export async function darfCodesAendern(): Promise<boolean> {
   const db = await serverClient();
   const { data } = await db.rpc("ist_mitarbeiter", { mindestens: "admin" });
   return data === true;
+}
+
+/* ------------------------------------------------------------------ */
+/* Promoter                                                            */
+/* ------------------------------------------------------------------ */
+
+export type PromoterZeile = Promoter & {
+  /** Bezahlte Tickets über Link oder Code */
+  tickets: number;
+  /** Aufrufe einer Eventseite über seinen Link */
+  klicks: number;
+  codes: Array<{ id: string; code: string }>;
+};
+
+export async function holePromoterListe(): Promise<PromoterZeile[]> {
+  const db = await serverClient();
+  const [{ data: promoter, error }, { data: bestellungen }, { data: klicks }] = await Promise.all([
+    db
+      .from("promoter")
+      .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code)")
+      .order("name"),
+    db
+      .from("bestellungen")
+      .select("promoter_id, positionen:bestellpositionen(menge)")
+      .eq("status", "bezahlt")
+      .not("promoter_id", "is", null),
+    // Zeilen statt Anzahl: PostgREST kann ohne eigene Funktion nicht
+    // gruppieren. Es sind nur Aufrufe über Promoter-Links, nicht alle.
+    db
+      .from("ereignisse")
+      .select("promoter_id")
+      .eq("art", "event_gesehen")
+      .not("promoter_id", "is", null),
+  ]);
+
+  if (error || !promoter) {
+    console.error("[backoffice] Promoter laden fehlgeschlagen:", error?.message);
+    return [];
+  }
+
+  const tickets = new Map<string, number>();
+  for (const b of bestellungen ?? []) {
+    const menge = ((b.positionen ?? []) as Array<{ menge: number }>).reduce(
+      (s, p) => s + p.menge,
+      0,
+    );
+    const id = b.promoter_id as string;
+    tickets.set(id, (tickets.get(id) ?? 0) + menge);
+  }
+  const aufrufe = new Map<string, number>();
+  for (const k of klicks ?? []) {
+    const id = k.promoter_id as string;
+    aufrufe.set(id, (aufrufe.get(id) ?? 0) + 1);
+  }
+
+  return promoter.map((p) => ({
+    id: p.id as string,
+    name: p.name as string,
+    kuerzel: p.kuerzel as string,
+    token: p.token as string,
+    aktiv: Boolean(p.aktiv),
+    notiz: (p.notiz as string | null) ?? null,
+    erstellt_am: p.erstellt_am as string,
+    codes: (p.codes ?? []) as Array<{ id: string; code: string }>,
+    tickets: tickets.get(p.id as string) ?? 0,
+    klicks: aufrufe.get(p.id as string) ?? 0,
+  }));
+}
+
+export async function holePromoter(id: string): Promise<{
+  promoter: Promoter;
+  codes: Array<{ id: string; code: string; event_id: string | null; aktiv: boolean }>;
+  statistik: PromoterStatistik | null;
+} | null> {
+  const db = await serverClient();
+  const { data: p } = await db
+    .from("promoter")
+    .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code, event_id, aktiv)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!p) return null;
+
+  // Den Token konnte nur lesen, wer zum Team gehört (Zugriffsregel). Mit ihm
+  // fragt der Server dieselbe Statistik ab, die der Promoter selbst sieht —
+  // so zeigen Backoffice und Promoterseite garantiert dieselben Zahlen.
+  const { data: statistik } = await dienstClient().rpc("promoter_statistik", {
+    p_token: p.token,
+  });
+
+  return {
+    promoter: {
+      id: p.id as string,
+      name: p.name as string,
+      kuerzel: p.kuerzel as string,
+      token: p.token as string,
+      aktiv: Boolean(p.aktiv),
+      notiz: (p.notiz as string | null) ?? null,
+      erstellt_am: p.erstellt_am as string,
+    },
+    codes: (p.codes ?? []) as Array<{ id: string; code: string; event_id: string | null; aktiv: boolean }>,
+    statistik: (statistik as PromoterStatistik | null) ?? null,
+  };
+}
+
+/** Für die Auswahl im Code-Formular */
+export async function holePromoterWahl(): Promise<Array<{ id: string; name: string }>> {
+  const db = await serverClient();
+  const { data } = await db.from("promoter").select("id, name").order("name");
+  return (data ?? []) as Array<{ id: string; name: string }>;
 }

@@ -18,11 +18,15 @@ export type EreignisArt =
 export function zaehle(art: EreignisArt, eventId?: string | null) {
   if (typeof window === "undefined") return;
 
-  const kampagne = new URLSearchParams(window.location.search).get("utm_campaign");
+  const suche = new URLSearchParams(window.location.search);
+  const kampagne = suche.get("utm_campaign");
   const koerper = JSON.stringify({
     art,
     eventId: eventId ?? null,
     kampagne,
+    // Kam der Aufruf über den Link eines Promoters? Daraus werden seine
+    // Klicks. Gelesen aus der Adresse, nicht aus einem Speicher.
+    promo: suche.get("promo"),
     mobil: window.matchMedia("(max-width: 768px)").matches,
   });
 

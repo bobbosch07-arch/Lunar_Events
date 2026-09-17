@@ -209,6 +209,41 @@ export type Rabattcode = {
   aktiv: boolean;
   notiz: string | null;
   erstellt_am: string;
+  /** Gehört der Code einem Promoter, zählen seine Einlösungen für ihn. */
+  promoter_id: string | null;
+};
+
+/**
+ * Ein Promoter wird nicht bezahlt, nur gezählt (0017). Zugeordnet wird
+ * über seinen Link (?promo=kuerzel, nur im selben Besuch) oder seinen Code.
+ */
+export type Promoter = {
+  id: string;
+  name: string;
+  /** Steht im Link: ?promo=max */
+  kuerzel: string;
+  /** Der geheime Teil des Statistik-Links */
+  token: string;
+  aktiv: boolean;
+  notiz: string | null;
+  erstellt_am: string;
+};
+
+/** Was promoter_statistik() liefert — und damit alles, was ein Promoter sieht. */
+export type PromoterStatistik = {
+  name: string;
+  kuerzel: string;
+  aktiv: boolean;
+  events: Array<{
+    id: string;
+    titel: string;
+    slug: string;
+    beginn: string;
+    kommend: boolean;
+    klicks: number;
+    tickets: number;
+  }>;
+  codes: Array<{ code: string; art: RabattArt; wert: number; event_id: string | null }>;
 };
 
 /**

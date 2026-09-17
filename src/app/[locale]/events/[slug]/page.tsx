@@ -11,10 +11,12 @@ import { Zaehler } from "@/components/Zaehler";
 import { holeEvent, holePhasen } from "@/lib/events";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
+import { pruefeKuerzel } from "@/lib/promoter";
 import css from "./event.module.css";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
+  searchParams: Promise<{ promo?: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -41,8 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function EventSeite({ params }: Props) {
+export default async function EventSeite({ params, searchParams }: Props) {
   const { locale, slug } = await params;
+  // Der Knopf springt auf dieselbe Seite. Ohne das Kürzel in seinem Ziel
+  // fiele der Promoter-Link dabei aus der Adresse — und damit die Zuordnung.
+  const promo = pruefeKuerzel((await searchParams).promo);
   setRequestLocale(locale);
 
   const event = await holeEvent(slug);
@@ -130,7 +135,11 @@ export default async function EventSeite({ params }: Props) {
 
             {!vergangen ? (
               <div className={css.heroKnopf}>
-                <Knopf href={`/events/${event.slug}#tickets`} stil="hell" groesse="gross">
+                <Knopf
+                  href={`/events/${event.slug}${promo ? `?promo=${promo}` : ""}#tickets`}
+                  stil="hell"
+                  groesse="gross"
+                >
                   {t("ticketsKaufen")}
                 </Knopf>
               </div>

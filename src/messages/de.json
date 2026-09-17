@@ -226,5 +226,23 @@
     "nichtGefundenTitel": "Diese Seite gibt es nicht",
     "nichtGefundenText": "Vielleicht ist der Link alt. Hier geht es zu den Events.",
     "zurStartseite": "Zur Startseite"
+  },
+  "promoter": {
+    "eyebrow": "Promoter",
+    "hallo": "Hallo {name}",
+    "intro": "Hier siehst du, was über deine Links läuft. Die Zahlen sind immer aktuell.",
+    "pausiert": "Dein Link ist gerade pausiert — Klicks und Käufe zählen im Moment nicht.",
+    "klicks": "Klicks",
+    "tickets": "Tickets",
+    "linksTitel": "Deine Links",
+    "linksText": "Teile den Link zum jeweiligen Event. Gezählt wird, wer darüber kommt und direkt kauft.",
+    "mitCode": "Dein Code {code} steckt schon im Link: {rabatt} weniger pro Ticket.",
+    "keineEvents": "Gerade ist kein Event im Verkauf. Sobald es wieder Tickets gibt, steht dein Link hier.",
+    "kopieren": "Kopieren",
+    "kopiert": "Kopiert",
+    "zahlenTitel": "Deine Zahlen",
+    "keineZahlen": "Noch keine Zahlen. Sobald jemand deinen Link öffnet, steht es hier.",
+    "hinweis": "Klicks sind Aufrufe, keine Personen: Wer zweimal öffnet, zählt zweimal. Tickets zählen, sobald sie bezahlt sind.",
+    "geheim": "Dieser Link ist nur für dich. Wer ihn hat, sieht deine Zahlen."
   }
 }

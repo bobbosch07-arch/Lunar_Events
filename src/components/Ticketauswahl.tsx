@@ -7,6 +7,7 @@ import { Knopf } from "./Knopf";
 import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
 import { gemerkterCode } from "@/lib/rabatt";
+import { promoAusAdresse } from "@/lib/promoter";
 import { phasenZustaende, verkaufsstand, zeigeRest, type Phase } from "@/lib/typen";
 import css from "./Ticketauswahl.module.css";
 
@@ -75,8 +76,12 @@ export function Ticketauswahl(props: Props) {
       .join(",");
     // Ein Code aus einem Link reist mit; eintragen muss ihn niemand.
     const code = gemerkterCode();
+    // Das Promoter-Kürzel reist nur in der Adresse — gespeichert wird es nie.
+    const promo = promoAusAdresse();
     router.push(
-      `/checkout?event=${eventSlug}&p=${teile}${code ? `&code=${encodeURIComponent(code)}` : ""}`,
+      `/checkout?event=${eventSlug}&p=${teile}` +
+        (code ? `&code=${encodeURIComponent(code)}` : "") +
+        (promo ? `&promo=${promo}` : ""),
     );
   }
 

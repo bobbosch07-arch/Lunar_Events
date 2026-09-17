@@ -17,6 +17,15 @@
   border: 0;
 }
 
+/* Ein langer Link in einer Zeile: scrollt in sich, statt das Formular
+   zu verbreitern. */
+.linkwert {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
 .gruppe {
   background: var(--ivory-50);
   border: 1px solid var(--border-light);

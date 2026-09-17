@@ -1,0 +1,211 @@
+/* Die Seite hinter dem geheimen Link eines Promoters. Sie wird fast immer
+   am Handy geöffnet, meist kurz vor oder nach einer Story — deshalb zuerst
+   die zwei Zahlen, dann die Links zum Kopieren. */
+
+.rahmen {
+  min-height: 100vh;
+  background: var(--ivory-50);
+  color: var(--text-primary);
+}
+
+.kopf {
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.inhalt {
+  padding-block: var(--space-10) var(--space-16);
+  max-width: var(--breite-schmal);
+}
+
+.kopfzeile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+}
+
+.intro {
+  font-size: var(--fs-body-l);
+  color: var(--text-secondary);
+  max-width: 48ch;
+}
+
+.pausiert {
+  margin-bottom: var(--space-8);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-md);
+  background: var(--warning-weich);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+/* ---------- Summen ---------- */
+
+.summen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-12);
+}
+
+.summe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--ivory-100);
+}
+
+.summeName {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.summeWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Abschnitte ---------- */
+
+.abschnitt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.abschnittTitel {
+  font-size: var(--fs-h3);
+}
+
+.abschnittText {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+.linkKarte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+}
+
+.linkKopf {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.linkTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  text-transform: uppercase;
+}
+
+.linkDatum {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+.linkCode {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.kopierReihe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kopierWert {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  background: var(--ivory-100);
+  font-size: var(--fs-body-s);
+}
+
+/* ---------- Zahlen je Event ---------- */
+
+.zeilen {
+  list-style: none;
+  border-top: 1px solid var(--border-light);
+}
+
+.zeile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 3.5rem 3.5rem;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding-block: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.zeileKopf {
+  padding-block: var(--space-3);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.zeileEvent {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.zeileTitel {
+  font-weight: var(--fw-medium);
+}
+
+.zeileDatum {
+  font-size: var(--fs-caption);
+  color: var(--text-muted);
+}
+
+.zahl {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.vorbei {
+  color: var(--text-secondary);
+}
+
+.fussnote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+  line-height: var(--lh-body);
+}

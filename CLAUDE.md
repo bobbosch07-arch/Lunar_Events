@@ -33,6 +33,7 @@ node scripts/zahlung-testen.mjs    # Stripe-Kauf ohne Browser durchspielen
 node scripts/einlass-testen.mjs    # Entwerten mit echter Anmeldung
 node scripts/backoffice-testen.mjs # Zugriffsregeln fürs Backoffice
 node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbst auf
+node scripts/promoter-testen.mjs    # Promoter-Zuordnung und Statistik, räumt selbst auf
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -284,6 +285,39 @@ ein offenes Feld schickt Gäste auf Codesuche (Briefing: keine Rabattschlacht).
 Im Backoffice unter „Rabattcodes“: lesen darf das Team, anlegen, ändern und
 löschen nur ein Admin (Zugriffsregel, nicht Oberfläche).
 
+### Promoter (Migrationen 0017, 0018)
+
+Promoter werden **nicht bezahlt, nur gezählt**. Jeder hat einen **geheimen
+Statistik-Link ohne Anmeldung** (`/promoter/<token>`) mit Klicks und
+bezahlten Tickets je Event und seinen Links zum Teilen — **keine Namen, kein
+Umsatz** (Rückfragen 17.09.2026). Rabatt gibt ein Promoter über Codes, die
+ihm zugeordnet sind (`rabattcodes.promoter_id`).
+
+**Zugeordnet wird nur im selben Besuch, und auf dem Gerät wird dafür nichts
+gespeichert.** Der Link trägt `?promo=kürzel` (nicht `p` — das belegt die
+Kasse), die Adresse reicht es weiter: Eventseite → „Tickets kaufen“ (der Knopf
+behält den Parameter, sonst fiele er beim Sprung auf `#tickets` heraus) →
+Ticketauswahl → Kasse. Das war die Bedingung, ohne Einwilligungsdialog
+auszukommen. **Wer das Kürzel in einen Cookie oder `sessionStorage` legt,
+braucht vorher einen Banner.** Ein Code des Promoters hält länger, weil er für
+den Rabatt ohnehin gemerkt wird.
+
+**`ordne_promoter_zu()`** setzt die Zuordnung direkt nach der Reservierung
+(`reserviere()` bleibt unberührt, es gibt kein Kontingent, um das jemand
+konkurriert). **Der Code schlägt den Link:** Wer Lisas Code über Max’ Link
+eintippt, hat ihn von Lisa. Pausierte Promoter zählen nicht, eine gesetzte
+Zuordnung wird nie überschrieben.
+
+**Klicks** sind `ereignisse` der Art `event_gesehen` mit `promoter_id` —
+die Ereignis-Route löst das Kürzel auf. Aufrufe, keine Personen, wie der Rest
+der Auswertung.
+
+**`promoter_statistik(token)`** liefert alles, was der Promoter sieht, und
+ist nur für `service_role` aufrufbar (sonst ließen sich Tokens durchprobieren).
+Das Backoffice benutzt dieselbe Funktion, damit beide Seiten dieselben Zahlen
+zeigen; die Links baut `teilLinks()` für beide. „Neuen Link erzeugen“
+tauscht den Token — der alte liefert sofort 404.
+
 ## Zahlung
 
 **Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
@@ -485,6 +519,7 @@ Fertig und geprüft:
 - Sitemap, robots, Vorschaubilder für geteilte Links
 - Abgelaufene Reservierungen werden alle fünf Minuten freigegeben (pg_cron)
 - Rabattcodes: Kasse (Link und Eingabe), Backoffice mit Einlösungen
+- Promoter: Zuordnung über Link oder Code, geheime Statistikseite, Backoffice
 
 Offen:
 

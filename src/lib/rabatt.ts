@@ -102,6 +102,8 @@ export type RabattcodeStand = {
   einmalProPerson: boolean;
   aktiv: boolean;
   notiz: string;
+  /** "" = gehört keinem Promoter */
+  promoterId: string;
 };
 
 export const LEERER_CODE: RabattcodeStand = {
@@ -116,6 +118,7 @@ export const LEERER_CODE: RabattcodeStand = {
   einmalProPerson: false,
   aktiv: true,
   notiz: "",
+  promoterId: "",
 };
 
 export function codeStandAus(code: Rabattcode): RabattcodeStand {
@@ -133,5 +136,6 @@ export function codeStandAus(code: Rabattcode): RabattcodeStand {
     einmalProPerson: code.einmal_pro_person,
     aktiv: code.aktiv,
     notiz: code.notiz ?? "",
+    promoterId: code.promoter_id ?? "",
   };
 }

@@ -226,5 +226,23 @@
     "nichtGefundenTitel": "This page doesn't exist",
     "nichtGefundenText": "The link may be old. Here are the events.",
     "zurStartseite": "To the homepage"
+  },
+  "promoter": {
+    "eyebrow": "Promoter",
+    "hallo": "Hi {name}",
+    "intro": "This is what’s happening through your links. The numbers are always up to date.",
+    "pausiert": "Your link is paused right now — clicks and purchases don’t count at the moment.",
+    "klicks": "Clicks",
+    "tickets": "Tickets",
+    "linksTitel": "Your links",
+    "linksText": "Share the link for each event. It counts when someone comes through it and buys right away.",
+    "mitCode": "Your code {code} is already in the link: {rabatt} off per ticket.",
+    "keineEvents": "No event is on sale right now. Your link will show up here as soon as tickets are available.",
+    "kopieren": "Copy",
+    "kopiert": "Copied",
+    "zahlenTitel": "Your numbers",
+    "keineZahlen": "No numbers yet. As soon as someone opens your link, you’ll see it here.",
+    "hinweis": "Clicks are page views, not people: opening twice counts twice. Tickets count once they’re paid.",
+    "geheim": "This link is just for you. Anyone who has it can see your numbers."
   }
 }

@@ -28,9 +28,12 @@ export function RabattcodeFormular({
   darfAendern,
   eingeloest,
   adresse,
+  promoter,
 }: {
   start: RabattcodeStand;
   events: EventWahl[];
+  /** Für die Auswahl "gehört zu Promoter" */
+  promoter: Array<{ id: string; name: string }>;
   darfAendern: boolean;
   /** Schon eingelöste Tickets, für den Hinweis bei der Obergrenze */
   eingeloest: number;
@@ -82,6 +85,7 @@ export function RabattcodeFormular({
         einmal_pro_person: stand.einmalProPerson,
         aktiv: stand.aktiv,
         notiz: stand.notiz || null,
+        promoter_id: stand.promoterId || null,
       });
 
       if (!antwort.ok) {
@@ -164,6 +168,28 @@ export function RabattcodeFormular({
                 onChange={(e) => setze("notiz", e.target.value)}
               />
             </div>
+          </div>
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="promoter">
+              Gehört zu Promoter
+            </label>
+            <select
+              id="promoter"
+              className={css.auswahl}
+              value={stand.promoterId}
+              onChange={(e) => setze("promoterId", e.target.value)}
+            >
+              <option value="">Keinem</option>
+              {promoter.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <span className={css.hinweis}>
+              Käufe mit diesem Code zählen dann für den Promoter — auch wenn der
+              Gast über einen anderen Link kam.
+            </span>
           </div>
           <label className={css.schalter}>
             <input

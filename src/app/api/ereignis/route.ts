@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
+import { pruefeKuerzel } from "@/lib/promoter";
 
 export const dynamic = "force-dynamic";
 
@@ -57,6 +58,7 @@ export async function POST(anfrage: Request) {
     art?: string;
     eventId?: string | null;
     kampagne?: string | null;
+    promo?: string | null;
     mobil?: boolean;
   };
   try {
@@ -72,7 +74,23 @@ export async function POST(anfrage: Request) {
   const eigeneHost = new URL(anfrage.url).hostname.replace(/^www\./, "");
 
   const db = dienstClient();
+
+  // Das Kürzel aus dem Link wird zum Promoter. Pausierte zählen nicht —
+  // wie bei der Zuordnung von Bestellungen (ordne_promoter_zu).
+  const kuerzel = pruefeKuerzel(koerper.promo);
+  let promoterId: string | null = null;
+  if (kuerzel) {
+    const { data } = await db
+      .from("promoter")
+      .select("id")
+      .eq("kuerzel", kuerzel)
+      .eq("aktiv", true)
+      .maybeSingle();
+    promoterId = (data?.id as string | undefined) ?? null;
+  }
+
   const { error } = await db.from("ereignisse").insert({
+    promoter_id: promoterId,
     art: koerper.art,
     event_id: koerper.eventId ?? null,
     quelle: quelleAus(anfrage.headers.get("referer"), eigeneHost),

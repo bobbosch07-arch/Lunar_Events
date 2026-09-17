@@ -81,6 +81,9 @@ async function Inhalt({ locale }: { locale: string }) {
                   <tr key={c.id}>
                     <td className={css.haupt}>
                       <Link href={`/backoffice/rabattcodes/${c.id}`}>{c.code}</Link>
+                      {c.promoterName ? (
+                        <div className={css.nebensache}>Promoter: {c.promoterName}</div>
+                      ) : null}
                       {c.notiz ? <div className={css.nebensache}>{c.notiz}</div> : null}
                     </td>
                     <td>{rabattText(c.art, c.wert)}</td>

@@ -9,6 +9,7 @@ const ZIELE = [
   { href: "/backoffice/events", name: "Events" },
   { href: "/backoffice/bestellungen", name: "Bestellungen" },
   { href: "/backoffice/rabattcodes", name: "Rabattcodes" },
+  { href: "/backoffice/promoter", name: "Promoter" },
   { href: "/backoffice/vip", name: "VIP" },
   { href: "/backoffice/auswertung", name: "Auswertung" },
   { href: "/backoffice/hochrechnung", name: "Hochrechnung" },

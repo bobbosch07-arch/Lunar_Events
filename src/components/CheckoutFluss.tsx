@@ -50,6 +50,8 @@ type Props = {
   vorkasseMoeglich: boolean;
   /** Code aus dem Link, auf dem Server schon geprüft. */
   startCode: { text: string; vorschau: CodeVorschau } | null;
+  /** Kürzel eines Promoters aus dem Link — nur für die Zuordnung. */
+  promo: string | null;
 };
 
 type GueltigerCode = Extract<CodeVorschau, { ergebnis: "ok" }>;
@@ -264,6 +266,7 @@ export function CheckoutFluss(props: Props) {
       telefon: formular.telefon,
       fastlane: fastlane && angebot ? anzahl : 0,
       code: code?.code ?? null,
+      promo: props.promo,
     });
 
     setLaeuft(false);
