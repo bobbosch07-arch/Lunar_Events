@@ -46,6 +46,12 @@ export default async function TicketAnsicht({ params }: Props) {
     .eq("zugangstoken", token)
     .maybeSingle();
 
+  // Kein Kauf mit diesem Token? Dann vielleicht ein Eintrag auf der
+  // Gästeliste (0021) — derselbe Link, dieselbe Ansicht, nur ohne Bestellung.
+  if (!bestellung) {
+    return <GaesteTickets token={token} locale={locale} />;
+  }
+
   // Offene Vorkasse-Bestellungen zeigen die Bankverbindung; alles andere,
   // was nicht bezahlt ist, gibt es hier nicht.
   const wartetAufUeberweisung = bestellung?.status === "offen" && Boolean(bestellung?.vorkasse);
@@ -188,6 +194,117 @@ export default async function TicketAnsicht({ params }: Props) {
             </p>
             <Knopf href="/events" stil="linieHell" groesse="klein">
               Weitere Events
+            </Knopf>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/**
+ * Die QR-Codes eines Gästelisten-Eintrags. Wie die Tickets eines Kaufs:
+ * Wer den Link hat, kommt rein. Ohne Wallet-Knöpfe — Pässe hängen an einer
+ * Bestellung.
+ */
+async function GaesteTickets({ token, locale }: { token: string; locale: string }) {
+  const db = dienstClient();
+  const { data: gast } = await db
+    .from("gaeste")
+    .select(
+      `id, name, entfernt_am,
+       event:events(titel, beginn, einlass, status, ort:orte(name, stadt, strasse, plz))`,
+    )
+    .eq("token", token)
+    .maybeSingle();
+  if (!gast) notFound();
+
+  const [t, f] = await Promise.all([getTranslations("ticket"), getFormatter({ locale })]);
+  const event = gast.event as unknown as {
+    titel: string;
+    beginn: string;
+    einlass: string | null;
+    status: string;
+    ort: { name: string; stadt: string; strasse: string | null; plz: string | null };
+  };
+
+  const { data: rohTickets } = await db
+    .from("tickets")
+    .select("code, phase_name, status, gast_name")
+    .eq("gast_id", gast.id)
+    .neq("status", "storniert")
+    .order("erstellt_am", { ascending: true })
+    .order("id", { ascending: true });
+
+  const wann = f.dateTime(new Date(event.beginn), "mitZeit");
+  const ort = `${event.ort.name}, ${event.ort.stadt}`;
+  const tickets: TicketAnzeige[] = gast.entfernt_am
+    ? []
+    : (rohTickets ?? []).map((z) => ({
+        code: z.code as string,
+        phase_name: z.phase_name as string,
+        art: "standard",
+        status: z.status === "entwertet" ? "entwertet" : "gueltig",
+        gast_name: (z.gast_name as string | null) ?? (gast.name as string),
+        platz: null,
+        fastlane: false,
+        event_titel: event.titel,
+        event_wann: wann,
+        event_ort: ort,
+        bestellnummer: "",
+      }));
+  const vorbei = new Date(event.beginn).getTime() < Date.now();
+
+  return (
+    <div className={css.rahmen}>
+      <header className={css.kopf}>
+        <div className="seitenbreite">
+          <Link href="/" aria-label="Lunar Events">
+            <Logo ton="ivory" hoehe={40} prioritaet />
+          </Link>
+        </div>
+      </header>
+
+      <main className={css.inhalt}>
+        <div className="seitenbreite">
+          <div className={css.kopfzeile}>
+            <span className="eyebrow">{t("gaesteliste")}</span>
+            <h1 className={css.titel}>{event.titel}</h1>
+            <p className={css.wann}>{wann}</p>
+            <p className={css.ort}>
+              {event.ort.name}
+              {event.ort.strasse ? `, ${event.ort.strasse}` : ""}
+              {event.ort.plz ? `, ${event.ort.plz}` : ""} {event.ort.stadt}
+            </p>
+            {event.einlass ? (
+              <p className={css.einlass}>
+                {t("einlassAb", {
+                  zeit: f.dateTime(new Date(event.einlass), { hour: "2-digit", minute: "2-digit" }),
+                })}
+              </p>
+            ) : null}
+          </div>
+
+          {gast.entfernt_am ? (
+            <p className={css.abgesagt}>{t("gastEntfernt")}</p>
+          ) : event.status === "abgesagt" ? (
+            <p className={css.abgesagt}>{t("gastAbgesagt")}</p>
+          ) : vorbei ? (
+            <p className={css.hinweisBand}>{t("vorbei")}</p>
+          ) : null}
+
+          <div className={css.raster}>
+            {tickets.map((ticket) => (
+              <TicketKarte key={ticket.code} ticket={ticket} />
+            ))}
+          </div>
+
+          <div className={css.fuss}>
+            <p className={css.warnung}>
+              <strong>{t("gastWarnungTitel")}</strong> {t("gastWarnung")}
+            </p>
+            <Knopf href="/events" stil="linieHell" groesse="klein">
+              {t("weitereEvents")}
             </Knopf>
           </div>
         </div>

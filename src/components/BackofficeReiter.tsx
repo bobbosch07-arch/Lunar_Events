@@ -10,6 +10,7 @@ const ZIELE = [
   { href: "/backoffice/bestellungen", name: "Bestellungen" },
   { href: "/backoffice/rabattcodes", name: "Rabattcodes" },
   { href: "/backoffice/promoter", name: "Promoter" },
+  { href: "/backoffice/gaesteliste", name: "Gästeliste" },
   { href: "/backoffice/vip", name: "VIP" },
   { href: "/backoffice/auswertung", name: "Auswertung" },
   { href: "/backoffice/hochrechnung", name: "Hochrechnung" },

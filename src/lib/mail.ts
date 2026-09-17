@@ -514,3 +514,76 @@ Lunar Events`;
     text,
   });
 }
+
+/* ------------------------------------------------------------------ */
+
+export type GaestelisteMail = {
+  an: string;
+  name: string;
+  eventTitel: string;
+  wann: string;
+  ort: string;
+  /** Personen insgesamt, der Gast eingeschlossen */
+  personen: number;
+  ticketLink: string;
+};
+
+/**
+ * Du stehst auf der Gästeliste — mit dem Link zu den QR-Codes. Am Einlass
+ * geht es auch ohne, über die Namensliste; der Code ist nur schneller.
+ */
+export async function sendeGaesteliste(daten: GaestelisteMail): Promise<boolean> {
+  const name = maskiere(daten.name);
+  const mit =
+    daten.personen === 1
+      ? ""
+      : daten.personen === 2
+        ? " — mit einer Begleitung"
+        : ` — mit ${daten.personen - 1} Begleitungen`;
+
+  const html = huelle(`
+${kopfBalken("Gästeliste")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">Hallo ${name},</p>
+<p style="margin:0 0 24px;">du stehst auf der Gästeliste für <strong>${maskiere(daten.eventTitel)}</strong>${mit}.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
+<tr><td style="padding:16px 18px;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
+</table>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:8px;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen"}</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+${daten.personen === 1 ? "Zeig den Code am Einlass." : "Jede Person braucht ihren eigenen Code — schick deiner Begleitung den Link oder zeigt die Codes nacheinander."}
+Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.
+</p>
+</td></tr>`);
+
+  const text = `Hallo ${daten.name},
+
+du stehst auf der Gästeliste für ${daten.eventTitel}${mit}.
+
+Wann: ${daten.wann}
+Wo: ${daten.ort}
+
+QR-Codes: ${daten.ticketLink}
+
+Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `Gästeliste: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}

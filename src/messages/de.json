@@ -206,7 +206,15 @@
     "walletGoogle": "Zu Google Wallet",
     "pdf": "Als PDF",
     "kommende": "Kommende",
-    "vergangene": "Vergangene"
+    "vergangene": "Vergangene",
+    "gaesteliste": "Gästeliste",
+    "einlassAb": "Einlass ab {zeit} Uhr",
+    "vorbei": "Dieses Event ist vorbei.",
+    "gastEntfernt": "Dieser Eintrag steht nicht mehr auf der Gästeliste. Melde dich bei uns, falls das ein Versehen ist.",
+    "gastAbgesagt": "Diese Veranstaltung wurde abgesagt.",
+    "gastWarnungTitel": "Wer diesen Link hat, kommt rein.",
+    "gastWarnung": "Jeder Code gilt für eine Person und genau einmal. Deine Begleitung kann ihren Code auch von deinem Handy zeigen. Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.",
+    "weitereEvents": "Weitere Events"
   },
   "konto": {
     "titel": "Account",

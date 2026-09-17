@@ -36,6 +36,7 @@ node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbs
 node scripts/promoter-testen.mjs    # Promoter-Zuordnung und Statistik, räumt selbst auf
 node scripts/presale-testen.mjs     # Presale, Einladungen, Abmelden, räumt selbst auf
 node scripts/warteliste-testen.mjs  # Warteliste: Reihenfolge, Frist, Freigeben, räumt selbst auf
+node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/Team/Einlass), räumt selbst auf
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -417,6 +418,42 @@ Bekannte Grenze: Das Formular schickt Mails an eingetippte Adressen. Gebremst
 wird je Adresse (10 Minuten) und mit Honigfalle — eine gezielte Flut könnte das
 Brevo-Tageslimit (300) aufbrauchen, und damit auch Ticketmails.
 
+### Gästeliste (Migration 0021)
+
+Entschieden: pflegen nur **Admins** (lesen das Team), **Begleitung je Eintrag**
+(0–10), am Einlass **QR-Code und Namensliste**, und die Gästeliste **kommt
+obendrauf** — sie zieht nichts von den Phasenkontingenten ab. In der
+Eventliste des Backoffice steht sie deshalb unter „Verkauft", nicht darin.
+
+**Jeder Eintrag erzeugt echte Tickets, eines je Person** (`speichere_gast`).
+QR-Scan (`entwerte_ticket`, unverändert), Prüfsummen für den Betrieb ohne Netz
+und Namensliste (`lasse_gast_ein`) entwerten dieselben Zeilen — wer per QR drin
+ist, ist auf der Liste abgehakt und umgekehrt, doppelt rein geht nicht.
+Gäste-Tickets hängen an `tickets.gast_id` statt an einer Bestellung
+(`bestellung_id` und `phase_id` sind dafür nullbar, die Regel
+`tickets_herkunft` erzwingt genau eine Herkunft). **Wer Tickets zählt, um
+Verkäufe zu meinen, muss `bestellung_id is not null` filtern** — die Kennzahl
+„Tickets verkauft" tut das, alles über Bestellungen sieht Gäste ohnehin nicht.
+
+Ändern gleicht die Tickets an: mehr Begleitung → neue Tickets, weniger → die
+jüngsten gültigen werden storniert, unter die Zahl der schon Eingelassenen geht
+es nicht. **Entfernen löscht nicht**, sondern storniert die offenen Tickets
+(`entfernt_am`); der Scanner zeigt dann „Storniert".
+
+Die Funktionen laufen über die Sitzung (`authenticated`) und prüfen die Rolle
+selbst; nur der Mailversand (`verschickeGastTickets`) nimmt den Dienstschlüssel
+und prüft vorher. Der Link zu den QR-Codes ist `/tickets/<gaeste.token>` —
+dieselbe Seite wie beim Kauf, sie fällt auf die Gästeliste zurück, wenn keine
+Bestellung den Token hat. Ohne Wallet-Knöpfe (Pässe hängen an Bestellungen).
+
+**Namensliste im Scanner** (`GaesteNamensliste`, Umschalter „Scannen |
+Gästeliste"): Die Datenbank liefert sie ohne Mailadressen
+(`gaesteliste_einlass`). Ohne Netz wie der Scanner: Die Liste **des gewählten
+Events** liegt im `localStorage` des Geräts (Name, Notiz, Personenzahl),
+Einlässe werden gepuffert und alle 20 Sekunden nachgereicht; beim Nachreichen
+begrenzt die Datenbank, sodass auch zwei Geräte nicht mehr Personen einlassen,
+als ein Eintrag hat. Die Notiz sieht der Einlass mit — das steht im Formular.
+
 ## Zahlung
 
 **Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
@@ -621,6 +658,7 @@ Fertig und geprüft:
 - Promoter: Zuordnung über Link oder Code, geheime Statistikseite, Backoffice
 - Presale: Verkaufsstart je Event, Zugang über Codes und Einladungen, Abmelden
 - Warteliste: Bestätigungslink, Angebote mit Frist, Kasse, Freigeben, Backoffice
+- Gästeliste: Backoffice-Reiter, Tickets je Person, Mail/Link, Namensliste im Scanner (offline)
 
 Offen:
 

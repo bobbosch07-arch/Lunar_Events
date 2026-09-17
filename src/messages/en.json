@@ -206,7 +206,15 @@
     "walletGoogle": "Add to Google Wallet",
     "pdf": "As PDF",
     "kommende": "Upcoming",
-    "vergangene": "Past"
+    "vergangene": "Past",
+    "gaesteliste": "Guest list",
+    "einlassAb": "Doors open {zeit}",
+    "vorbei": "This event is over.",
+    "gastEntfernt": "This entry is no longer on the guest list. Get in touch if that’s a mistake.",
+    "gastAbgesagt": "This event has been cancelled.",
+    "gastWarnungTitel": "Anyone with this link gets in.",
+    "gastWarnung": "Each code is for one person and works exactly once. Your plus-one can show their code from your phone. No phone? No problem: you’re on the list by name.",
+    "weitereEvents": "More events"
   },
   "konto": {
     "titel": "Account",

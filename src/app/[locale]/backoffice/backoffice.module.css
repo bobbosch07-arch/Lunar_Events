@@ -362,3 +362,29 @@
     background-position: -200% 0;
   }
 }
+
+/* ---------- Leise Knöpfe in Tabellen ---------- */
+
+/* Wie "Entfernen" im Eventformular, aber ohne die rote Warnfarbe — für
+   Bearbeiten, Schicken und Ähnliches. */
+.textknopf {
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--fs-caption);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.textknopf:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
+}
+
+.textknopf:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

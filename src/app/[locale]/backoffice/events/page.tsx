@@ -94,6 +94,9 @@ async function Inhalt({ locale }: { locale: string }) {
                           </span>
                         ) : null}
                       </div>
+                      {e.gaeste > 0 ? (
+                        <div className={css.nebensache}>+ {e.gaeste} Gästeliste</div>
+                      ) : null}
                     </td>
                     <td className={css.zahl}>{preisText(e.umsatzCent, locale)}</td>
                     <td>
@@ -111,7 +114,8 @@ async function Inhalt({ locale }: { locale: string }) {
         „Verkauft" zählt alle Standardphasen zusammen und enthält auch
         laufende Reservierungen — das ist Absicht, denn die blockieren
         tatsächlich Plätze. Der Umsatz zählt dagegen nur bezahlte
-        Bestellungen.
+        Bestellungen. Die Gästeliste kommt obendrauf und steht deshalb
+        darunter, nicht darin.
       </p>
     </>
   );

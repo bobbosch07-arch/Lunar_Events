@@ -45,7 +45,8 @@ export async function holeKennzahlen(): Promise<Kennzahlen> {
     // Die einzige Abfrage, die noch Zeilen braucht: Summieren kann
     // PostgREST nicht ohne eigene Funktion in der Datenbank.
     db.from("bestellungen").select("gesamt_cent").eq("status", "bezahlt"),
-    zaehle("tickets").neq("status", "storniert"),
+    // Gäste-Tickets (0021) haben keine Bestellung — verkauft sind sie nicht.
+    zaehle("tickets").neq("status", "storniert").not("bestellung_id", "is", null),
     zaehle("tickets").eq("status", "entwertet"),
     zaehle("events").eq("status", "veroeffentlicht").gt("beginn", jetzt),
     zaehle("vip_anfragen").in("status", ["neu", "in_bearbeitung"]),
@@ -87,6 +88,8 @@ export type EventZeile = {
   kontingent: number | null;
   umsatzCent: number;
   phasen: number;
+  /** Personen auf der Gästeliste — zählen nicht zu "verkauft". */
+  gaeste: number;
 };
 
 /**
@@ -133,6 +136,19 @@ export async function holeEventZeilen(
     // bilden.
     .in("event_id", data.map((e) => e.id as string));
 
+  // Gästeliste je Event, in Personen. Sie kommt obendrauf und steht deshalb
+  // neben den verkauften Tickets, nicht darin.
+  const { data: gaeste } = await db
+    .from("gaeste")
+    .select("event_id, begleitung")
+    .is("entfernt_am", null)
+    .in("event_id", data.map((e) => e.id as string));
+  const gaesteJeEvent = new Map<string, number>();
+  for (const g of gaeste ?? []) {
+    const id = g.event_id as string;
+    gaesteJeEvent.set(id, (gaesteJeEvent.get(id) ?? 0) + 1 + (g.begleitung as number));
+  }
+
   const umsatzJeEvent = new Map<string, number>();
   for (const b of bestellungen ?? []) {
     const id = b.event_id as string;
@@ -161,6 +177,7 @@ export async function holeEventZeilen(
         : standard.reduce((s, p) => s + (p.kontingent ?? 0), 0),
       umsatzCent: umsatzJeEvent.get(e.id as string) ?? 0,
       phasen: phasen.length,
+      gaeste: gaesteJeEvent.get(e.id as string) ?? 0,
     };
   });
 }

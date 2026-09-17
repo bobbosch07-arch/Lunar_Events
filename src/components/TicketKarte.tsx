@@ -83,10 +83,13 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
               <span className={css.datenWert}>{ticket.gast_name}</span>
             </div>
           ) : null}
-          <div className={css.datenfeld}>
-            <span className={css.datenName}>Bestellung</span>
-            <span className={css.datenWert}>{ticket.bestellnummer}</span>
-          </div>
+          {/* Gäste-Tickets (0021) haben keine Bestellung. */}
+          {ticket.bestellnummer ? (
+            <div className={css.datenfeld}>
+              <span className={css.datenName}>Bestellung</span>
+              <span className={css.datenWert}>{ticket.bestellnummer}</span>
+            </div>
+          ) : null}
         </div>
       </div>
 

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { Knopf } from "./Knopf";
+import { GaesteNamensliste } from "./GaesteNamensliste";
 import { entwerte, holePruefsummen, type EinlassErgebnis } from "@/app/aktionen/einlass";
 import css from "./EinlassScanner.module.css";
 
@@ -53,6 +54,10 @@ export function EinlassScanner({ events }: { events: Event[] }) {
   const strom = useRef<MediaStream | null>(null);
   const zuletzt = useRef<{ code: string; zeit: number } | null>(null);
   const laufend = useRef(false);
+  // Auf der Namensliste läuft die Kamera weiter (kein neues Freigeben beim
+  // Zurückwechseln), sucht aber keine Codes.
+  const modusRef = useRef<"scan" | "liste">("scan");
+  const [modus, setModus] = useState<"scan" | "liste">("scan");
 
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
   const [laeuft, setLaeuft] = useState(false);
@@ -195,7 +200,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
       inversionAttempts: "dontInvert",
     });
 
-    if (treffer?.data) void verarbeite(treffer.data);
+    if (treffer?.data && modusRef.current === "scan") void verarbeite(treffer.data);
     if (laufend.current) requestAnimationFrame(suchen);
   }, [verarbeite]);
 
@@ -266,7 +271,38 @@ export function EinlassScanner({ events }: { events: Event[] }) {
         </div>
       </header>
 
-      <div className={css.buehne}>
+      <div className={css.modus} role="tablist" aria-label="Einlass">
+        {(
+          [
+            ["scan", "Scannen"],
+            ["liste", "Gästeliste"],
+          ] as const
+        ).map(([wert, name]) => (
+          <button
+            key={wert}
+            type="button"
+            role="tab"
+            aria-selected={modus === wert}
+            className={`${css.modusKnopf} ${modus === wert ? css.modusAktiv : ""}`}
+            onClick={() => {
+              modusRef.current = wert;
+              setModus(wert);
+            }}
+          >
+            {name}
+          </button>
+        ))}
+      </div>
+
+      {modus === "liste" ? (
+        <GaesteNamensliste
+          eventId={eventId}
+          online={online}
+          eingelassen={(n) => setGezaehlt((z) => z + n)}
+        />
+      ) : null}
+
+      <div className={css.buehne} hidden={modus !== "scan"}>
         <video ref={video} className={css.video} playsInline muted />
         <canvas ref={leinwand} hidden />
         {laeuft ? (
@@ -287,6 +323,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
       <div
         className={`${css.ergebnis} ${urteil ? css[urteil.klasse] : css.leer}`}
         aria-live="assertive"
+        hidden={modus !== "scan"}
       >
         {urteil ? (
           <>
@@ -304,6 +341,8 @@ export function EinlassScanner({ events }: { events: Event[] }) {
                   <span className={css.detail}>
                     {zustand.wert.typ}
                     {zustand.wert.platz ? ` · ${zustand.wert.platz}` : ""}
+                    {/* Gästeliste (0021): der Name steht auf dem Ticket. */}
+                    {zustand.wert.gast ? ` · ${zustand.wert.gast}` : ""}
                   </span>
                 ) : null}
                 {zustand.wert.event ? (
@@ -338,7 +377,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
         )}
       </div>
 
-      {handeingabe ? (
+      {handeingabe && modus === "scan" ? (
         <form
           className={css.eingabezeile}
           onSubmit={(e) => {

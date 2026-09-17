@@ -203,9 +203,11 @@ export type Bestellung = {
 
 export type Ticket = {
   id: string;
-  bestellung_id: string;
+  /** null bei Tickets von der Gästeliste (0021) — dann ist gast_id gesetzt. */
+  bestellung_id: string | null;
   event_id: string;
-  phase_id: string;
+  phase_id: string | null;
+  gast_id: string | null;
   phase_name: string;
   art: TicketArt;
   /** Der Wert im QR-Code. Zufaellig, nicht ableitbar aus der Ticket-ID. */
@@ -308,6 +310,32 @@ export type CodeVorschau =
     };
 
 export type CodeAblehnung = Exclude<CodeVorschau, { ergebnis: "ok" }>;
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Ein Eintrag auf der Gästeliste (0021). Er erzeugt ein Ticket je Person —
+ * QR-Scan und Namensliste entwerten dieselben Tickets. Die Gästeliste kommt
+ * obendrauf und zieht nichts von den Phasenkontingenten ab.
+ */
+export type Gast = {
+  id: string;
+  event_id: string;
+  name: string;
+  email: string | null;
+  /** Wie viele Personen zusätzlich mitkommen: +1, +2 … */
+  begleitung: number;
+  notiz: string | null;
+  /** Zugang zur Ticketseite: /tickets/<token> */
+  token: string;
+  mail_gesendet_am: string | null;
+  /** Personen mit gültigem oder eingelöstem Ticket */
+  personen: number;
+  /** Davon schon drin */
+  drin: number;
+};
+
+export const GAST_MAX_BEGLEITUNG = 10;
 
 /* ------------------------------------------------------------------ */
 
