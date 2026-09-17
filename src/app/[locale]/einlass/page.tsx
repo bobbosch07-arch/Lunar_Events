@@ -7,7 +7,8 @@ import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
 import { holeKommendeEvents } from "@/lib/events";
 import { redirect } from "next/navigation";
-import { sitzungAbgelaufen, type PersonalRolle } from "@/lib/sitzung";
+import { sitzungAbgelaufen } from "@/lib/sitzung";
+import { darfScannen, istRolle, ROLLEN_NAMEN } from "@/lib/rollen";
 import css from "./einlass.module.css";
 
 export const metadata: Metadata = {
@@ -47,22 +48,25 @@ export default async function Einlass({
     .eq("user_id", angemeldet.id)
     .maybeSingle();
 
-  if (!mitarbeiter?.aktiv) {
+  const rolle = istRolle(mitarbeiter?.rolle) ? mitarbeiter.rolle : null;
+
+  if (!mitarbeiter?.aktiv || !rolle || !darfScannen(rolle)) {
     return (
       <main className={css.tor}>
         <Logo ton="ivory" hoehe={64} />
         <div className={css.abweisung}>
           <h1 className={css.abweisungTitel}>Kein Zugang</h1>
           <p className={css.abweisungText}>
-            Dieses Konto ({angemeldet.email}) ist nicht fürs Einlasspersonal
-            freigeschaltet. Melde dich bei der Veranstaltungsleitung.
+            {rolle && mitarbeiter?.aktiv
+              ? `Als ${ROLLEN_NAMEN[rolle]} scannst du keine Tickets. Scannen dürfen Einlass, Bar und Kasse.`
+              : `Dieses Konto (${angemeldet.email}) ist nicht fürs Einlasspersonal freigeschaltet. Melde dich bei der Veranstaltungsleitung.`}
           </p>
         </div>
       </main>
     );
   }
 
-  if (await sitzungAbgelaufen(mitarbeiter.rolle as PersonalRolle)) {
+  if (await sitzungAbgelaufen(rolle)) {
     redirect("/auth/abmelden?weiter=/einlass");
   }
 

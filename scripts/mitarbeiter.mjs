@@ -5,10 +5,14 @@
  *   node scripts/mitarbeiter.mjs max@lunar.de "Max M" admin
  *   node scripts/mitarbeiter.mjs max@lunar.de --weg
  *
- * Rollen:
- *   admin    — alles, auch Personal verwalten
- *   team     — Events, Preise, Bestellungen, Auswertungen
- *   einlass  — nur Tickets scannen und entwerten
+ * Rollen (Migration 0022) — Aufgaben, keine Rechtestufen:
+ *   admin      — Backoffice und Personal; braucht zweiten Faktor
+ *   kasse      — Geld vor Ort, scannt; braucht zweiten Faktor
+ *   einlass    — scannt am Eingang
+ *   bar        — scannt (Fast Lane, später Getränkemarken)
+ *   security   — nur eigener Plan
+ *   runner     — nur eigener Plan
+ *   toiletten  — nur eigener Plan
  *
  * Es gibt bewusst keine Oberfläche dafür. Wer Personal anlegen darf,
  * bestimmt, wer an die Kasse kommt — das gehört nicht hinter einen
@@ -28,7 +32,7 @@ const db = createClient(
   { auth: { persistSession: false } },
 );
 
-const ROLLEN = ["admin", "team", "einlass"];
+const ROLLEN = ["admin", "kasse", "einlass", "bar", "security", "runner", "toiletten"];
 const [, , email, zweites, drittes] = process.argv;
 
 async function auflisten() {
@@ -47,7 +51,8 @@ async function auflisten() {
   for (const m of data) {
     const konto = konten.users.find((u) => u.id === m.user_id);
     console.log(
-      `${m.aktiv ? "●" : "○"} ${(konto?.email ?? m.user_id).padEnd(34)} ${m.rolle.padEnd(8)} ${m.name}`,
+      `${m.aktiv ? "●" : "○"} ${(konto?.email ?? m.user_id).padEnd(34)} ${m.rolle.padEnd(10)} ` +
+        `${(konto?.factors ?? []).length ? "2FA" : "   "} ${m.name}`,
     );
   }
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { PasswortSetzen } from "@/components/PasswortSetzen";
+import { ZweiFaktor } from "@/components/ZweiFaktor";
 import { serverClient } from "@/lib/supabase/server";
 import css from "../backoffice.module.css";
 
@@ -32,6 +33,9 @@ export default async function Zugang({
         hatPasswort={Boolean(nutzer?.user_metadata?.passwort_gesetzt)}
         email={nutzer?.email}
       />
+      <div style={{ marginTop: "1.5rem" }}>
+        <ZweiFaktor art="verwalten" />
+      </div>
     </>
   );
 }

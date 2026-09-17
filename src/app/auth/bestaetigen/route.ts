@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { SUPABASE_URL, SUPABASE_OEFFENTLICH } from "@/lib/supabase/umgebung";
+import { meldeAnmeldung } from "@/lib/anmeldemeldung";
 
 export const dynamic = "force-dynamic";
 
@@ -63,6 +64,10 @@ export async function GET(anfrage: NextRequest) {
     console.error("[auth] Anmeldung fehlgeschlagen:", error.message);
     return NextResponse.redirect(`${origin}/konto?fehler=abgelaufen`);
   }
+
+  // Gemeldet werden nur Anmeldungen von Admins — bei Gästen wäre es Lärm.
+  const { data: nutzer } = await db.auth.getUser();
+  if (nutzer.user) await meldeAnmeldung(nutzer.user.id, "Anmeldelink");
 
   return NextResponse.redirect(`${origin}${ziel}`);
 }

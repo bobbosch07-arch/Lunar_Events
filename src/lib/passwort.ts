@@ -15,6 +15,9 @@
  * kurzes Passwort direkt über die Schnittstelle setzen.
  */
 
+/** Merkt für ein paar Stunden, dass jemand den zweiten Faktor vertagt hat. */
+export const SPAETER_COOKIE = "lunar_2fa_spaeter";
+
 export const PASSWORT_MINDESTLAENGE = 12;
 
 /** Häufige Passwörter und Wortbestandteile — kleingeschrieben verglichen. */

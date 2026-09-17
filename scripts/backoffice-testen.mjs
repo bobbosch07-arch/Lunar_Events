@@ -9,6 +9,7 @@
  * halten sie ein fremdes Konto davon fern?
  */
 import { createClient } from "@supabase/supabase-js";
+import { richteZweitenFaktorEin } from "./_totp.mjs";
 import { readFileSync } from "node:fs";
 
 for (const roh of readFileSync(new URL("../.env.local", import.meta.url), "utf8").split("\n")) {
@@ -91,24 +92,27 @@ async function durchspielen() {
          "Fremdes Konto kann kein Event ändern",
          fremdSchreibt ? "abgewiesen" : "stillschweigend ignoriert");
 
-  // --- Team-Konto ---
+  // --- Admin-Konto (seit 0022 gibt es keine Bürorolle mehr) ---
   await dienst.from("mitarbeiter").upsert(
-    { user_id: team.user.id, name: "Team Test", rolle: "team", aktiv: true },
+    { user_id: team.user.id, name: "Admin Test", rolle: "admin", aktiv: true },
     { onConflict: "user_id" },
   );
   const teamNeu = await sitzungFuer(TEAM);
+  // Zweiter Faktor, falls die Pflicht scharf steht — sonst käme der Admin
+  // hier nicht an seine eigenen Daten.
+  await richteZweitenFaktorEin(teamNeu.client, "Backofficetest");
 
   const { data: teamVip } = await teamNeu.client.from("vip_anfragen").select("id, name");
-  pruefe((teamVip ?? []).length > 0, "Team sieht VIP-Anfragen", `${(teamVip ?? []).length}`);
+  pruefe((teamVip ?? []).length > 0, "Admin sieht VIP-Anfragen", `${(teamVip ?? []).length}`);
 
   const { data: teamBestellungen } = await teamNeu.client
     .from("bestellungen").select("id, nummer");
-  pruefe(Array.isArray(teamBestellungen), "Team kann Bestellungen lesen",
+  pruefe(Array.isArray(teamBestellungen), "Admin kann Bestellungen lesen",
          `${(teamBestellungen ?? []).length}`);
 
   const { error: teamSchreibt } = await teamNeu.client
     .from("vip_anfragen").update({ status: "in_bearbeitung" }).eq("email", "anfragetest@lunar-events.de");
-  pruefe(!teamSchreibt, "Team kann den Anfragestatus setzen", teamSchreibt?.message ?? "");
+  pruefe(!teamSchreibt, "Admin kann den Anfragestatus setzen", teamSchreibt?.message ?? "");
 
   // --- Ein Event anlegen, wie es das Formular täte ---
   const { data: ort } = await teamNeu.client.from("orte").select("id").limit(1).single();
@@ -127,7 +131,7 @@ async function durchspielen() {
     })
     .select("id, slug")
     .single();
-  pruefe(!anlegeFehler && Boolean(neu), "Team kann ein Event anlegen",
+  pruefe(!anlegeFehler && Boolean(neu), "Admin kann ein Event anlegen",
          anlegeFehler?.message ?? "");
 
   if (neu) {
@@ -136,7 +140,7 @@ async function durchspielen() {
       preis_cent: 3900, gebuehr_cent: 250, kontingent: 100, verkauft: 0,
       leistungen: ["Eintritt"], position: 1, aktiv: true,
     });
-    pruefe(!phasenFehler, "Team kann Phasen anlegen", phasenFehler?.message ?? "");
+    pruefe(!phasenFehler, "Admin kann Phasen anlegen", phasenFehler?.message ?? "");
 
     // Ein Entwurf darf oeffentlich nicht sichtbar sein
     const anonym = createClient(URL_, OEFFENTLICH, { auth: { persistSession: false } });

@@ -1,23 +1,15 @@
-import { serverClient } from "./supabase/server";
+import { dienstClient, datenbankVerbunden, serverClient } from "./supabase/server";
+import { sitzungStunden, type Rolle } from "./rollen";
 
 /**
- * Wie lange eine Anmeldung fürs Personal gilt — gemessen ab der echten
- * Anmeldung, nicht ab der letzten Aktivität.
+ * Wie lange eine Anmeldung fürs Personal gilt und wie stark sie ist.
  *
- * Die eigentliche Grenze zieht die Datenbank (`ist_mitarbeiter`, Migration
- * 0014, Dauer für Einlass in 0015): Danach sieht eine alte Sitzung keine Personal-Daten mehr. Diese
- * Datei sorgt nur dafür, dass die Oberfläche das merkt und zur Anmeldung
- * schickt, statt leere Seiten zu zeigen. Die Zahlen müssen mit der
- * Migration übereinstimmen.
+ * Die eigentliche Grenze zieht die Datenbank (`ist_mitarbeiter`, zuletzt
+ * Migration 0022): Danach sieht eine alte Sitzung keine Personal-Daten mehr.
+ * Diese Datei sorgt nur dafür, dass die Oberfläche das merkt und zur
+ * Anmeldung schickt, statt leere Seiten zu zeigen. Die Dauer je Rolle steht
+ * in `rollen.ts` und muss mit der Migration übereinstimmen.
  */
-export const SITZUNG_STUNDEN = {
-  admin: 8,
-  team: 8,
-  // 24 statt 12 Stunden: Fragebogen vom 16.09.2026.
-  einlass: 24,
-} as const;
-
-export type PersonalRolle = keyof typeof SITZUNG_STUNDEN;
 
 /**
  * Zeitpunkt der echten Anmeldung in Sekunden, aus `amr` im Token.
@@ -47,8 +39,48 @@ export async function angemeldetSeit(): Promise<number | null> {
 }
 
 /** Ist die Anmeldung für diese Rolle zu alt? Ohne Zeitpunkt: ja. */
-export async function sitzungAbgelaufen(rolle: PersonalRolle): Promise<boolean> {
+export async function sitzungAbgelaufen(rolle: Rolle): Promise<boolean> {
   const seit = await angemeldetSeit();
   if (seit === null) return true;
-  return Date.now() / 1000 - seit > SITZUNG_STUNDEN[rolle] * 3600;
+  return Date.now() / 1000 - seit > sitzungStunden(rolle) * 3600;
+}
+
+/**
+ * Wurde diese Sitzung mit zweitem Faktor bestätigt?
+ *
+ * Steht als `aal` im Token ("aal1" = nur Passwort oder Link, "aal2" = dazu
+ * ein Einmalcode). Dieselbe Angabe prüft die Datenbank in
+ * `ist_mitarbeiter()`; hier wird sie nur gelesen, um die Oberfläche zur
+ * Einrichtung zu schicken statt zu leeren Seiten.
+ */
+export async function mitZweitemFaktor(): Promise<boolean> {
+  const db = await serverClient();
+  const { data } = await db.auth.getSession();
+  const token = data.session?.access_token;
+  if (!token) return false;
+  try {
+    const nutzlast = JSON.parse(
+      Buffer.from(token.split(".")[1], "base64url").toString("utf8"),
+    ) as { aal?: string };
+    return nutzlast.aal === "aal2";
+  } catch {
+    return false;
+  }
+}
+
+/** Steht die Pflicht zum zweiten Faktor schon scharf? (betrieb.zwei_faktor) */
+export async function zweiFaktorPflicht(): Promise<boolean> {
+  if (!datenbankVerbunden()) return false;
+  try {
+    const { data } = await dienstClient()
+      .from("betrieb")
+      .select("wert")
+      .eq("schluessel", "zwei_faktor")
+      .maybeSingle();
+    return data?.wert === "an";
+  } catch {
+    // Ohne Dienstschlüssel lässt sich der Schalter nicht lesen. Dann gilt
+    // die Pflicht als nicht scharf — die Datenbank entscheidet ohnehin selbst.
+    return false;
+  }
 }

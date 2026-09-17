@@ -1,9 +1,11 @@
 "use server";
 
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { serverClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
-import { pruefePasswort } from "@/lib/passwort";
+import { pruefePasswort, SPAETER_COOKIE } from "@/lib/passwort";
+import { meldeAnmeldung } from "@/lib/anmeldemeldung";
 
 export type AnmeldeErgebnis =
   | { ok: true }
@@ -110,7 +112,28 @@ export async function meldeMitPasswortAn(
     await db.auth.signOut();
     return { ok: false, fehler: "kein_team" };
   }
+
+  // Anmelde-Mail an die Admins (Fragebogen 16.09.2026). Scheitert sie,
+  // scheitert nicht die Anmeldung.
+  const { data: nutzer } = await db.auth.getUser();
+  if (nutzer.user) await meldeAnmeldung(nutzer.user.id, "Passwort");
+
   return { ok: true };
+}
+
+/**
+ * „Später" im Tor zum zweiten Faktor. Gilt, solange die Pflicht noch nicht
+ * scharf ist — das Tor bietet den Knopf sonst gar nicht an.
+ */
+export async function spaeterMitZweitemFaktor(): Promise<void> {
+  const store = await cookies();
+  store.set(SPAETER_COOKIE, "1", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 60 * 60 * 12,
+    path: "/",
+  });
 }
 
 /** Passwort setzen oder ändern. Nur für angemeldetes Team-Personal. */

@@ -3,7 +3,7 @@
  *
  *   node scripts/gaesteliste-testen.mjs
  *
- * Legt ein Test-Event als Entwurf an und drei Testkonten (Admin, Team,
+ * Legt ein Test-Event als Entwurf an und drei Testkonten (Admin, Bar,
  * Einlass), weil die Funktionen auf auth.uid() und die Rolle schauen — mit
  * dem Dienstschlüssel wäre die Prüfung wertlos. Spielt Anlegen, Ändern,
  * QR-Scan, Namensliste und Entfernen durch und räumt am Ende alles weg, auch
@@ -11,6 +11,7 @@
  */
 import { createClient } from "@supabase/supabase-js";
 import { readFileSync } from "node:fs";
+import { richteZweitenFaktorEin } from "./_totp.mjs";
 
 for (const roh of readFileSync(new URL("../.env.local", import.meta.url), "utf8").split("\n")) {
   const t = roh.trim().match(/^([A-Z_]+)=(.*)$/);
@@ -69,14 +70,16 @@ async function durchspielen() {
   angelegt.event = ev.id;
 
   const admin = await personal("admin");
-  const team = await personal("team");
+  // Zweiter Faktor, falls die Pflicht scharf steht (Migration 0022).
+  await richteZweitenFaktorEin(admin, "Gästetest");
+  const bar = await personal("bar");
   const einlass = await personal("einlass");
 
   console.log("\n— Anlegen und Rechte —");
-  const { data: ohne } = await team.rpc("speichere_gast", {
+  const { data: ohne } = await bar.rpc("speichere_gast", {
     p_id: null, p_event_id: ev.id, p_name: "Max", p_email: null, p_begleitung: 0, p_notiz: null,
   });
-  pruefe(ohne?.ergebnis === "keine_berechtigung", "Team darf die Gästeliste nicht pflegen", ohne?.ergebnis);
+  pruefe(ohne?.ergebnis === "keine_berechtigung", "Bar darf die Gästeliste nicht pflegen", ohne?.ergebnis);
 
   const { data: max } = await admin.rpc("speichere_gast", {
     p_id: null, p_event_id: ev.id, p_name: "  Max Muster ", p_email: "Max@Example.invalid",
@@ -89,18 +92,20 @@ async function durchspielen() {
   pruefe(t[0].gast_name === "Max Muster" && t[2].gast_name === "Max Muster · Begleitung",
     "Name auf dem ersten Ticket, Begleitung auf den anderen", t.map((x) => x.gast_name).join(" | "));
 
-  const { data: teamSieht } = await team.from("gaeste").select("email").eq("event_id", ev.id);
+  const { data: adminSieht } = await admin.from("gaeste").select("email").eq("event_id", ev.id);
+  const { data: barSieht } = await bar.from("gaeste").select("email").eq("event_id", ev.id);
   const { data: einlassSieht } = await einlass.from("gaeste").select("email").eq("event_id", ev.id);
-  pruefe((teamSieht ?? []).length === 1 && teamSieht[0].email === "max@example.invalid",
-    "Team liest die Liste, Adresse klein geschrieben");
-  pruefe((einlassSieht ?? []).length === 0, "Einlass liest die Tabelle nicht direkt");
+  pruefe((adminSieht ?? []).length === 1 && adminSieht[0].email === "max@example.invalid",
+    "Admin liest die Liste, Adresse klein geschrieben");
+  pruefe((barSieht ?? []).length === 0 && (einlassSieht ?? []).length === 0,
+    "Bar und Einlass lesen die Tabelle nicht direkt — nur die Namensliste");
 
   const { data: liste } = await einlass.rpc("gaesteliste_einlass", { p_event_id: ev.id });
   pruefe(liste?.length === 1 && liste[0].personen === 3 && liste[0].drin === 0
     && liste[0].notiz === "DJ-Freund" && !("email" in liste[0]),
     "Namensliste am Einlass: Name, Personen, Notiz — keine Adresse", JSON.stringify(liste?.[0]));
-  const { data: teamListe } = await team.rpc("gaesteliste_einlass", { p_event_id: ev.id });
-  pruefe(Array.isArray(teamListe) && teamListe.length === 1, "Team sieht die Namensliste auch");
+  const { data: barListe } = await bar.rpc("gaesteliste_einlass", { p_event_id: ev.id });
+  pruefe(Array.isArray(barListe) && barListe.length === 1, "Bar sieht die Namensliste auch");
 
   console.log("\n— Einlass: QR und Namensliste über dieselben Tickets —");
   const { data: scan } = await einlass.rpc("entwerte_ticket", { p_code: t[0].code });

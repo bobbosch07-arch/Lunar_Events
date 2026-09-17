@@ -587,3 +587,50 @@ Lunar Events`;
     text,
   });
 }
+
+/* ------------------------------------------------------------------ */
+
+export type AnmeldeMail = {
+  an: string;
+  name: string;
+  email: string;
+  weg: "Passwort" | "Anmeldelink";
+  zeit: string;
+};
+
+/** Geht an die Admins, sobald sich ein Admin anmeldet. */
+export async function sendeAnmeldungImBackoffice(daten: AnmeldeMail): Promise<boolean> {
+  const zeilen: Array<[string, string]> = [
+    ["Wer", `${daten.name} (${daten.email})`],
+    ["Wann", daten.zeit],
+    ["Weg", daten.weg],
+  ];
+
+  const html = huelle(`
+${kopfBalken("Anmeldung")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 24px;">Jemand hat sich mit Admin-Rechten im Backoffice angemeldet.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;">
+${zeilen
+  .map(
+    ([name, wert]) =>
+      `<tr><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;width:80px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">${name}</td><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;font-size:15px;">${maskiere(wert)}</td></tr>`,
+  )
+  .join("")}
+</table>
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Warst du das nicht? Dann sofort das Passwort ändern (Backoffice → Mein Zugang) und den
+zweiten Faktor neu einrichten.
+</p>
+</td></tr>`);
+
+  const text = `Anmeldung im Backoffice mit Admin-Rechten.
+
+${zeilen.map(([n, w]) => `${n}: ${w}`).join("\n")}
+
+Warst du das nicht? Passwort ändern und zweiten Faktor neu einrichten.
+
+Lunar Events`;
+
+  return versende({ an: daten.an, betreff: `Anmeldung im Backoffice: ${daten.name}`, html, text });
+}

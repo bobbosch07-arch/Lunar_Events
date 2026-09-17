@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
-import { sitzungAbgelaufen } from "@/lib/sitzung";
+import { cookies } from "next/headers";
+import { mitZweitemFaktor, sitzungAbgelaufen, zweiFaktorPflicht } from "@/lib/sitzung";
+import { darfBackoffice, darfScannen, istRolle, ROLLEN_NAMEN } from "@/lib/rollen";
+import { ZweiFaktor } from "@/components/ZweiFaktor";
+import { SPAETER_COOKIE } from "@/lib/passwort";
 import { setRequestLocale } from "next-intl/server";
 import { Anmeldung } from "@/components/Anmeldung";
 import { BackofficeReiter } from "@/components/BackofficeReiter";
@@ -9,8 +13,6 @@ import { Link } from "@/i18n/navigation";
 import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
 import css from "./backoffice.module.css";
-
-export type Rolle = "admin" | "team" | "einlass";
 
 /**
  * Rahmen und Rechteprüfung fürs gesamte Backoffice.
@@ -53,20 +55,21 @@ export default async function BackofficeLayout({
     .eq("user_id", angemeldet.id)
     .maybeSingle();
 
-  const rolle = mitarbeiter?.aktiv ? (mitarbeiter.rolle as Rolle) : null;
+  const rolle =
+    mitarbeiter?.aktiv && istRolle(mitarbeiter.rolle) ? mitarbeiter.rolle : null;
 
-  // Einlasspersonal darf scannen, aber keine Zahlen sehen — das ist eine
-  // andere Vertrauensstufe.
-  if (rolle !== "admin" && rolle !== "team") {
+  // Zahlen, Bestellungen und Kundendaten sehen nur Admins (17.09.2026). Alle
+  // anderen Rollen sind fürs Event da, nicht fürs Büro.
+  if (!rolle || !darfBackoffice(rolle)) {
     return (
       <main className={css.tor}>
         <Logo ton="ivory" hoehe={64} />
         <p className={css.torText}>
-          {rolle === "einlass"
-            ? "Dieses Konto ist fürs Einlasspersonal freigeschaltet, nicht fürs Backoffice."
+          {rolle
+            ? `Dieses Konto ist als ${ROLLEN_NAMEN[rolle]} freigeschaltet, nicht fürs Backoffice.`
             : `Dieses Konto (${angemeldet.email}) hat keinen Zugang zum Backoffice.`}
         </p>
-        {rolle === "einlass" ? (
+        {rolle && darfScannen(rolle) ? (
           <Link href="/einlass" style={{ color: "#E4CE98" }}>
             Zum Einlass-Scanner
           </Link>
@@ -80,6 +83,23 @@ export default async function BackofficeLayout({
   // leere Seiten.
   if (await sitzungAbgelaufen(rolle)) {
     redirect("/auth/abmelden?weiter=/backoffice");
+  }
+
+  // Zweiter Faktor. Solange die Pflicht noch nicht scharf ist, lässt sich
+  // die Einrichtung vertagen — sonst stünde hier eine Wand, bevor überhaupt
+  // jemand einrichten konnte.
+  const [zweiterFaktor, pflicht, kekse] = await Promise.all([
+    mitZweitemFaktor(),
+    zweiFaktorPflicht(),
+    cookies(),
+  ]);
+  if (!zweiterFaktor && (pflicht || !kekse.get(SPAETER_COOKIE))) {
+    return (
+      <main className={css.tor}>
+        <Logo ton="ivory" hoehe={64} />
+        <ZweiFaktor art="tor" pflicht={pflicht} />
+      </main>
+    );
   }
 
   return (

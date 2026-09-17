@@ -88,3 +88,19 @@
 .nochmal:hover {
   color: var(--akzent-text);
 }
+
+/* QR-Code für die Zwei-Faktor-Einrichtung: weißer Grund, damit jede
+   Kamera ihn erkennt — auch auf dunklem Untergrund. */
+.qr {
+  width: 200px;
+  height: 200px;
+  padding: 8px;
+  background: #fff;
+  border-radius: var(--radius-md);
+}
+
+.qr svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

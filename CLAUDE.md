@@ -36,7 +36,8 @@ node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbs
 node scripts/promoter-testen.mjs    # Promoter-Zuordnung und Statistik, räumt selbst auf
 node scripts/presale-testen.mjs     # Presale, Einladungen, Abmelden, räumt selbst auf
 node scripts/warteliste-testen.mjs  # Warteliste: Reihenfolge, Frist, Freigeben, räumt selbst auf
-node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/Team/Einlass), räumt selbst auf
+node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/Bar/Einlass), räumt selbst auf
+node scripts/rollen-testen.mjs      # Rollen und zweiter Faktor, mit echten Einmalcodes
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -572,6 +573,42 @@ eigene Datenbankfunktion nicht. `holeEventZeilen({ abJetzt, grenze })`
 lädt für die Übersicht nur die sechs kommenden Events statt der
 gesamten Historie.
 
+### Rollen und zweiter Faktor (Migration 0022)
+
+**Rollen sind Aufgaben, keine Rechtestufen:** `admin`, `kasse`, `einlass`,
+`bar`, `security`, `runner`, `toiletten`. Die alte Bürorolle `team` ist weg —
+**ins Backoffice kommen nur Admins** (17.09.2026). Was eine Rolle darf, steht
+an **einer** Stelle: `ist_mitarbeiter()` mit den Stufen `admin`, `team`
+(gleichbedeutend mit admin, damit die bestehenden Zugriffsregeln gültig
+bleiben), `kasse`, `einlass` (scannen: admin, kasse, einlass, bar) und
+`personal`. Dieselben Regeln noch einmal für die Oberfläche in
+`src/lib/rollen.ts` — ändert sich eine, muss die andere mit.
+
+**Zwei Faktoren für admin und kasse**, also für alle, die an Geld oder
+Kundendaten kommen. Geprüft wird in `ist_mitarbeiter()` am `aal`-Anspruch im
+Token, nicht in der Oberfläche: Eine Sitzung ohne Code sieht keine Daten, egal
+über welchen Weg sie fragt. Eingerichtet wird im Browser gegen Supabase
+(`ZweiFaktor`, TOTP) — der Code läuft nie über unseren Server.
+
+**Die Pflicht ist ein Schalter** (`betrieb.zwei_faktor` = `an`/`aus`). Grund:
+Zwischen dem Einspielen der Migration und der Auslieferung der Oberfläche
+stünde sonst ein Backoffice, das etwas verlangt, was sich noch nicht
+einrichten lässt. Solange er auf `aus` steht, zeigt das Tor die Einrichtung
+mit einem „Später"-Knopf (Cookie, 12 Stunden); mit `an` gibt es kein Später.
+Umlegen ist ein Update auf einer Zeile — und gehört gemacht, sobald alle
+Admins eingerichtet haben.
+
+**Anmelde-Mail nur bei Admins** (`src/lib/anmeldemeldung.ts`), beide Wege
+(Passwort und Anmeldelink). Bei zwanzig Leuten am Eventabend wären alle
+Anmeldungen zusammen ein gutes Stück des Brevo-Tageslimits, das die Tickets
+brauchen — deshalb nur die Zugänge, bei denen es zählt.
+
+**Sitzungsdauer:** admin und kasse 8 Stunden, alle anderen 24 (gemessen am
+`amr`-Zeitpunkt, siehe unten).
+
+Personal legt weiterhin `scripts/mitarbeiter.mjs` an; die Liste zeigt, wer
+einen zweiten Faktor eingerichtet hat.
+
 ### Anmeldung fürs Team
 
 **Gäste melden sich per Link an, das Team zusätzlich mit Passwort.** Das
@@ -659,6 +696,7 @@ Fertig und geprüft:
 - Presale: Verkaufsstart je Event, Zugang über Codes und Einladungen, Abmelden
 - Warteliste: Bestätigungslink, Angebote mit Frist, Kasse, Freigeben, Backoffice
 - Gästeliste: Backoffice-Reiter, Tickets je Person, Mail/Link, Namensliste im Scanner (offline)
+- Rollen (admin, kasse, einlass, bar, security, runner, toiletten), zweiter Faktor für admin und kasse, Anmelde-Mail
 
 Offen:
 
