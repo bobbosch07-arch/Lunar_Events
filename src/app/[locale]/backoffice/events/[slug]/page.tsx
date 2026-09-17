@@ -9,6 +9,7 @@ import type { EventStand } from "@/lib/event-stand";
 import { holeOrte } from "@/app/aktionen/event-speichern";
 import { dienstClient, serverClient } from "@/lib/supabase/server";
 import { PresaleEinladungen, type EinladungStand } from "@/components/PresaleEinladungen";
+import { WartelisteUebersicht } from "@/components/WartelisteUebersicht";
 import { darfCodesAendern } from "@/lib/backoffice";
 import { verkaufsstartKommt } from "@/lib/typen";
 import { utcNachBerlinFeld } from "@/lib/zeit";
@@ -136,6 +137,7 @@ async function Inhalt({ slug }: { slug: string }) {
           />
         </div>
       ) : null}
+      <WartelisteUebersicht eventId={event.id as string} />
     </>
   );
 }

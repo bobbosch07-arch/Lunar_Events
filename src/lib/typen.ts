@@ -309,6 +309,69 @@ export type CodeVorschau =
 
 export type CodeAblehnung = Exclude<CodeVorschau, { ergebnis: "ok" }>;
 
+/* ------------------------------------------------------------------ */
+
+/**
+ * Warteliste (0020). Die Zahlen stehen genauso in der Migration — die
+ * Anzahl als check-Regel, die Frist in angebot_frist().
+ */
+export const WARTELISTE_MAX_TICKETS = 4;
+export const ANGEBOT_STUNDEN = 4;
+
+/**
+ * Darf man sich auf die Warteliste setzen? Dieselbe Regel wie
+ * ist_ausverkauft() in der Datenbank: Es gibt Standardphasen, und keine hat
+ * noch Tickets oder bekommt welche. Eine Phase, deren Verkauf erst beginnt,
+ * zählt als „kommt noch" — dann gibt es keine Warteliste, sondern ein Datum.
+ */
+export function wartelisteOffen(phasen: Phase[], jetzt: Date = new Date()): boolean {
+  const standard = phasen.filter((p) => p.art === "standard");
+  if (standard.length === 0) return false;
+  return !standard.some(
+    (p) =>
+      p.aktiv &&
+      (p.bis === null || new Date(p.bis) >= jetzt) &&
+      (p.kontingent === null || p.verkauft < p.kontingent),
+  );
+}
+
+export type WartelisteZustand =
+  | "unbestaetigt"
+  | "wartet"
+  /** Reserviert, die Frist läuft */
+  | "angeboten"
+  /** Per Überweisung bestellt, Zahlung steht aus */
+  | "ueberweisung"
+  | "gekauft"
+  /** Frist abgelaufen — raus aus der Liste */
+  | "verfallen"
+  | "ausgetragen";
+
+/**
+ * Der Zustand eines Eintrags wird nicht gespeichert, sondern aus Eintrag
+ * und Angebots-Bestellung abgeleitet — sonst gäbe es zwei Wahrheiten, die
+ * auseinanderlaufen, sobald eine Reservierung verfällt.
+ */
+export function wartelisteZustand(
+  eintrag: { bestaetigt_am: string | null; ausgetragen_am: string | null; angebot_am: string | null },
+  bestellung: { status: string; vorkasse: boolean; reserviert_bis: string | null } | null,
+  jetzt: Date = new Date(),
+): WartelisteZustand {
+  if (bestellung?.status === "bezahlt") return "gekauft";
+  if (eintrag.ausgetragen_am) return "ausgetragen";
+  if (!eintrag.bestaetigt_am) return "unbestaetigt";
+  if (!eintrag.angebot_am) return "wartet";
+  if (bestellung?.status === "offen") {
+    if (bestellung.vorkasse) return "ueberweisung";
+    // Der Aufräumlauf kommt nur alle fünf Minuten — was abgelaufen ist, ist
+    // abgelaufen, auch wenn der Status noch "offen" sagt.
+    if (!bestellung.reserviert_bis || new Date(bestellung.reserviert_bis) > jetzt) {
+      return "angeboten";
+    }
+  }
+  return "verfallen";
+}
+
 export type VipAnfrage = {
   id: string;
   event_id: string | null;

@@ -11,6 +11,7 @@ import { paypalEingerichtet } from "@/lib/paypal";
 import { vorkasseMoeglich } from "@/lib/vorkasse";
 import { pruefePresaleZugang, pruefeRabattcode } from "@/app/aktionen/bestellung";
 import { pruefeKuerzel } from "@/lib/promoter";
+import { holeWartelisteEintrag } from "@/lib/warteliste";
 import css from "@/components/Checkout.module.css";
 
 type Props = {
@@ -21,6 +22,8 @@ type Props = {
     code?: string;
     promo?: string;
     einladung?: string;
+    /** Token eines Warteliste-Angebots — die Tickets sind schon reserviert. */
+    angebot?: string;
   }>;
 };
 
@@ -49,7 +52,61 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  const { event: slug, p, code, promo, einladung } = await searchParams;
+  const { event: slug, p, code, promo, einladung, angebot } = await searchParams;
+
+  const stripeAktiv = stripeEingerichtet();
+  // Die Kennung ist öffentlich — sie steht ohnehin im Skript, das PayPal
+  // im Browser lädt.
+  const paypalClientId = paypalEingerichtet()
+    ? (process.env.PAYPAL_CLIENT_ID ?? null)
+    : null;
+  const testmodus =
+    !process.env.STRIPE_SECRET_KEY && !process.env.PAYPAL_CLIENT_SECRET;
+
+  // Warteliste (0020): Reserviert ist schon, es fehlen Name und Zahlung.
+  // Ist das Angebot vorbei, erklärt die Seite des Eintrags, warum.
+  if (angebot) {
+    const eintrag = await holeWartelisteEintrag(angebot);
+    if (!eintrag) redirect("/events");
+    if (eintrag.zustand !== "angeboten" || !eintrag.bestellung) {
+      redirect(`/warteliste/${angebot}`);
+    }
+    const [wartelisteEvent, f] = await Promise.all([
+      holeEvent(eintrag.event.slug),
+      getFormatter(),
+    ]);
+    if (!wartelisteEvent) redirect("/events");
+
+    return (
+      <Rahmen>
+        <CheckoutFluss
+          eventId={wartelisteEvent.id}
+          eventSlug={wartelisteEvent.slug}
+          eventTitel={wartelisteEvent.titel}
+          eventWann={f.dateTime(new Date(wartelisteEvent.beginn), "mitZeit")}
+          eventOrt={`${wartelisteEvent.ort.name}, ${wartelisteEvent.ort.stadt}`}
+          posten={eintrag.bestellung.posten}
+          fastlane={null}
+          vorkasseMoeglich={vorkasseMoeglich(wartelisteEvent.beginn)}
+          testmodus={testmodus}
+          stripeAktiv={stripeAktiv}
+          paypalClientId={paypalClientId}
+          rueckkehrBasis={eigeneAdresse()}
+          startCode={null}
+          promo={null}
+          einladung={null}
+          presaleCode={null}
+          warteliste={{
+            token: eintrag.token,
+            email: eintrag.email,
+            vorname: eintrag.vorname,
+            bis: eintrag.bestellung.reserviertBis ?? "",
+          }}
+        />
+      </Rahmen>
+    );
+  }
+
   // Wer hier ohne Auswahl landet, hat sich verlaufen oder einen alten Link
   // geöffnet. Eine 404 wäre technisch richtig und trotzdem unfreundlich —
   // die Eventliste ist das, was diese Person sucht.
@@ -58,11 +115,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const event = await holeEvent(slug);
   if (!event || event.status !== "veroeffentlicht") redirect("/events");
 
-  const [phasen, t, f] = await Promise.all([
-    holePhasen(event.id),
-    getTranslations("checkout"),
-    getFormatter(),
-  ]);
+  const [phasen, f] = await Promise.all([holePhasen(event.id), getFormatter()]);
 
   const gewaehlt = leseAuswahl(p);
 
@@ -98,15 +151,6 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
     redirect(`/events/${event.slug}#tickets`);
   }
 
-  const stripeAktiv = stripeEingerichtet();
-  // Die Kennung ist öffentlich — sie steht ohnehin im Skript, das PayPal
-  // im Browser lädt.
-  const paypalClientId = paypalEingerichtet()
-    ? (process.env.PAYPAL_CLIENT_ID ?? null)
-    : null;
-  const testmodus =
-    !process.env.STRIPE_SECRET_KEY && !process.env.PAYPAL_CLIENT_SECRET;
-
   // Ein Code aus dem Link wird vorab geprüft, damit die Zusammenfassung
   // den Rabatt vom ersten Bild an zeigt — oder gleich sagt, warum nicht.
   // Fast Lane ist hier noch nicht gewählt; die Kasse fragt beim Wechsel neu.
@@ -122,6 +166,40 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
     : null;
 
   return (
+    <Rahmen>
+      <CheckoutFluss
+        eventId={event.id}
+        eventSlug={event.slug}
+        eventTitel={event.titel}
+        eventWann={f.dateTime(new Date(event.beginn), "mitZeit")}
+        eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
+        posten={posten}
+        fastlane={event.fastlane ?? null}
+        vorkasseMoeglich={vorkasseMoeglich(event.beginn)}
+        testmodus={testmodus}
+        stripeAktiv={stripeAktiv}
+        paypalClientId={paypalClientId}
+        rueckkehrBasis={eigeneAdresse()}
+        startCode={startCode}
+        promo={pruefeKuerzel(promo)}
+        einladung={
+          presale?.verkauf === "presale" && presale.zugang === "einladung"
+            ? { token: einladung!, email: presale.email }
+            : null
+        }
+        presaleCode={
+          presale?.verkauf === "presale" && presale.zugang === "code" ? presale.code : null
+        }
+        warteliste={null}
+      />
+    </Rahmen>
+  );
+}
+
+/** Kopf der Kasse: Logo, sonst nichts — keine Navigation, die vom Kauf wegführt. */
+async function Rahmen({ children }: { children: React.ReactNode }) {
+  const t = await getTranslations("checkout");
+  return (
     <div className={css.rahmen}>
       <header className={css.kopf}>
         <div className="seitenbreite">
@@ -135,32 +213,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
       </header>
 
       <main className={css.inhalt}>
-        <div className="seitenbreite">
-          <CheckoutFluss
-            eventId={event.id}
-            eventSlug={event.slug}
-            eventTitel={event.titel}
-            eventWann={f.dateTime(new Date(event.beginn), "mitZeit")}
-            eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
-            posten={posten}
-            fastlane={event.fastlane ?? null}
-            vorkasseMoeglich={vorkasseMoeglich(event.beginn)}
-            testmodus={testmodus}
-            stripeAktiv={stripeAktiv}
-            paypalClientId={paypalClientId}
-            rueckkehrBasis={eigeneAdresse()}
-            startCode={startCode}
-            promo={pruefeKuerzel(promo)}
-            einladung={
-              presale?.verkauf === "presale" && presale.zugang === "einladung"
-                ? { token: einladung!, email: presale.email }
-                : null
-            }
-            presaleCode={
-              presale?.verkauf === "presale" && presale.zugang === "code" ? presale.code : null
-            }
-          />
-        </div>
+        <div className="seitenbreite">{children}</div>
       </main>
     </div>
   );

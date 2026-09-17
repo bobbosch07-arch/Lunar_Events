@@ -5,6 +5,7 @@ import { dienstClient } from "@/lib/supabase/server";
 import { stripe, stripeEingerichtet } from "@/lib/stripe";
 import { verschickeTickets } from "./ticketmail";
 import { CODE_MUSTER, normalisiereCode } from "@/lib/rabatt";
+import { holeWartelisteEintrag } from "@/lib/warteliste";
 import type { CodeAblehnung, CodeVorschau, VerkaufsStand } from "@/lib/typen";
 
 /**
@@ -162,6 +163,59 @@ export async function reserviereBestellung(eingabe: {
     reserviert_bis: bestellung?.reserviert_bis ?? "",
     code_rabatt_cent: (bestellung?.code_rabatt_cent as number | undefined) ?? 0,
     code_tickets: (bestellung?.code_tickets as number | undefined) ?? 0,
+  };
+}
+
+/**
+ * Der Kauf über ein Warteliste-Angebot. Reserviert ist schon (0020) — hier
+ * kommen nur Name und Telefon dazu, und der Browser bekommt den Nachweis,
+ * die Bestellung bezahlen zu dürfen. Ab da läuft alles wie bei jedem Kauf.
+ */
+export async function uebernimmAngebot(eingabe: {
+  token: string;
+  vorname: string;
+  nachname: string;
+  telefon?: string;
+}): Promise<ReservierungErgebnis> {
+  const angebot = await holeWartelisteEintrag(eingabe.token);
+  if (!angebot || angebot.zustand !== "angeboten" || !angebot.bestellung) {
+    return { ok: false, fehler: "angebot_vorbei" };
+  }
+
+  const db = dienstClient();
+  const { error: kunde } = await db
+    .from("kunden")
+    .update({
+      vorname: eingabe.vorname.trim() || null,
+      nachname: eingabe.nachname.trim() || null,
+      ...(eingabe.telefon?.trim() ? { telefon: eingabe.telefon.trim() } : {}),
+    })
+    .eq("id", angebot.bestellung.kundeId);
+  if (kunde) console.error("[warteliste] Name nicht übernommen:", kunde.message);
+
+  // Dieselbe Kasse, derselbe Hinweis (§ 7 Abs. 3 UWG) — siehe oben.
+  const { error: hinweis } = await db
+    .from("bestellungen")
+    .update({ werbehinweis: true })
+    .eq("id", angebot.bestellung.id);
+  if (hinweis) console.error("[bestellung] Werbehinweis nicht vermerkt:", hinweis.message);
+
+  const store = await cookies();
+  store.set(COOKIE, angebot.bestellung.id, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    maxAge: COOKIE_DAUER,
+    path: "/",
+  });
+
+  return {
+    ok: true,
+    bestellung_id: angebot.bestellung.id,
+    nummer: angebot.bestellung.nummer,
+    reserviert_bis: angebot.bestellung.reserviertBis ?? "",
+    code_rabatt_cent: 0,
+    code_tickets: 0,
   };
 }
 

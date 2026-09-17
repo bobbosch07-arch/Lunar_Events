@@ -1,4 +1,5 @@
 import { eigeneAdresse } from "./stripe";
+import { ANGEBOT_STUNDEN } from "./typen";
 
 /**
  * Mailversand über Brevo oder Resend.
@@ -158,6 +159,11 @@ function kopfBalken(titel: string): string {
 <div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#d4b873;">Lunar Events</div>
 <div style="font-size:24px;font-weight:700;letter-spacing:1px;margin-top:8px;text-transform:uppercase;">${titel}</div>
 </td></tr>`;
+}
+
+/** Für alles, was ein Gast selbst eingetippt hat und ins HTML einer Mail geht. */
+function maskiere(t: string): string {
+  return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 /* ------------------------------------------------------------------ */
@@ -320,8 +326,6 @@ export type PresaleEinladungMail = {
 export async function sendePresaleEinladung(daten: PresaleEinladungMail): Promise<boolean> {
   // Der Vorname kommt aus der Kasse, also vom Gast selbst — ins HTML nur
   // maskiert. Der Text-Teil braucht das nicht.
-  const maskiere = (t: string) =>
-    t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
   const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
 
@@ -376,5 +380,137 @@ Lunar Events`;
     html,
     text,
     kopfzeilen: { "List-Unsubscribe": `<${daten.abmeldeLink}>` },
+  });
+}
+
+/* ------------------------------------------------------------------ */
+
+export type WartelisteBestaetigungMail = {
+  an: string;
+  vorname: string | null;
+  eventTitel: string;
+  wann: string;
+  anzahl: number;
+  link: string;
+};
+
+/**
+ * Erst wer diesen Link anklickt, steht auf der Warteliste. Eine vertippte
+ * Adresse hielte sonst später echte Tickets stundenlang fest.
+ */
+export async function sendeWartelisteBestaetigung(
+  daten: WartelisteBestaetigungMail,
+): Promise<boolean> {
+  const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+  const stueck = daten.anzahl === 1 ? "1 Ticket" : `${daten.anzahl} Tickets`;
+
+  const html = huelle(`
+${kopfBalken("Warteliste")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 24px;">du möchtest auf die Warteliste für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}) — für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:8px;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Eintrag bestätigen</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Wird etwas frei, schreiben wir dir. Dann hast du ${ANGEBOT_STUNDEN} Stunden Zeit zum Kaufen.
+</p>
+<p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#858990;">
+Du hast dich nicht eingetragen? Dann ignoriere diese Mail — ohne Klick passiert nichts.
+</p>
+</td></tr>`);
+
+  const text = `${anredeText}
+
+du möchtest auf die Warteliste für ${daten.eventTitel} (${daten.wann}) — für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf:
+
+${daten.link}
+
+Wird etwas frei, schreiben wir dir. Dann hast du ${ANGEBOT_STUNDEN} Stunden Zeit zum Kaufen.
+
+Du hast dich nicht eingetragen? Dann ignoriere diese Mail — ohne Klick passiert nichts.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `Warteliste ${daten.eventTitel}: bitte bestätigen`,
+    html,
+    text,
+  });
+}
+
+export type WartelisteAngebotMail = {
+  an: string;
+  vorname: string | null;
+  eventTitel: string;
+  wann: string;
+  ort: string;
+  anzahl: number;
+  /** "Freitag, 24. Oktober, 14:30" */
+  bis: string;
+  kaufLink: string;
+  freigebenLink: string;
+};
+
+/** Du bist dran: Die Tickets sind reserviert, die Frist läuft. */
+export async function sendeWartelisteAngebot(daten: WartelisteAngebotMail): Promise<boolean> {
+  const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+  const stueck = daten.anzahl === 1 ? "1 Ticket ist" : `${daten.anzahl} Tickets sind`;
+
+  const html = huelle(`
+${kopfBalken("Du bist dran")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 24px;">für <strong>${maskiere(daten.eventTitel)}</strong> ist etwas frei geworden. ${stueck} für dich reserviert.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
+<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
+<tr><td style="padding:16px 18px;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Reserviert bis</div>
+<div style="font-size:15px;margin-top:2px;"><strong>${daten.bis} Uhr</strong></div></td></tr>
+</table>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:8px;">
+<a href="${daten.kaufLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Jetzt kaufen</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Danach gehen die Tickets an den Nächsten auf der Liste.
+Doch keine Zeit? <a href="${daten.freigebenLink}" style="color:#5e6268;">Tickets freigeben</a> — dann ist der Nächste gleich dran.
+</p>
+</td></tr>`);
+
+  const text = `${anredeText}
+
+für ${daten.eventTitel} ist etwas frei geworden. ${stueck} für dich reserviert.
+
+Wann: ${daten.wann}
+Wo: ${daten.ort}
+Reserviert bis: ${daten.bis} Uhr
+
+Jetzt kaufen: ${daten.kaufLink}
+
+Danach gehen die Tickets an den Nächsten auf der Liste.
+Doch keine Zeit? Tickets freigeben: ${daten.freigebenLink}
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `${daten.eventTitel}: Deine Tickets sind reserviert`,
+    html,
+    text,
   });
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { serverClient } from "@/lib/supabase/server";
 import { berlinNachUtc } from "@/lib/zeit";
+import { bedieneWarteliste } from "@/lib/warteliste";
 
 export type PhasenEingabe = {
   id?: string;
@@ -191,6 +192,11 @@ export async function speichereEvent(
 
     if (pf) return { ok: false, fehler: `Phase „${phase.name}": ${pf.message}` };
   }
+
+  // Mehr Kontingent heißt: Wer auf der Warteliste steht, ist zuerst dran —
+  // jetzt gleich, nicht erst beim nächsten Takt. Sonst kaufte in den Minuten
+  // dazwischen jemand, der nie gewartet hat.
+  await bedieneWarteliste(event.id as string);
 
   revalidatePath("/backoffice/events");
   revalidatePath("/events");

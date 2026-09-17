@@ -17,6 +17,7 @@ import {
   reserviereBestellung,
   schliesseKostenlosAb,
   schliesseTestkaufAb,
+  uebernimmAngebot,
   type ReservierungErgebnis,
 } from "@/app/aktionen/bestellung";
 import css from "./Checkout.module.css";
@@ -56,6 +57,12 @@ type Props = {
   einladung: { token: string; email: string } | null;
   /** Der Code, der den Presale öffnet — er darf nicht herausfliegen. */
   presaleCode: string | null;
+  /**
+   * Kauf über ein Warteliste-Angebot: Die Tickets sind schon reserviert,
+   * Adresse und Auswahl stehen fest. Kein Code, keine Fast Lane — das
+   * Angebot ist genau das, was für diese Person zurückgelegt wurde.
+   */
+  warteliste: { token: string; email: string; vorname: string | null; bis: string } | null;
 };
 
 type GueltigerCode = Extract<CodeVorschau, { ergebnis: "ok" }>;
@@ -86,7 +93,11 @@ export function CheckoutFluss(props: Props) {
           : "paypal",
   );
   const [formular, setFormular] = useState<Formular>(
-    props.einladung ? { ...LEER, email: props.einladung.email } : LEER,
+    props.warteliste
+      ? { ...LEER, email: props.warteliste.email, vorname: props.warteliste.vorname ?? "" }
+      : props.einladung
+        ? { ...LEER, email: props.einladung.email }
+        : LEER,
   );
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
   const [agb, setAgb] = useState(false);
@@ -145,7 +156,9 @@ export function CheckoutFluss(props: Props) {
   // freien Plätze nicht für alle Tickets, gibt es kein Angebot — halbe
   // Gruppen an der Schlange vorbei hilft niemandem.
   const angebot =
-    props.fastlane && (props.fastlane.rest === null || props.fastlane.rest >= anzahl)
+    !props.warteliste &&
+    props.fastlane &&
+    (props.fastlane.rest === null || props.fastlane.rest >= anzahl)
       ? props.fastlane
       : null;
   const fastlaneCent = fastlane && angebot ? angebot.preis_cent * anzahl : 0;
@@ -273,20 +286,32 @@ export function CheckoutFluss(props: Props) {
     setLaeuft(true);
     setStoerung(null);
 
-    const ergebnis: ReservierungErgebnis = await reserviereBestellung({
-      eventId: props.eventId,
-      auswahl: auswahlFuerDb(),
-      email: formular.email,
-      vorname: formular.vorname,
-      nachname: formular.nachname,
-      telefon: formular.telefon,
-      fastlane: fastlane && angebot ? anzahl : 0,
-      code: code?.code ?? null,
-      promo: props.promo,
-      einladung: props.einladung?.token ?? null,
-    });
+    const ergebnis: ReservierungErgebnis = props.warteliste
+      ? await uebernimmAngebot({
+          token: props.warteliste.token,
+          vorname: formular.vorname,
+          nachname: formular.nachname,
+          telefon: formular.telefon,
+        })
+      : await reserviereBestellung({
+          eventId: props.eventId,
+          auswahl: auswahlFuerDb(),
+          email: formular.email,
+          vorname: formular.vorname,
+          nachname: formular.nachname,
+          telefon: formular.telefon,
+          fastlane: fastlane && angebot ? anzahl : 0,
+          code: code?.code ?? null,
+          promo: props.promo,
+          einladung: props.einladung?.token ?? null,
+        });
 
     setLaeuft(false);
+
+    if (!ergebnis.ok && ergebnis.fehler === "angebot_vorbei") {
+      setStoerung(t("wartelisteVorbei"));
+      return;
+    }
 
     if (
       !ergebnis.ok &&
@@ -447,6 +472,16 @@ export function CheckoutFluss(props: Props) {
             <p className={css.hinweis}>
               {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} für {props.eventTitel}.
             </p>
+            {props.warteliste?.bis ? (
+              <p className={css.codeAktiv}>
+                <span className={css.codeHaken} aria-hidden="true">
+                  ✓
+                </span>
+                <span className={css.codeText}>
+                  {t("wartelisteHinweis", { zeit: fristText(props.warteliste.bis, locale) })}
+                </span>
+              </p>
+            ) : null}
             {angebot ? (
               <div className={css.zustimmungen}>
                 <label className={css.zustimmung}>
@@ -473,7 +508,7 @@ export function CheckoutFluss(props: Props) {
             {/* Bewusst zurückhaltend: ein Verweis statt eines offenen Feldes.
                 Ein großes Codefeld schickt Gäste auf die Suche nach Codes
                 (Briefing: keine Rabattschlacht). Wer einen hat, findet ihn. */}
-            {code ? (
+            {props.warteliste ? null : code ? (
               <div className={css.codeAktiv}>
                 <span className={css.codeHaken} aria-hidden="true">
                   ✓
@@ -588,8 +623,14 @@ export function CheckoutFluss(props: Props) {
                   beschriftung={t("email")}
                   wert={formular.email}
                   fehler={fehler.email}
-                  hinweis={props.einladung ? t("einladungAdresse") : t("emailHinweis")}
-                  nurLesen={Boolean(props.einladung)}
+                  hinweis={
+                    props.warteliste
+                      ? t("wartelisteAdresse")
+                      : props.einladung
+                        ? t("einladungAdresse")
+                        : t("emailHinweis")
+                  }
+                  nurLesen={Boolean(props.einladung || props.warteliste)}
                   autoComplete="email"
                   aendern={(v) => setFormular((f) => ({ ...f, email: v }))}
                 />
@@ -938,6 +979,19 @@ function Feld({
   );
 }
 
+/** "14:30" heute, sonst "Sa., 10:00" — immer Berliner Zeit. */
+function fristText(iso: string, locale: string): string {
+  const datum = new Date(iso);
+  const tag = (d: Date) =>
+    new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", dateStyle: "short" }).format(d);
+  return new Intl.DateTimeFormat(locale, {
+    ...(tag(datum) !== tag(new Date()) ? { weekday: "short" as const } : {}),
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Berlin",
+  }).format(datum);
+}
+
 /**
  * Zeigt, wie lange die Tickets noch gehalten werden. Kein Druckmittel —
  * die Frist ist echt, sie steht als reserviert_bis in der Datenbank und
@@ -945,6 +999,7 @@ function Feld({
  */
 function Uhr({ bis }: { bis: string }) {
   const t = useTranslations("checkout");
+  const locale = useLocale();
   const [rest, setRest] = useState(() =>
     Math.max(0, Math.floor((new Date(bis).getTime() - Date.now()) / 1000)),
   );
@@ -957,6 +1012,12 @@ function Uhr({ bis }: { bis: string }) {
   }, [bis]);
 
   if (rest === 0) return <p className={css.stoerung}>{t("abgelaufen")}</p>;
+
+  // Angebote von der Warteliste halten Stunden. Eine Uhr, die "239:59"
+  // zählt, sagt weniger als die Uhrzeit, bis zu der es gilt.
+  if (rest > 60 * 60) {
+    return <p className={css.uhr}>{t("reserviertBis", { zeit: fristText(bis, locale) })}</p>;
+  }
 
   const minuten = String(Math.floor(rest / 60)).padStart(2, "0");
   const sekunden = String(rest % 60).padStart(2, "0");

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
+import { Warteliste } from "./Warteliste";
 import { zaehle } from "./Zaehler";
 import { preisText } from "@/lib/format";
 import { gemerkteEinladung, gemerkterCode, merkeCode, normalisiereCode } from "@/lib/rabatt";
@@ -12,6 +13,7 @@ import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
 import {
   phasenZustaende,
   verkaufsstand,
+  wartelisteOffen,
   zeigeRest,
   type Phase,
   type VerkaufsStand,
@@ -24,6 +26,8 @@ type Props = {
   phasen: Phase[];
   /** Auf dem Server geprüft, mit Code oder Einladung aus der Adresse. */
   verkauf: VerkaufsStand;
+  /** Mailversand ist eingerichtet — ohne ihn gäbe es weder Bestätigung noch Angebot. */
+  warteliste: boolean;
 };
 
 /** Mehr als zwanzig Tickets auf einmal ist keine Bestellung, das ist eine
@@ -107,6 +111,9 @@ export function Ticketauswahl(props: Props) {
     }).format(new Date(iso));
 
   const zustaende = useMemo(() => phasenZustaende(phasen), [phasen]);
+  // Ausverkauft und nichts mehr in Aussicht: Dann steht statt der Summe die
+  // Warteliste da — auch im Presale, denn dort gibt es ebenso nichts zu kaufen.
+  const zurWarteliste = props.warteliste && wartelisteOffen(phasen);
 
   const { summe, anzahl } = useMemo(() => {
     let summe = 0;
@@ -338,7 +345,9 @@ export function Ticketauswahl(props: Props) {
         })}
       </div>
 
-      {!kaufFrei ? (
+      {zurWarteliste ? (
+        <Warteliste eventId={eventId} />
+      ) : !kaufFrei ? (
         <div className={css.presale}>
           {verkauf.verkauf === "bald" ? (
             <p className={css.presaleTitel}>

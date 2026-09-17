@@ -13,6 +13,7 @@ import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
 import { pruefeKuerzel } from "@/lib/promoter";
 import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
+import { versandEingerichtet } from "@/lib/mail";
 import { verkaufsstartKommt, type VerkaufsStand } from "@/lib/typen";
 import css from "./event.module.css";
 
@@ -207,6 +208,7 @@ export default async function EventSeite({ params, searchParams }: Props) {
                   eventSlug={event.slug}
                   phasen={phasen}
                   verkauf={verkauf}
+                  warteliste={versandEingerichtet()}
                 />
 
                 <div className={css.abendkasse}>

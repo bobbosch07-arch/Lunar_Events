@@ -26,7 +26,7 @@ npm run dev      # Entwicklung auf :3000
 npm run build    # prüft auch die Typen
 npm run lint
 
-npx supabase db push          # Migrationen einspielen (braucht SUPABASE_ACCESS_TOKEN)
+npx supabase db push --yes    # Migrationen einspielen
 node scripts/testdaten.mjs    # Testwelt anlegen, --weg entfernt sie
 node scripts/mitarbeiter.mjs  # Personal auflisten/anlegen
 node scripts/zahlung-testen.mjs    # Stripe-Kauf ohne Browser durchspielen
@@ -35,6 +35,7 @@ node scripts/backoffice-testen.mjs # Zugriffsregeln fürs Backoffice
 node scripts/rabattcodes-testen.mjs # Rabattcodes an der echten DB, räumt selbst auf
 node scripts/promoter-testen.mjs    # Promoter-Zuordnung und Statistik, räumt selbst auf
 node scripts/presale-testen.mjs     # Presale, Einladungen, Abmelden, räumt selbst auf
+node scripts/warteliste-testen.mjs  # Warteliste: Reihenfolge, Frist, Freigeben, räumt selbst auf
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -359,6 +360,63 @@ Einladung und Code werden wie der Rabattcode für die Sitzung gemerkt
 (`sessionStorage`, `CodeMerker`): Der Gast hat sie selbst angeklickt, um zu
 kaufen. Anders als das Promoter-Kürzel, das nur Zählung ist.
 
+### Warteliste (Migration 0020)
+
+Entschieden am 17.09.2026: Eintrag mit Mailadresse und **Anzahl 1–4**, auf
+der Liste steht erst, wer den **Bestätigungslink** geklickt hat (eine
+vertippte Adresse hielte sonst Tickets fest). Reihenfolge ab Bestätigung.
+**Wer passt, rückt vor:** Ist weniger frei, als der Erste will, bekommt es der
+Nächste mit passender Anzahl; der Erste bleibt vorne. Frist **4 Stunden ab
+Versand der Mail**, endet sie zwischen 0 und 10 Uhr, gilt sie bis 10 Uhr,
+spätestens bis Beginn (`angebot_frist`, mit Selbstprüfung über die
+Zeitumstellung).
+
+**Ein Angebot ist eine Reservierung wie jede andere.** `bediene_warteliste()`
+ruft `reserviere()` mit langer Frist; Kontingent, Sperre, Verfall, Kasse und
+Bezahlung laufen durch die bestehenden Wege. Die Warteliste merkt sich nur
+`angebot_am` und `bestellung_id`. Der Zustand eines Eintrags wird **nicht
+gespeichert**, sondern hergeleitet (`wartelisteZustand` in `typen.ts`) — sonst
+liefe er auseinander, sobald eine Reservierung verfällt. Merkmal ist
+`angebot_am`, nicht `bestellung_id`: Gelöschte Bestellungen dürfen einen
+Eintrag nicht wieder auf „wartet" setzen.
+
+**Der Takt** (`lunar_takt`, pg_cron alle fünf Minuten, ersetzt den Auftrag aus
+0005): verfallene Reservierungen freigeben, das Freigewordene sofort verteilen,
+Mails anstoßen — in einem Lauf, dazwischen kann niemand kaufen. Freie Plätze
+entstehen fast nur so (es gibt keine Rückgabe) oder wenn das Team Kontingent
+erhöht; deshalb verteilen auch **Event speichern** und der **Aufräumknopf**
+sofort (`bedieneWarteliste`). Während des Presale verteilt die Warteliste
+nichts, sonst wäre sie ein Zugang am Presale vorbei. In der letzten Stunde vor
+Beginn auch nicht.
+
+**Mails verschickt die Anwendung, nicht die Datenbank.** Warten Angebote auf
+ihre Mail, ruft der Takt per pg_net `POST /api/warteliste/versand` auf. Der
+Schlüssel dafür liegt nur in der Tabelle `betrieb` (von der Migration
+erzeugt, ohne Zugriffsregeln) — nicht im Repository, nicht in Vercel; die
+Adresse (`https://lunar-events.de`) steht dort ebenfalls. `beanspruche_angebote`
+markiert vor dem Versand (Takt und Backoffice schicken sonst doppelt) und setzt
+dabei die Frist; scheitert die Mail, nimmt `angebot_nicht_zugestellt` das
+zurück. Bis zur Mail hält ein Angebot **höchstens einen Tag** — sonst liefe bei
+erreichtem Brevo-Tageslimit die ganze Liste durch, ohne dass jemand davon weiß.
+
+**Ohne Mailversand gibt es keine Warteliste** (`versandEingerichtet()`): Die
+Eventseite zeigt das Formular dann nicht. Lokal fehlt `BREVO_API_KEY` — zum
+Ansehen den Server mit einem Platzhalter starten (`BREVO_API_KEY=x npx next
+dev -p 3007`), echte Mails gehen damit nicht raus.
+
+Kasse über `/checkout?angebot=<token>`: Tickets und Adresse stehen fest, kein
+Code, keine Fast Lane; statt `reserviere()` nimmt `uebernimmAngebot` nur Name
+und Telefon auf, setzt Werbehinweis und Cookie. `/warteliste/<token>` ist das
+Ziel aller Links (bestätigen, kaufen, freigeben, austragen) — wie beim
+Abmelden ändert erst der Knopf etwas, nie der Aufruf. **Freigeben** gibt die
+Reservierung sofort über `raeume_reservierungen_auf` zurück; wer bezahlt oder
+per Überweisung bestellt hat, kann nicht freigeben. Das Backoffice zeigt die
+Liste auf der Bearbeiten-Seite des Events, nur lesend.
+
+Bekannte Grenze: Das Formular schickt Mails an eingetippte Adressen. Gebremst
+wird je Adresse (10 Minuten) und mit Honigfalle — eine gezielte Flut könnte das
+Brevo-Tageslimit (300) aufbrauchen, und damit auch Ticketmails.
+
 ## Zahlung
 
 **Der Webhook ist die einzige Quelle, der wir glauben** (`api/stripe/webhook`).
@@ -562,6 +620,7 @@ Fertig und geprüft:
 - Rabattcodes: Kasse (Link und Eingabe), Backoffice mit Einlösungen
 - Promoter: Zuordnung über Link oder Code, geheime Statistikseite, Backoffice
 - Presale: Verkaufsstart je Event, Zugang über Codes und Einladungen, Abmelden
+- Warteliste: Bestätigungslink, Angebote mit Frist, Kasse, Freigeben, Backoffice
 
 Offen:
 

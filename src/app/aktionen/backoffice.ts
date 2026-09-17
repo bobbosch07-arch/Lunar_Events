@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { serverClient } from "@/lib/supabase/server";
+import { bedieneWarteliste } from "@/lib/warteliste";
 
 /**
  * Änderungen aus dem Backoffice laufen über die Sitzung des Mitarbeiters.
@@ -60,6 +61,9 @@ export async function raeumeReservierungenAuf() {
     console.error("[backoffice] Aufräumen fehlgeschlagen:", error.message);
     return { ok: false as const, fehler: error.message };
   }
+
+  // Was frei wurde, gehört zuerst der Warteliste — wie im Takt.
+  await bedieneWarteliste();
 
   revalidatePath("/backoffice");
   revalidatePath("/backoffice/bestellungen");
