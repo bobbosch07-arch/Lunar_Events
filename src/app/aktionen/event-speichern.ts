@@ -41,6 +41,8 @@ export type EventEingabe = {
   dresscode: string | null;
   abendkasse: boolean;
   abendkasse_hinweis: string | null;
+  /** Streichpreis (0030), null = keiner. */
+  streichpreis_cent: number | null;
   featured: boolean;
   fastlane_aktiv: boolean;
   fastlane_preis_cent: number;
@@ -127,6 +129,9 @@ export async function speichereEvent(
     dresscode: eingabe.dresscode?.trim() || null,
     abendkasse: eingabe.abendkasse,
     abendkasse_hinweis: eingabe.abendkasse_hinweis?.trim() || null,
+    // 0 oder Unsinn heißt: kein Streichpreis (die Tabelle erlaubt nur > 0).
+    streichpreis_cent:
+      eingabe.streichpreis_cent && eingabe.streichpreis_cent > 0 ? eingabe.streichpreis_cent : null,
     featured: eingabe.featured,
     fastlane_aktiv: eingabe.fastlane_aktiv,
     fastlane_preis_cent: Math.max(0, eingabe.fastlane_preis_cent),

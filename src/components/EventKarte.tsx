@@ -1,9 +1,10 @@
 import Image from "next/image";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import type { Veranstaltung } from "@/lib/typen";
+import { streichpreisZu, type Veranstaltung } from "@/lib/typen";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
+import { Streichpreis } from "./Streichpreis";
 import css from "./EventKarte.module.css";
 
 type Props = {
@@ -63,6 +64,16 @@ export function EventKarte({ event, prioritaet = false }: Props) {
               {t("abPreis", {
                 preis: preisText(event.ab_preis_cent, locale),
               })}
+              {/* Streichpreis (0030), dezent daneben. */}
+              {(() => {
+                const streich = streichpreisZu(event.ab_preis_cent, event.streichpreis_cent ?? null);
+                return streich !== null ? (
+                  <>
+                    {" "}
+                    <Streichpreis cent={streich} />
+                  </>
+                ) : null;
+              })()}
             </span>
           )}
           <span className={css.cta}>{t("ansehen")}</span>

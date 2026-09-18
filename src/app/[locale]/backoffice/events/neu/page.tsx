@@ -37,6 +37,7 @@ function vorlage(): EventStand {
     dresscode: "",
     abendkasse: false,
     abendkasseHinweis: "",
+    streichpreisEuro: "",
     featured: false,
     fastlaneAktiv: false,
     fastlanePreisEuro: "10,00",

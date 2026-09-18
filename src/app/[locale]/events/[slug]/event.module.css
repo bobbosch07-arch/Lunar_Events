@@ -203,6 +203,44 @@
   line-height: var(--lh-body);
 }
 
+/* Flaggen (18.09.2026): woran der Einlass scheitern kann. Sichtbar, aber
+   ruhig — eine feine Goldlinie links, keine Warnfarbe. Gold ist dabei nicht
+   das einzige Merkmal: Die Marke „Ü18“ trägt Schrift und Rahmen. */
+.flaggen {
+  list-style: none;
+  margin: 0 0 var(--space-6);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.flagge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--linie);
+  border-left: 2px solid var(--akzent);
+  border-radius: var(--radius-md);
+  background: var(--grund);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--auf-grund-2);
+}
+
+.flaggeKurz {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-body);
+  letter-spacing: var(--ls-label);
+  color: var(--auf-grund);
+}
+
 .abschnittKopf {
   display: flex;
   flex-direction: column;

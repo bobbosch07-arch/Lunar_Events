@@ -93,7 +93,13 @@
     "presaleUnbekannt": "This code doesn’t unlock the presale.",
     "presaleAufgebraucht": "The presale tickets for this code are gone.",
     "presaleMitCode": "Presale · unlocked with {code}",
-    "presaleMitEinladung": "Presale · your invitation for {email}"
+    "presaleMitEinladung": "Presale · your invitation for {email}",
+    "streichpreisVorlesen": "At the door",
+    "preisVerborgen": "???",
+    "preisVerborgenVorlesen": "Price to be announced",
+    "fomoDanachVerborgen": "Then {phase}: ???",
+    "flaggeAlter": "{jahre}+",
+    "flaggeHinweis": "Entry {jahre}+ only · Bring your ID"
   },
   "vip": {
     "eyebrow": "VIP Experience",
@@ -181,7 +187,9 @@
     "reserviertBis": "Held until {zeit}",
     "wartelisteHinweis": "From the waitlist · held for you until {zeit}",
     "wartelisteAdresse": "The offer is for the address you signed up with.",
-    "wartelisteVorbei": "Your offer has expired. The tickets went to the next person on the list."
+    "wartelisteVorbei": "Your offer has expired. The tickets went to the next person on the list.",
+    "flaggeHinweis": "Entry {jahre}+ only · Bring your ID",
+    "flaggeZustimmung": "I understand: entry only from age {jahre}. Without valid ID there is no entry and no refund."
   },
   "bestaetigung": {
     "titel": "PURCHASE COMPLETE",

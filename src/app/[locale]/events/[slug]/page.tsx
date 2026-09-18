@@ -14,7 +14,14 @@ import { preisText } from "@/lib/format";
 import { pruefeKuerzel } from "@/lib/promoter";
 import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
 import { versandEingerichtet } from "@/lib/mail";
-import { verkaufsstartKommt, type VerkaufsStand } from "@/lib/typen";
+import {
+  einlassFlaggen,
+  streichpreisZu,
+  verbergeSpaetePreise,
+  verkaufsstartKommt,
+  type VerkaufsStand,
+} from "@/lib/typen";
+import { Streichpreis } from "@/components/Streichpreis";
 import css from "./event.module.css";
 
 type Props = {
@@ -77,6 +84,12 @@ export default async function EventSeite({ params, searchParams }: Props) {
   const beginn = new Date(event.beginn);
   const vergangen = beginn.getTime() < Date.now();
   const guenstigste = event.ab_preis_cent;
+  // Spätere Phasen zeigen „???“ (18.09.2026) — ihre Preise gehen gar nicht
+  // erst an den Browser.
+  const phasenAnzeige = verbergeSpaetePreise(phasen);
+  const streichpreis = event.streichpreis_cent ?? null;
+  const streichAb = guenstigste !== null ? streichpreisZu(guenstigste, streichpreis) : null;
+  const flaggen = einlassFlaggen(event);
 
   const infos: Array<[string, string]> = [
     [t("datum"), f.dateTime(beginn, "lang")],
@@ -143,6 +156,12 @@ export default async function EventSeite({ params, searchParams }: Props) {
                   <span className={css.eckTrenner} aria-hidden="true" />
                   <span className={css.eckpunkt}>
                     ab {preisText(guenstigste, locale)}
+                    {streichAb !== null ? (
+                      <>
+                        {" "}
+                        <Streichpreis cent={streichAb} />
+                      </>
+                    ) : null}
                   </span>
                 </>
               ) : null}
@@ -203,10 +222,24 @@ export default async function EventSeite({ params, searchParams }: Props) {
               <p className={css.vergangen}>{t("vergangen")}</p>
             ) : (
               <>
+                {/* Flaggen: Dinge, an denen der Einlass scheitert — ruhig, aber
+                    vor der Auswahl, nicht erst in der Kasse. */}
+                {flaggen.length > 0 ? (
+                  <ul className={css.flaggen}>
+                    {flaggen.map((fl) => (
+                      <li key={fl.art} className={css.flagge}>
+                        <span className={css.flaggeKurz}>{t("flaggeAlter", { jahre: fl.jahre })}</span>
+                        <span>{t("flaggeHinweis", { jahre: fl.jahre })}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
                 <Ticketauswahl
                   eventId={event.id}
                   eventSlug={event.slug}
-                  phasen={phasen}
+                  phasen={phasenAnzeige}
+                  streichpreisCent={streichpreis}
                   verkauf={verkauf}
                   warteliste={versandEingerichtet()}
                 />

@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { CheckoutFluss, type Posten } from "@/components/CheckoutFluss";
 import { holeEvent, holePhasen } from "@/lib/events";
-import { phasenZustaende, verkaufsstartKommt } from "@/lib/typen";
+import { einlassFlaggen, phasenZustaende, verkaufsstartKommt } from "@/lib/typen";
 import { stripeEingerichtet, eigeneAdresse } from "@/lib/stripe";
 import { paypalEingerichtet } from "@/lib/paypal";
 import { vorkasseMoeglich } from "@/lib/vorkasse";
@@ -88,6 +88,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
           posten={eintrag.bestellung.posten}
           fastlane={null}
           garderobe={null}
+          flaggen={einlassFlaggen(wartelisteEvent)}
           vorkasseMoeglich={vorkasseMoeglich(wartelisteEvent.beginn)}
           testmodus={testmodus}
           stripeAktiv={stripeAktiv}
@@ -177,6 +178,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
         posten={posten}
         fastlane={event.fastlane ?? null}
         garderobe={event.garderobe ?? null}
+        flaggen={einlassFlaggen(event)}
         vorkasseMoeglich={vorkasseMoeglich(event.beginn)}
         testmodus={testmodus}
         stripeAktiv={stripeAktiv}

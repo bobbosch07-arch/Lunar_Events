@@ -12,12 +12,14 @@ import { promoAusAdresse } from "@/lib/promoter";
 import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
 import {
   phasenZustaende,
+  streichpreisZu,
   verkaufsstand,
   wartelisteOffen,
   zeigeRest,
   type Phase,
   type VerkaufsStand,
 } from "@/lib/typen";
+import { Streichpreis } from "./Streichpreis";
 import css from "./Ticketauswahl.module.css";
 
 type Props = {
@@ -28,6 +30,8 @@ type Props = {
   verkauf: VerkaufsStand;
   /** Mailversand ist eingerichtet — ohne ihn gäbe es weder Bestätigung noch Angebot. */
   warteliste: boolean;
+  /** Dezent durchgestrichen neben den sichtbaren Preisen (0030). */
+  streichpreisCent: number | null;
 };
 
 /** Mehr als zwanzig Tickets auf einmal ist keine Bestellung, das ist eine
@@ -254,13 +258,15 @@ export function Ticketauswahl(props: Props) {
                       </span>
                       <span>
                         {stand.naechste
-                          ? t("fomoDanach", {
-                              phase: stand.naechste.name,
-                              preis: preisText(
-                                stand.naechste.preis_cent + stand.naechste.gebuehr_cent,
-                                locale,
-                              ),
-                            })
+                          ? stand.naechste.preis_verborgen
+                            ? t("fomoDanachVerborgen", { phase: stand.naechste.name })
+                            : t("fomoDanach", {
+                                phase: stand.naechste.name,
+                                preis: preisText(
+                                  stand.naechste.preis_cent + stand.naechste.gebuehr_cent,
+                                  locale,
+                                ),
+                              })
                           : t("fomoLetzte")}
                       </span>
                     </div>
@@ -287,10 +293,27 @@ export function Ticketauswahl(props: Props) {
 
               <div className={css.rechts}>
                 <div className={css.preisfeld}>
-                  <span className={css.preis}>
-                    {phase.art === "vip"
-                      ? t("aufAnfrage")
-                      : preisText(phase.preis_cent + phase.gebuehr_cent, locale)}
+                  <span className={css.preiszeile}>
+                    {/* Streichpreis nur neben Preisen, die man sieht und die
+                        noch kommen — nicht bei „???“, nicht bei Vergangenem. */}
+                    {phase.art === "standard" && !phase.preis_verborgen && !gesperrt
+                      ? (() => {
+                          const streich = streichpreisZu(
+                            phase.preis_cent + phase.gebuehr_cent,
+                            props.streichpreisCent,
+                          );
+                          return streich !== null ? <Streichpreis cent={streich} /> : null;
+                        })()
+                      : null}
+                    <span className={css.preis}>
+                      {phase.art === "vip" ? (
+                        t("aufAnfrage")
+                      ) : phase.preis_verborgen ? (
+                        <span aria-label={t("preisVerborgenVorlesen")}>{t("preisVerborgen")}</span>
+                      ) : (
+                        preisText(phase.preis_cent + phase.gebuehr_cent, locale)
+                      )}
+                    </span>
                   </span>
                   {phase.art !== "vip" && phase.gebuehr_cent > 0 ? (
                     <span className={css.gebuehr}>

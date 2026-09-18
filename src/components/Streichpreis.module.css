@@ -1,0 +1,27 @@
+/* Dezent: kleiner und gedämpft neben dem eigentlichen Preis, eine dünne
+   Linie statt eines kräftigen Strichs. Der Preis selbst bleibt der Blickfang. */
+.streich {
+  font-family: var(--font-body);
+  font-weight: var(--fw-body);
+  font-size: 0.72em;
+  letter-spacing: 0;
+  color: var(--auf-grund-3);
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1px;
+  text-decoration-color: currentColor;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Nur für Screenreader. */
+.vorlesen {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

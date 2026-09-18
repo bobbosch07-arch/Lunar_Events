@@ -52,6 +52,7 @@ async function Inhalt({ slug }: { slug: string }) {
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
        garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
+       streichpreis_cent,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv, abendkasse)`,
     )
@@ -101,6 +102,8 @@ async function Inhalt({ slug }: { slug: string }) {
     dresscode: (event.dresscode as string | null) ?? "",
     abendkasse: (event.abendkasse as boolean) ?? false,
     abendkasseHinweis: (event.abendkasse_hinweis as string | null) ?? "",
+    streichpreisEuro:
+      event.streichpreis_cent === null ? "" : euroAus(event.streichpreis_cent as number),
     featured: (event.featured as boolean) ?? false,
     fastlaneAktiv: (event.fastlane_aktiv as boolean) ?? false,
     fastlanePreisEuro: euroAus((event.fastlane_preis_cent as number) ?? 0),

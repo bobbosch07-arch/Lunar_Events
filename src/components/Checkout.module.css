@@ -174,6 +174,37 @@
   border-bottom: 1px solid var(--border-gold);
 }
 
+/* ---------- Flaggen (18.09.2026) ----------
+   Woran der Einlass scheitern kann, gleich unter der Überschrift. Wie auf
+   der Eventseite: ruhig, feine Goldlinie, keine Warnfarbe. */
+
+.flagge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--border-light);
+  border-left: 2px solid var(--gold-500);
+  border-radius: var(--radius-md);
+  background: var(--ivory-50);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+}
+
+.flaggeKurz {
+  flex: none;
+  padding: 2px 8px;
+  border: 1px solid var(--border-gold);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-body);
+  letter-spacing: var(--ls-label);
+  color: var(--text-primary);
+}
+
 /* ---------- Zusätze (Garderobe, 0027) ---------- */
 
 .zusatz {

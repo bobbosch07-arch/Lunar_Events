@@ -51,6 +51,8 @@ export type EventStand = {
   dresscode: string;
   abendkasse: boolean;
   abendkasseHinweis: string;
+  /** Streichpreis (0030), "" = keiner. */
+  streichpreisEuro: string;
   featured: boolean;
   fastlaneAktiv: boolean;
   fastlanePreisEuro: string;

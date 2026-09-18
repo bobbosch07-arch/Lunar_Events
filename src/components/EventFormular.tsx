@@ -85,6 +85,7 @@ export function EventFormular({
       dresscode: stand.dresscode || null,
       abendkasse: stand.abendkasse,
       abendkasse_hinweis: stand.abendkasseHinweis || null,
+      streichpreis_cent: stand.streichpreisEuro.trim() ? centAus(stand.streichpreisEuro) : null,
       featured: stand.featured,
       fastlane_aktiv: stand.fastlaneAktiv,
       fastlane_preis_cent: centAus(stand.fastlanePreisEuro),
@@ -414,6 +415,25 @@ export function EventFormular({
               />
             </div>
           ) : null}
+          {/* Streichpreis (0030) — unabhängig davon, ob es eine Abendkasse gibt. */}
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="streichpreis">
+              Streichpreis (€)
+            </label>
+            <input
+              id="streichpreis"
+              inputMode="decimal"
+              className={css.eingabe}
+              placeholder="z. B. 15,00"
+              value={stand.streichpreisEuro}
+              onChange={(e) => setze("streichpreisEuro", e.target.value)}
+            />
+            <span className={css.hinweis}>
+              Steht dezent durchgestrichen neben den Online-Preisen, ohne
+              Beschriftung — gedacht als Preis an der Tür. Gibt es eine
+              Abendkassen-Phase, gilt deren Preis. Leer = keiner.
+            </span>
+          </div>
         </div>
       </section>
 

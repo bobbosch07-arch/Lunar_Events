@@ -1,7 +1,7 @@
 import type { Phase, Veranstaltung } from "./typen";
 import { BEISPIEL_EVENTS, beispielPhasen } from "./beispieldaten";
 import { datenbankVerbunden, serverClient } from "./supabase/server";
-import { phasenZustaende } from "./typen";
+import { phasenFolge, phasenZustaende } from "./typen";
 
 /**
  * Eine Stelle, an der Events herkommen.
@@ -20,6 +20,7 @@ const AUSWAHL = `
   fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
   fastlane_beschreibung, presale_ab, verkauf_ab,
   garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
+  streichpreis_cent,
   ort:orte(*),
   phasen(*)
 `;
@@ -87,8 +88,21 @@ function garderobeAus(z: Zeile): Veranstaltung["garderobe"] {
   return { preis_cent: (z.garderobe_preis_cent as number) ?? 0, rest };
 }
 
+/**
+ * Streichpreis (0030): Gibt es eine aktive Abendkassen-Phase, ist deren Preis
+ * die Wahrheit — sonst das Feld am Event.
+ */
+function streichpreisAus(z: Zeile, allePhasen: Phase[]): number | null {
+  const tuer = allePhasen
+    .filter((p) => p.abendkasse && p.aktiv && p.art === "standard")
+    .sort(phasenFolge)[0];
+  if (tuer) return tuer.preis_cent + tuer.gebuehr_cent;
+  return (z.streichpreis_cent as number | null) ?? null;
+}
+
 function baueEvent(z: Zeile): Veranstaltung {
-  const phasen = nurOnline(((z.phasen as Zeile[]) ?? []).map(bauePhase));
+  const allePhasen = ((z.phasen as Zeile[]) ?? []).map(bauePhase);
+  const phasen = nurOnline(allePhasen);
   const zustaende = phasenZustaende(phasen);
   const kaufbar = phasen.filter((p) => zustaende.get(p.id)?.art === "kaufbar");
 
@@ -135,6 +149,7 @@ function baueEvent(z: Zeile): Veranstaltung {
     ausverkauft: standard.length > 0 && kaufbar.length === 0,
     fastlane: fastlaneAus(z),
     garderobe: garderobeAus(z),
+    streichpreis_cent: streichpreisAus(z, allePhasen),
     presale_ab: (z.presale_ab as string | null) ?? null,
     verkauf_ab: (z.verkauf_ab as string | null) ?? null,
   };

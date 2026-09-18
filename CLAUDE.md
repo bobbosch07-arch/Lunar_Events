@@ -153,6 +153,33 @@ dasselbe in `reserviere()` (0010), weil die Auswahl in der Adresse steht.
 Eine Phase ohne Kontingent ist nie ausverkauft; danach kommt eine spätere
 nur über `bis`, `aktiv` oder ein Zeitfenster dran.
 
+**Spätere Phasen zeigen „???“** (entschieden 18.09.2026): Die aktuelle Phase
+und die nächste zeigen ihren Preis, alle danach „???“ (`SICHTBARE_PHASEN`).
+Vergangene (ausverkaufte) Phasen behalten ihren Preis. Ausgeblendet wird **auf
+dem Server** (`verbergeSpaetePreise` auf der Eventseite): Preis und Gebühr
+stehen dann auf 0 mit `preis_verborgen` — nur „???“ anzuzeigen reichte nicht,
+die Ticketauswahl läuft im Browser, und der Preis stünde im Quelltext. Die
+Kasse rechnet weiter mit den echten Phasen; kaufbar ist ohnehin nur die
+aktuelle. Wer eine neue Anzeigefläche für Phasen baut, muss die Preise dort
+ebenfalls verbergen.
+
+**Streichpreis** (0030, `events.streichpreis_cent`): dezent durchgestrichen
+neben den sichtbaren Preisen, dem „ab“-Preis im Hero und auf den Eventkarten —
+nur, wenn er über dem Preis liegt (`streichpreisZu`). Gemeint ist der Preis an
+der Tür; gibt es eine aktive Abendkassen-Phase, gilt deren Preis. **Sichtbar
+ohne Beschriftung** — ausdrücklicher Wunsch des Veranstalters (18.09.2026),
+das Risiko einer irreführenden Preisgegenüberstellung (§ 5 UWG) ist ihm
+bekannt. Er verspricht keine Abendkasse und hängt deshalb nicht an
+`events.abendkasse`. Für Screenreader steht unsichtbar „Abendkasse“ davor.
+Nicht in der Kasse: Dort läse sich ein Streichpreis wie ein Rabatt.
+
+**Flaggen** (`einlassFlaggen`): woran der Einlass scheitern kann. Die erste
+kommt aus dem **Mindestalter** (eine Wahrheit, kein zweites Feld „Ü18“, das
+ihm widersprechen könnte). Eventseite: ruhige Zeile mit Goldlinie über der
+Ticketauswahl. Kasse: dieselbe Zeile in Schritt 1 und ein **Pflicht-Häkchen**
+in Schritt 3 („ohne gültigen Ausweis kein Einlass und keine Erstattung“) — alle
+Bezahlwege hängen an `zugestimmt`. Weitere Flaggen kommen als eigene `art` dazu.
+
 **Die Verkaufsleiste zeigt nur echte Zahlen** (`verkaufsstand`): Anteil
 verkauft und Preis der nächsten Phase, erst ab 50 %, ab 80 % in
 Warnfarbe. Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer

@@ -15,6 +15,7 @@ import {
   type CodeAblehnung,
   type CodeVorschau,
   type FastLane,
+  type Flagge,
   type Garderobe,
 } from "@/lib/typen";
 import { preisText } from "@/lib/format";
@@ -56,6 +57,8 @@ type Props = {
   fastlane: FastLane | null;
   /** Garderobe je Stück, falls das Event sie online anbietet (0027). */
   garderobe: Garderobe | null;
+  /** Woran der Einlass scheitern kann (18.09.2026) — mit eigenem Häkchen. */
+  flaggen: Flagge[];
   /** Bankverbindung hinterlegt und das Event weit genug entfernt. */
   vorkasseMoeglich: boolean;
   /** Code aus dem Link, auf dem Server schon geprüft. */
@@ -88,6 +91,7 @@ const LEER: Formular = { vorname: "", nachname: "", email: "", telefon: "" };
 export function CheckoutFluss(props: Props) {
   const t = useTranslations("checkout");
   const tg = useTranslations("garderobe");
+  const te = useTranslations("event");
   const locale = useLocale();
   const router = useRouter();
 
@@ -112,6 +116,9 @@ export function CheckoutFluss(props: Props) {
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
   const [agb, setAgb] = useState(false);
   const [widerruf, setWiderruf] = useState(false);
+  const [flaggenOk, setFlaggenOk] = useState(false);
+  // Alle Bezahlwege hängen an denselben Zustimmungen.
+  const zugestimmt = agb && widerruf && (props.flaggen.length === 0 || flaggenOk);
   const [laeuft, setLaeuft] = useState(false);
   const [stoerung, setStoerung] = useState<string | null>(null);
   const [fastlane, setFastlane] = useState(false);
@@ -497,6 +504,12 @@ export function CheckoutFluss(props: Props) {
         {schritt === 1 ? (
           <>
             <h1 className={css.titel}>{t("schritt1")}</h1>
+            {props.flaggen.map((fl) => (
+              <p key={fl.art} className={css.flagge}>
+                <span className={css.flaggeKurz}>{te("flaggeAlter", { jahre: fl.jahre })}</span>
+                <span>{t("flaggeHinweis", { jahre: fl.jahre })}</span>
+              </p>
+            ))}
             <p className={css.hinweis}>
               {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} für {props.eventTitel}.
             </p>
@@ -738,6 +751,16 @@ export function CheckoutFluss(props: Props) {
                 />
                 <span>{t("widerrufText")}</span>
               </label>
+              {props.flaggen.map((fl) => (
+                <label key={fl.art} className={css.zustimmung}>
+                  <input
+                    type="checkbox"
+                    checked={flaggenOk}
+                    onChange={(e) => setFlaggenOk(e.target.checked)}
+                  />
+                  <span>{t("flaggeZustimmung", { jahre: fl.jahre })}</span>
+                </label>
+              ))}
             </div>
 
             {kostenlos ? (
@@ -747,7 +770,7 @@ export function CheckoutFluss(props: Props) {
                 <div className={css.knoepfe}>
                   <Knopf
                     onClick={kostenlosBestellen}
-                    disabled={!agb || !widerruf || laeuft}
+                    disabled={!zugestimmt || laeuft}
                     groesse="gross"
                   >
                     {laeuft ? "…" : t("code.kostenlosKnopf")}
@@ -822,7 +845,7 @@ export function CheckoutFluss(props: Props) {
                     <div className={css.knoepfe}>
                       <Knopf
                         onClick={perUeberweisung}
-                        disabled={!agb || !widerruf || laeuft}
+                        disabled={!zugestimmt || laeuft}
                         groesse="gross"
                       >
                         {laeuft ? "…" : "Verbindlich per Überweisung bestellen"}
@@ -833,13 +856,13 @@ export function CheckoutFluss(props: Props) {
                   <StripeZahlung
                     bestellungId={bestellung.id}
                     rueckkehr={`${props.rueckkehrBasis}/checkout/bestaetigung?b=${bestellung.id}`}
-                    freigegeben={agb && widerruf}
+                    freigegeben={zugestimmt}
                   />
                 ) : props.paypalClientId ? (
                   <PaypalZahlung
                     bestellungId={bestellung.id}
                     clientId={props.paypalClientId}
-                    freigegeben={agb && widerruf}
+                    freigegeben={zugestimmt}
                   />
                 ) : (
                   <>
@@ -853,7 +876,7 @@ export function CheckoutFluss(props: Props) {
                     <div className={css.knoepfe}>
                       <Knopf
                         onClick={kaufen}
-                        disabled={!agb || !widerruf || laeuft || !props.testmodus}
+                        disabled={!zugestimmt || laeuft || !props.testmodus}
                         groesse="gross"
                       >
                         {laeuft ? "…" : t("jetztKaufen")}

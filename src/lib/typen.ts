@@ -90,6 +90,11 @@ export type Veranstaltung = {
   fastlane?: FastLane | null;
   /** Nur gesetzt, wenn die Garderobe online angeboten wird und Plätze hat (0027). */
   garderobe?: Garderobe | null;
+  /**
+   * Dezent durchgestrichen neben den Preisen (0030): der Preis einer
+   * Abendkassen-Phase, sonst das Feld am Event. null = keiner.
+   */
+  streichpreis_cent?: number | null;
   /** Ab hier kauft, wer Presale-Zugang hat (0019). */
   presale_ab?: string | null;
   /** Ab hier kauft jeder. null = Verkauf offen. */
@@ -187,6 +192,11 @@ export type Phase = {
   aktiv: boolean;
   /** Nur an der Tür (0025): online unsichtbar und nicht kaufbar. */
   abendkasse: boolean;
+  /**
+   * Preis wird noch nicht gezeigt („???“, 18.09.2026). Dann stehen Preis und
+   * Gebühr auf 0 — sie verlassen den Server gar nicht erst.
+   */
+  preis_verborgen?: boolean;
 };
 
 /** Abgeleiteter Zustand einer Phase zum Zeitpunkt der Anzeige. */
@@ -569,6 +579,61 @@ export function verkaufsstand(
       .find((p) => p.art === "standard" && zustaende.get(p.id)?.art === "folgt") ?? null;
 
   return { anteil, rest: phase.kontingent - phase.verkauft, naechste };
+}
+
+/* ------------------------------------------------------------------ */
+/* Preise zeigen (entschieden 18.09.2026)                              */
+/* ------------------------------------------------------------------ */
+
+/** Die aktuelle Phase und die nächste zeigen ihren Preis, danach „???“. */
+export const SICHTBARE_PHASEN = 2;
+
+/**
+ * Nimmt die Preise späterer Phasen heraus, bevor die Phasen an den Browser
+ * gehen. Nur „???“ anzuzeigen reichte nicht: Die Ticketauswahl läuft im
+ * Browser, und im Seitenquelltext stünde der Preis trotzdem.
+ *
+ * Vergangene Phasen (ausverkauft, vorbei) behalten ihren Preis — das ist
+ * Transparenz (Briefing 12) und verrät nichts über die Zukunft. VIP hat
+ * ohnehin keinen Preis. Nur für die Anzeige: Die Kasse rechnet mit den
+ * echten Phasen, und kaufbar ist ohnehin nur die aktuelle.
+ */
+export function verbergeSpaetePreise(phasen: Phase[], jetzt: Date = new Date()): Phase[] {
+  const zustaende = phasenZustaende(phasen, jetzt);
+  const verborgen = new Set<string>();
+  let kommende = 0;
+  for (const p of [...phasen].sort(phasenFolge)) {
+    if (p.art !== "standard") continue;
+    const art = zustaende.get(p.id)?.art;
+    if (art === "ausverkauft" || art === "vorbei") continue;
+    kommende++;
+    if (kommende > SICHTBARE_PHASEN) verborgen.add(p.id);
+  }
+  return phasen.map((p) =>
+    verborgen.has(p.id) ? { ...p, preis_cent: 0, gebuehr_cent: 0, preis_verborgen: true } : p,
+  );
+}
+
+/**
+ * Der Streichpreis neben einem Preis — nur, wenn er wirklich darüber liegt.
+ * Ein gleich hoher oder niedrigerer „Streichpreis“ wäre sinnlos.
+ */
+export function streichpreisZu(preisCent: number, streichpreisCent: number | null): number | null {
+  return streichpreisCent !== null && streichpreisCent > preisCent ? streichpreisCent : null;
+}
+
+/**
+ * Flaggen: Dinge, an denen der Einlass scheitern kann. Deshalb stehen sie in
+ * der Kasse sichtbar und brauchen dort ein eigenes Häkchen. Die erste kommt
+ * aus dem Mindestalter (eine Wahrheit, nicht zwei Felder, die sich
+ * widersprechen können); weitere kommen später als eigene Art dazu.
+ */
+export type Flagge = { art: "alter"; jahre: number };
+
+export function einlassFlaggen(event: { mindestalter: number | null }): Flagge[] {
+  return event.mindestalter && event.mindestalter > 0
+    ? [{ art: "alter", jahre: event.mindestalter }]
+    : [];
 }
 
 /* ------------------------------------------------------------------ */

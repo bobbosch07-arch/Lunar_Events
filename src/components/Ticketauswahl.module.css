@@ -185,6 +185,14 @@
   color: var(--auf-grund);
 }
 
+/* Streichpreis links vom Preis, auf derselben Grundlinie (0030). */
+.preiszeile {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--fs-h3);
+}
+
 .gebuehr {
   font-size: var(--fs-caption);
   color: var(--auf-grund-3);

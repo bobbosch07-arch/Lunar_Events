@@ -93,7 +93,13 @@
     "presaleUnbekannt": "Mit diesem Code geht es nicht in den Presale.",
     "presaleAufgebraucht": "Die Presale-Tickets für diesen Code sind vergeben.",
     "presaleMitCode": "Presale · freigeschaltet mit {code}",
-    "presaleMitEinladung": "Presale · deine Einladung für {email}"
+    "presaleMitEinladung": "Presale · deine Einladung für {email}",
+    "streichpreisVorlesen": "Abendkasse",
+    "preisVerborgen": "???",
+    "preisVerborgenVorlesen": "Preis wird noch bekannt gegeben",
+    "fomoDanachVerborgen": "Danach {phase}: ???",
+    "flaggeAlter": "Ü{jahre}",
+    "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen"
   },
   "vip": {
     "eyebrow": "VIP Experience",
@@ -181,7 +187,9 @@
     "reserviertBis": "Reserviert bis {zeit} Uhr",
     "wartelisteHinweis": "Von der Warteliste · für dich reserviert bis {zeit} Uhr",
     "wartelisteAdresse": "Das Angebot gilt für die Adresse, mit der du dich eingetragen hast.",
-    "wartelisteVorbei": "Dein Angebot ist abgelaufen. Die Tickets sind an den Nächsten auf der Liste gegangen."
+    "wartelisteVorbei": "Dein Angebot ist abgelaufen. Die Tickets sind an den Nächsten auf der Liste gegangen.",
+    "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen",
+    "flaggeZustimmung": "Mir ist bekannt: Einlass erst ab {jahre} Jahren. Ohne gültigen Ausweis gibt es keinen Einlass und keine Erstattung."
   },
   "bestaetigung": {
     "titel": "KAUF ERFOLGREICH",
