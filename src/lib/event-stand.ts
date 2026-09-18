@@ -26,6 +26,8 @@ export type PhasenStand = {
   leistungen: string[];
   beschreibung: string;
   aktiv: boolean;
+  /** Nur an der Tür verkaufen (0025) */
+  abendkasse: boolean;
   verkauft: number;
 };
 
@@ -73,5 +75,6 @@ export const LEERE_PHASE: PhasenStand = {
   leistungen: ["Eintritt"],
   beschreibung: "",
   aktiv: true,
+  abendkasse: false,
   verkauft: 0,
 };

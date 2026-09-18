@@ -51,7 +51,17 @@ function bauePhase(z: Zeile): Phase {
     beschreibung: (z.beschreibung as string | null) ?? null,
     position: (z.position as number) ?? 0,
     aktiv: (z.aktiv as boolean) ?? true,
+    abendkasse: (z.abendkasse as boolean) ?? false,
   };
+}
+
+/**
+ * Was die Öffentlichkeit sieht. Abendkassen-Phasen (0025) gehören der Tür:
+ * Sie haben eigene Preise und ein eigenes Kontingent und würden online nur
+ * verwirren — kaufbar sind sie dort ohnehin nicht (reserviere prüft es).
+ */
+function nurOnline(phasen: Phase[]): Phase[] {
+  return phasen.filter((p) => !p.abendkasse);
 }
 
 /** Fast Lane nur anbieten, wenn eingeschaltet und nicht vergriffen. */
@@ -68,7 +78,7 @@ function fastlaneAus(z: Zeile): Veranstaltung["fastlane"] {
 }
 
 function baueEvent(z: Zeile): Veranstaltung {
-  const phasen = ((z.phasen as Zeile[]) ?? []).map(bauePhase);
+  const phasen = nurOnline(((z.phasen as Zeile[]) ?? []).map(bauePhase));
   const zustaende = phasenZustaende(phasen);
   const kaufbar = phasen.filter((p) => zustaende.get(p.id)?.art === "kaufbar");
 
@@ -189,6 +199,34 @@ export async function holeKommendeEvents(): Promise<Veranstaltung[]> {
   );
 }
 
+/**
+ * Events für Einlass und Abendkasse: die kommenden **und** die, die gerade
+ * laufen. Eine Nacht, die um 23 Uhr begonnen hat, läuft um zwei noch — und
+ * genau dann wird gescannt und kassiert. `holeKommendeEvents()` taugt dafür
+ * nicht: Sie lässt ein Event fallen, sobald es begonnen hat, und hat den
+ * Scanner damit zur Hauptzeit leer gemacht.
+ */
+export async function holeEventsFuerDenAbend(): Promise<Veranstaltung[]> {
+  // Wer um 23 Uhr beginnt, ist bis in den Morgen in Betrieb.
+  const seit = new Date(Date.now() - 18 * 3_600_000).toISOString();
+
+  return ausDatenbank(
+    "holeEventsFuerDenAbend",
+    async () => {
+      const db = await serverClient();
+      return db
+        .from("events")
+        .select(AUSWAHL)
+        .eq("status", "veroeffentlicht")
+        .gt("beginn", seit)
+        .order("beginn", { ascending: true });
+    },
+    () => BEISPIEL_EVENTS.filter((e) => e.status === "veroeffentlicht" && e.beginn > seit),
+    () => [],
+    (zeilen) => zeilen.map(baueEvent),
+  );
+}
+
 export async function holeFeaturedEvents(): Promise<Veranstaltung[]> {
   const alle = await holeKommendeEvents();
   const markiert = alle.filter((e) => e.featured);
@@ -223,7 +261,7 @@ export async function holePhasen(eventId: string): Promise<Phase[]> {
     },
     () => beispielPhasen(eventId).sort((a, b) => a.position - b.position),
     () => [],
-    (zeilen) => zeilen.map(bauePhase),
+    (zeilen) => nurOnline(zeilen.map(bauePhase)),
   );
 }
 

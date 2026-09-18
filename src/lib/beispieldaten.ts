@@ -165,6 +165,7 @@ export const BEISPIEL_PHASEN: Record<string, Phase[]> = {
       beschreibung: null,
       position: 1,
       aktiv: true,
+      abendkasse: false,
     },
     {
       id: "ph-2",
@@ -181,6 +182,7 @@ export const BEISPIEL_PHASEN: Record<string, Phase[]> = {
       beschreibung: null,
       position: 2,
       aktiv: true,
+      abendkasse: false,
     },
     {
       id: "ph-3",
@@ -197,6 +199,7 @@ export const BEISPIEL_PHASEN: Record<string, Phase[]> = {
       beschreibung: null,
       position: 3,
       aktiv: true,
+      abendkasse: false,
     },
     {
       id: "ph-4",
@@ -218,6 +221,7 @@ export const BEISPIEL_PHASEN: Record<string, Phase[]> = {
       beschreibung: "Für vier bis zwölf Gäste. Wir melden uns innerhalb von 24 Stunden.",
       position: 4,
       aktiv: true,
+      abendkasse: false,
     },
   ],
 };

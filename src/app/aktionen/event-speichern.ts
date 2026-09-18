@@ -16,6 +16,7 @@ export type PhasenEingabe = {
   beschreibung: string | null;
   position: number;
   aktiv: boolean;
+  abendkasse: boolean;
 };
 
 export type EventEingabe = {
@@ -184,6 +185,7 @@ export async function speichereEvent(
       beschreibung: phase.beschreibung?.trim() || null,
       position: phase.position,
       aktiv: phase.aktiv,
+      abendkasse: phase.abendkasse,
     };
 
     const { error: pf } = phase.id

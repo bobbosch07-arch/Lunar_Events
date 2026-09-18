@@ -24,11 +24,32 @@ export async function starteZahlung(
   if (store.get(COOKIE)?.value !== bestellungId) {
     return { ok: false, fehler: "nicht_deine_bestellung" };
   }
+  return zahlungVorbereiten(bestellungId);
+}
 
+/**
+ * Dasselbe für die Abendkasse (0025): Der Gast scannt an der Tür einen
+ * QR-Code und zahlt mit seinem eigenen Handy. Ein Cookie hat dieses Handy
+ * nicht — der Nachweis ist der Zugangstoken im Link, und der gilt nur für
+ * Bestellungen, die an der Kasse entstanden sind.
+ */
+export async function starteZahlungAnDerTuer(token: string): Promise<ZahlungErgebnis> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return { ok: false, fehler: "unbekannt" };
+  const { data } = await dienstClient()
+    .from("bestellungen")
+    .select("id, abendkasse")
+    .eq("zugangstoken", token)
+    .maybeSingle();
+  if (!data?.abendkasse) return { ok: false, fehler: "unbekannt" };
+  return zahlungVorbereiten(data.id as string);
+}
+
+/** Der gemeinsame Teil: Betrag aus der Datenbank, ein Zahlungsvorgang je Bestellung. */
+async function zahlungVorbereiten(bestellungId: string): Promise<ZahlungErgebnis> {
   const db = dienstClient();
   const { data: bestellung, error } = await db
     .from("bestellungen")
-    .select("id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, vorkasse, kunde:kunden(email)")
+    .select("id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, vorkasse, abendkasse, kunde:kunden(email)")
     .eq("id", bestellungId)
     .single();
 
@@ -77,8 +98,13 @@ export async function starteZahlung(
     {
       amount: betrag,
       currency: "eur",
-      automatic_payment_methods: { enabled: true },
-      receipt_email: kunde?.email,
+      // An der Tür nur Karte (samt Apple Pay und Google Pay): Eine Lastschrift
+      // gälte erst Tage später — der Gast wäre längst drin, wenn sie platzt.
+      ...(bestellung.abendkasse
+        ? { payment_method_types: ["card"] }
+        : { automatic_payment_methods: { enabled: true } }),
+      // An der Abendkasse gibt es oft keine Adresse — dann eben kein Beleg per Mail.
+      receipt_email: kunde?.email ?? undefined,
       description: `Lunar Events · Bestellung ${bestellung.nummer}`,
       // Der Webhook erkennt die Bestellung hieran wieder.
       metadata: { bestellung_id: bestellungId, nummer: bestellung.nummer as string },

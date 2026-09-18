@@ -325,5 +325,16 @@
     "zumEvent": "Zum Event",
     "fehler": "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
     "datenschutz": "Datenschutz"
+  },
+  "tuer": {
+    "titel": "Abendkasse",
+    "text": "Bestellung {nummer}. Zahl mit Karte, Apple Pay oder Google Pay — sobald es durch ist, lässt dich die Kasse rein.",
+    "zustimmung": "Ich habe die <agb>AGB</agb> und die <datenschutz>Datenschutzerklärung</datenschutz> gelesen. Für Veranstaltungstickets gibt es kein Widerrufsrecht.",
+    "bezahlt": "Bezahlt",
+    "bezahltText": "Danke! Zeig diese Seite an der Kasse — dort bist du schon als bezahlt zu sehen.",
+    "tickets": "Meine Tickets",
+    "abgelaufen": "Nicht mehr offen",
+    "abgelaufenText": "Diese Zahlung ist abgelaufen oder wurde abgebrochen. Frag an der Kasse nach einem neuen Code.",
+    "keineKarte": "Kartenzahlung ist gerade nicht eingerichtet. Bitte bar an der Kasse zahlen."
   }
 }

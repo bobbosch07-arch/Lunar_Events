@@ -1,0 +1,298 @@
+/* Die Abendkasse ist Werkzeug wie der Scanner: dunkel, große Flächen, im
+   Halbdunkel auf Armlänge lesbar. Farben für Erfolg und Warnung dieselben wie
+   im Scanner, damit das Personal nicht umlernen muss. */
+
+.rahmen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--navy-950);
+  color: var(--text-on-dark);
+}
+
+.kopf {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+.eventwahl {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--tap);
+  padding: 10px 12px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  background: var(--navy-900);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+}
+
+.inhalt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.beschriftung {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+}
+
+/* ---------- Phasen ---------- */
+
+.phasen {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.phase {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 60px;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  background: var(--navy-900);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Gewählt: Kante und Gewicht, nicht Gold allein. */
+.phase[aria-pressed="true"] {
+  border: 2px solid var(--gold-400);
+  font-weight: var(--fw-medium);
+}
+
+.phase:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.phaseName {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.phaseRest {
+  font-size: var(--fs-caption);
+  color: var(--text-on-dark-muted);
+}
+
+.phasePreis {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Menge und Summe ---------- */
+
+.menge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.mengeKnoepfe {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.mengeKnopf {
+  width: 56px;
+  height: 56px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
+  background: var(--navy-900);
+  color: var(--text-on-dark);
+  font-size: 1.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mengeKnopf:disabled {
+  opacity: 0.4;
+}
+
+.mengeWert {
+  min-width: 2ch;
+  text-align: center;
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  font-variant-numeric: tabular-nums;
+}
+
+.summe {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: clamp(2.5rem, 12vw, 3.5rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.schalter {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--tap);
+  font-size: var(--fs-body);
+  cursor: pointer;
+}
+
+.schalter input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--gold-400);
+}
+
+/* ---------- Die zwei Wege ---------- */
+
+.wege {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+}
+
+.weg {
+  min-height: 72px;
+  padding: var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  color: var(--text-on-dark);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-body-l);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.weg:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bar {
+  background: #14532d;
+}
+
+.qrWeg {
+  background: var(--navy-800);
+  border: 1px solid var(--border-dark);
+}
+
+/* ---------- Ergebnis ---------- */
+
+.ergebnis {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-5);
+  border-radius: var(--radius-md);
+}
+
+.gut {
+  background: #14532d;
+}
+
+.warte {
+  background: var(--navy-900);
+  border: 1px solid var(--border-dark);
+}
+
+.schlecht {
+  background: #7f1d1d;
+}
+
+.urteil {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: clamp(2rem, 10vw, 3rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.nebensache {
+  font-size: var(--fs-body-s);
+  color: rgba(255, 255, 255, 0.78);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Der QR-Code für das Gasthandy: weißer Grund, damit jede Kamera ihn liest. */
+.qr {
+  align-self: center;
+  width: min(72vw, 280px);
+  aspect-ratio: 1;
+  padding: 10px;
+  background: #fff;
+  border-radius: var(--radius-md);
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.textknopf {
+  min-height: var(--tap);
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--text-on-dark);
+  font: inherit;
+  font-size: var(--fs-body-s);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.fehler {
+  padding: var(--space-4);
+  border-radius: var(--radius-md);
+  background: #7f1d1d;
+  font-size: var(--fs-body);
+}
+
+/* ---------- Kassenstand ---------- */
+
+.stand {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+  border-top: 1px solid var(--border-dark);
+  font-size: var(--fs-body-s);
+  color: var(--text-on-dark-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stand strong {
+  color: var(--text-on-dark);
+}
+
+.leer {
+  color: var(--text-on-dark-muted);
+  line-height: var(--lh-body);
+}

@@ -52,7 +52,7 @@ async function Inhalt({ slug }: { slug: string }) {
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
-              leistungen, beschreibung, position, aktiv)`,
+              leistungen, beschreibung, position, aktiv, abendkasse)`,
     )
     .eq("slug", slug)
     .maybeSingle();
@@ -75,6 +75,7 @@ async function Inhalt({ slug }: { slug: string }) {
         : [""],
       beschreibung: (p.beschreibung as string | null) ?? "",
       aktiv: (p.aktiv as boolean) ?? true,
+      abendkasse: (p.abendkasse as boolean) ?? false,
       verkauft: (p.verkauft as number) ?? 0,
     }));
 

@@ -50,6 +50,7 @@ export function BackofficeReiter() {
         );
       })}
       <Link href="/plan">Mein Plan</Link>
+      <Link href="/kasse">Kasse</Link>
       <Link href="/einlass">Einlass</Link>
       <Link href="/">Zur Website</Link>
     </nav>

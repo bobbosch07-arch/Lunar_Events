@@ -5,7 +5,7 @@ import { EinlassScanner } from "@/components/EinlassScanner";
 import { Logo } from "@/components/Logo";
 import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
-import { holeKommendeEvents } from "@/lib/events";
+import { holeEventsFuerDenAbend } from "@/lib/events";
 import { redirect } from "next/navigation";
 import { sitzungAbgelaufen } from "@/lib/sitzung";
 import { darfScannen, istRolle, ROLLEN_NAMEN } from "@/lib/rollen";
@@ -71,7 +71,7 @@ export default async function Einlass({
   }
 
   const [events, f] = await Promise.all([
-    holeKommendeEvents(),
+    holeEventsFuerDenAbend(),
     getFormatter(),
   ]);
 

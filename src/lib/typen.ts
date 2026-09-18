@@ -152,6 +152,8 @@ export type Phase = {
   beschreibung: string | null;
   position: number;
   aktiv: boolean;
+  /** Nur an der Tür (0025): online unsichtbar und nicht kaufbar. */
+  abendkasse: boolean;
 };
 
 /** Abgeleiteter Zustand einer Phase zum Zeitpunkt der Anzeige. */

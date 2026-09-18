@@ -325,5 +325,16 @@
     "zumEvent": "View event",
     "fehler": "That didn’t work. Reload the page and try again.",
     "datenschutz": "Privacy"
+  },
+  "tuer": {
+    "titel": "Door sales",
+    "text": "Order {nummer}. Pay by card, Apple Pay or Google Pay — once it’s through, the door will let you in.",
+    "zustimmung": "I have read the <agb>terms</agb> and the <datenschutz>privacy policy</datenschutz>. There is no right of withdrawal for event tickets.",
+    "bezahlt": "Paid",
+    "bezahltText": "Thanks! Show this page at the door — you’re already marked as paid there.",
+    "tickets": "My tickets",
+    "abgelaufen": "No longer open",
+    "abgelaufenText": "This payment has expired or was cancelled. Ask at the door for a new code.",
+    "keineKarte": "Card payment isn’t set up right now. Please pay cash at the door."
   }
 }

@@ -39,6 +39,7 @@ node scripts/warteliste-testen.mjs  # Warteliste: Reihenfolge, Frist, Freigeben,
 node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/Bar/Einlass), räumt selbst auf
 node scripts/rollen-testen.mjs      # Rollen und zweiter Faktor, mit echten Einmalcodes
 node scripts/schichtplan-testen.mjs # Schichtplan: einteilen, sehen, ein- und auschecken
+node scripts/kasse-testen.mjs       # Abendkasse: bar, QR, Kontingent, Kassenstand, Rechte
 ```
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
@@ -642,6 +643,47 @@ niemanden in die falsche Schicht schicken. Wer aus dem Team genommen wird,
 behält seine Schicht in der Abrechnung (`schichten.user_id` hängt an
 `auth.users`, nicht an `mitarbeiter`).
 
+### Abendkasse (Migrationen 0025, 0026)
+
+Verkauft wird unter `/kasse` (Rolle kasse oder admin, mit zweitem Faktor wie
+das Backoffice). **Der Türpreis ist eine eigene Phase** mit dem Häkchen „Nur
+an der Abendkasse" (`phasen.abendkasse`, entschieden 17.09.2026): eigener
+Preis, eigenes Kontingent. Online ist sie unsichtbar (`nurOnline` in
+`events.ts`) und unkaufbar (`reserviere()` → `PHASE_NUR_ABENDKASSE`), und sie
+zählt bei der Phasenfolge nicht mit — sonst blockierte eine Abendkasse mit
+Restkarten den Online-Verkauf.
+
+**Nach dem Verkauf ist die Person drin** (Rückfrage 17.09.2026): Die Tickets
+werden im selben Zug entwertet. Ohne Häkchen „Sofort einlassen" bekommt der
+Gast seine Tickets als QR-Code auf den Bildschirm, zum Abfotografieren.
+
+Zwei Wege, beide über `verkaufe_abendkasse()` — eigene Funktion statt
+`reserviere()`, weil Bargeld keine Reservierung kennt; gesperrt wird dieselbe
+Phase, also lässt sich auch an der Tür nichts überverkaufen:
+- **Bar:** sofort bezahlt (`zahlungsart = abendkasse`), Tickets entstehen sofort.
+- **QR am Gasthandy:** Bestellung bleibt 20 Minuten offen, der Gast zahlt unter
+  `/kasse/zahlen/<zugangstoken>` mit seinem eigenen Handy. Die Kasse fragt alle
+  2,5 Sekunden (`pruefeTuerZahlung`, mit `stelleZahlungSicher` gegen einen zu
+  langsamen Webhook) und lässt nach dem Zahlungseingang ein. „Abbrechen" gibt
+  die Plätze sofort frei. **An der Tür nur Karte** (samt Apple Pay und Google
+  Pay, `payment_method_types: ["card"]`): Eine Lastschrift gälte erst Tage
+  später. Ohne Stripe-Schlüssel zeigt die Kasse den QR-Knopf gar nicht.
+
+`bestellungen.abendkasse` markiert Tür-Verkäufe unabhängig von der Zahlart;
+daraus rechnet `abendkasse_stand()` den **Kassenstand** (Tickets, bar, QR) —
+was am Ende in der Kasse liegen muss, steht unter „bar". Ohne Mailadresse hängt
+jeder Verkauf an einem gemeinsamen Kunden „Abendkasse" je Event
+(`abendkasse_kunde`), statt je Barverkauf eine leere Kundenzeile anzulegen.
+
+Der erste echte Verkauf im Prüfskript scheiterte daran, dass 0025 den
+Bestellstatus als Text eintrug — PostgreSQL wandelt Text beim Einfügen nicht
+von selbst in einen Aufzählungstyp. 0026 behebt das.
+
+**Scanner und Kasse zeigen auch laufende Events** (`holeEventsFuerDenAbend`,
+beginn bis 18 Stunden zurück). Vorher nahm der Scanner `holeKommendeEvents()`
+und ließ ein Event fallen, sobald es begonnen hatte — um 23:30 wäre die Party
+von 23 Uhr aus der Auswahl verschwunden.
+
 ### Anmeldung fürs Team
 
 **Gäste melden sich per Link an, das Team zusätzlich mit Passwort.** Das
@@ -731,6 +773,7 @@ Fertig und geprüft:
 - Gästeliste: Backoffice-Reiter, Tickets je Person, Mail/Link, Namensliste im Scanner (offline)
 - Rollen (admin, kasse, einlass, bar, security, runner, toiletten), zweiter Faktor für admin und kasse, Anmelde-Mail
 - Schichtplan: einteilen, Plan per Mail, „Mein Plan“, Ein- und Auschecken, Stunden
+- Abendkasse: eigene Türphase, bar oder QR am Gasthandy, sofort einlassen, Kassenstand
 
 Offen:
 

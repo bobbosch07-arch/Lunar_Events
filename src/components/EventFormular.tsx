@@ -104,6 +104,7 @@ export function EventFormular({
         beschreibung: p.beschreibung || null,
         position: i + 1,
         aktiv: p.aktiv,
+        abendkasse: p.abendkasse,
       })),
     };
 
@@ -666,6 +667,21 @@ export function EventFormular({
               />
               Aktiv (sichtbar und kaufbar)
             </label>
+
+            <label className={css.schalter}>
+              <input
+                type="checkbox"
+                checked={phase.abendkasse}
+                onChange={(e) => setzePhase(i, { abendkasse: e.target.checked })}
+              />
+              Nur an der Abendkasse
+            </label>
+            {phase.abendkasse ? (
+              <span className={css.hinweis}>
+                Diese Phase taucht online nicht auf und ist dort auch nicht kaufbar. Verkauft
+                wird sie unter „Kasse“ — mit eigenem Preis und eigenem Kontingent.
+              </span>
+            ) : null}
           </div>
         ))}
 

@@ -10,7 +10,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { useTranslations } from "next-intl";
 import { Knopf } from "./Knopf";
-import { starteZahlung } from "@/app/aktionen/zahlung";
+import { starteZahlung, starteZahlungAnDerTuer } from "@/app/aktionen/zahlung";
 import css from "./Checkout.module.css";
 
 /** Wird einmal geladen und behalten — sonst holt jede Neuanzeige das Skript neu. */
@@ -28,16 +28,21 @@ type Props = {
   rueckkehr: string;
   /** Die Zustimmungen müssen stehen, bevor gezahlt werden kann. */
   freigegeben: boolean;
+  /**
+   * Abendkasse (0025): Der Gast zahlt am eigenen Handy, ohne Kassen-Cookie.
+   * Der Zugangstoken aus dem QR-Code ist dann der Nachweis.
+   */
+  tuerToken?: string;
 };
 
-export function StripeZahlung({ bestellungId, rueckkehr, freigegeben }: Props) {
+export function StripeZahlung({ bestellungId, rueckkehr, freigegeben, tuerToken }: Props) {
   const t = useTranslations("checkout");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [fehler, setFehler] = useState<string | null>(null);
 
   useEffect(() => {
     let abgebrochen = false;
-    starteZahlung(bestellungId).then((ergebnis) => {
+    (tuerToken ? starteZahlungAnDerTuer(tuerToken) : starteZahlung(bestellungId)).then((ergebnis) => {
       if (abgebrochen) return;
       if (ergebnis.ok) setClientSecret(ergebnis.clientSecret);
       else
@@ -48,7 +53,7 @@ export function StripeZahlung({ bestellungId, rueckkehr, freigegeben }: Props) {
     return () => {
       abgebrochen = true;
     };
-  }, [bestellungId, t]);
+  }, [bestellungId, tuerToken, t]);
 
   if (fehler) return <p className={css.stoerung}>{fehler}</p>;
   if (!clientSecret) return <p className={css.hinweis}>…</p>;
