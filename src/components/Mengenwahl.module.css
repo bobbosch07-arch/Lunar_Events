@@ -1,0 +1,43 @@
+/* Wie .menge in Ticketauswahl.module.css — dieselbe Geste, dasselbe Aussehen. */
+
+.menge {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.knopf {
+  width: var(--tap);
+  height: var(--tap);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 0;
+  color: var(--auf-grund);
+  font-size: 1.1rem;
+  line-height: 1;
+  transition: background-color var(--dur-schnell) var(--ease);
+}
+
+.knopf:hover:not(:disabled) {
+  background: var(--grund-3);
+}
+
+.knopf:disabled {
+  color: var(--auf-grund-3);
+  cursor: not-allowed;
+}
+
+.wert {
+  min-width: 40px;
+  text-align: center;
+  /* Die Textschrift, nicht Syne: deren Null liest sich wie ein kleines o. */
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}

@@ -6,6 +6,7 @@ import { Logo } from "@/components/Logo";
 import { Knopf } from "@/components/Knopf";
 import { Zaehler } from "@/components/Zaehler";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
+import { GarderobenMarke, type MarkeAnzeige } from "@/components/GarderobenMarke";
 import { UeberweisungsDaten } from "@/components/UeberweisungsDaten";
 import { versandEingerichtet } from "@/lib/mail";
 import {
@@ -75,6 +76,19 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
     .select("code, phase_name, art, status, gast_name, platz, fastlane")
     .eq("bestellung_id", b)
     .order("erstellt_am", { ascending: true });
+
+  const { data: rohMarken } = await db
+    .from("garderobe_marken")
+    .select("code, status")
+    .eq("bestellung_id", b)
+    .order("erstellt_am", { ascending: true })
+    .order("id", { ascending: true });
+  // Frisch bezahlt ist noch nichts abgegeben: offen oder storniert.
+  const marken: MarkeAnzeige[] = (rohMarken ?? []).map((m) => ({
+    code: m.code as string,
+    nummer: null,
+    zustand: m.status === "storniert" ? "storniert" : "offen",
+  }));
 
   const versandLaeuft = versandEingerichtet();
   const walletEingerichtet = Boolean(
@@ -187,6 +201,18 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
               {walletEingerichtet ? (
                 <p className={css.walletHinweis}>{t("walletHinweis")}</p>
               ) : null}
+            </section>
+          ) : null}
+
+          {/* Garderobenmarken (0027) — gleich unter den Tickets, wie auf der
+              Ticketseite. */}
+          {marken.length > 0 ? (
+            <section className={css.tickets}>
+              <div className={css.ticketRaster}>
+                {marken.map((marke, i) => (
+                  <GarderobenMarke key={marke.code} marke={marke} nr={i + 1} gesamt={marken.length} />
+                ))}
+              </div>
             </section>
           ) : null}
 

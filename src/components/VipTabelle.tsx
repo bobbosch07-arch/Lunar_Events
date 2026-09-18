@@ -1,7 +1,9 @@
 "use client";
 
 import { Fragment, useState, useTransition } from "react";
+import { Link } from "@/i18n/navigation";
 import { setzeVipStatus } from "@/app/aktionen/backoffice";
+import { preisText } from "@/lib/format";
 import type { VipZeile } from "@/lib/backoffice";
 import css from "@/app/[locale]/backoffice/backoffice.module.css";
 
@@ -51,6 +53,7 @@ export function VipTabelle({
             <th>Paket</th>
             <th>Eingegangen</th>
             <th>Status</th>
+            <th>Tickets</th>
           </tr>
         </thead>
         <tbody>
@@ -101,10 +104,25 @@ export function VipTabelle({
                     ))}
                   </select>
                 </td>
+                <td onClick={(e) => e.stopPropagation()}>
+                  {/* Nach der Zusage: benannte Tickets je Gast (0028). */}
+                  <Link href={`/backoffice/vip/${a.id}`} className={css.textknopf}>
+                    {a.tickets > 0
+                      ? `${a.tickets} ${a.tickets === 1 ? "Ticket" : "Tickets"}${a.tisch ? ` · ${a.tisch}` : ""}`
+                      : a.status === "abgelehnt"
+                        ? "Ansehen"
+                        : "Ausstellen"}
+                  </Link>
+                  {a.betragCent !== null ? (
+                    <div className={css.nebensache}>
+                      {preisText(a.betragCent)} · {a.bezahlt ? "bezahlt" : "offen"}
+                    </div>
+                  ) : null}
+                </td>
               </tr>
               {offen === a.id && a.nachricht ? (
                 <tr>
-                  <td colSpan={7} style={{ whiteSpace: "normal", background: "var(--ivory-100)" }}>
+                  <td colSpan={8} style={{ whiteSpace: "normal", background: "var(--ivory-100)" }}>
                     {a.nachricht}
                   </td>
                 </tr>

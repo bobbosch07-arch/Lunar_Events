@@ -90,6 +90,10 @@ export type EventZeile = {
   phasen: number;
   /** Personen auf der Gästeliste — zählen nicht zu "verkauft". */
   gaeste: number;
+  /** VIP-Gäste mit Ticket (0028) — ebenfalls obendrauf. */
+  vip: number;
+  /** Gebuchte Garderobenplätze (0027), null = nicht angeboten. */
+  garderobe: number | null;
 };
 
 /**
@@ -108,7 +112,7 @@ export async function holeEventZeilen(
   let abfrage = db
     .from("events")
     .select(
-      `id, slug, titel, status, beginn,
+      `id, slug, titel, status, beginn, garderobe_aktiv, garderobe_verkauft,
        ort:orte(name, stadt),
        phasen(id, preis_cent, gebuehr_cent, kontingent, verkauft, art)`,
     )
@@ -138,15 +142,22 @@ export async function holeEventZeilen(
 
   // Gästeliste je Event, in Personen. Sie kommt obendrauf und steht deshalb
   // neben den verkauften Tickets, nicht darin.
+  // VIP-Gäste (0028) stehen in derselben Tabelle, werden aber getrennt
+  // gezählt — sie sind eine Buchung, keine Einladung.
   const { data: gaeste } = await db
     .from("gaeste")
-    .select("event_id, begleitung")
+    .select("event_id, begleitung, vip_anfrage_id")
     .is("entfernt_am", null)
     .in("event_id", data.map((e) => e.id as string));
   const gaesteJeEvent = new Map<string, number>();
+  const vipJeEvent = new Map<string, number>();
   for (const g of gaeste ?? []) {
     const id = g.event_id as string;
-    gaesteJeEvent.set(id, (gaesteJeEvent.get(id) ?? 0) + 1 + (g.begleitung as number));
+    if (g.vip_anfrage_id) {
+      vipJeEvent.set(id, (vipJeEvent.get(id) ?? 0) + 1);
+    } else {
+      gaesteJeEvent.set(id, (gaesteJeEvent.get(id) ?? 0) + 1 + (g.begleitung as number));
+    }
   }
 
   const umsatzJeEvent = new Map<string, number>();
@@ -178,6 +189,8 @@ export async function holeEventZeilen(
       umsatzCent: umsatzJeEvent.get(e.id as string) ?? 0,
       phasen: phasen.length,
       gaeste: gaesteJeEvent.get(e.id as string) ?? 0,
+      vip: vipJeEvent.get(e.id as string) ?? 0,
+      garderobe: e.garderobe_aktiv ? ((e.garderobe_verkauft as number) ?? 0) : null,
     };
   });
 }
@@ -200,6 +213,10 @@ export type BestellZeile = {
   zahlungRef: string | null;
   rabattcode: string | null;
   codeRabattCent: number;
+  /** Stück Garderobe (0027). */
+  garderobe: number;
+  /** Auf der Ticketseite nachgebuchte Garderobe — keine eigenen Tickets. */
+  nachbuchung: boolean;
 };
 
 export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
@@ -209,7 +226,7 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
     .from("bestellungen")
     .select(
       `id, nummer, status, gesamt_cent, zahlungsart, zahlung_ref, erstellt_am, vorkasse, reserviert_bis,
-       rabattcode, code_rabatt_cent,
+       rabattcode, code_rabatt_cent, garderobe_menge, nachbuchung_zu,
        kunde:kunden(vorname, nachname, email),
        event:events(titel),
        tickets(id)`,
@@ -247,6 +264,8 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       zahlungRef: (b.zahlung_ref as string | null) ?? null,
       rabattcode: (b.rabattcode as string | null) ?? null,
       codeRabattCent: (b.code_rabatt_cent as number | null) ?? 0,
+      garderobe: (b.garderobe_menge as number | null) ?? 0,
+      nachbuchung: Boolean(b.nachbuchung_zu),
     };
   });
 }
@@ -263,6 +282,11 @@ export type VipZeile = {
   erstelltAm: string;
   event: string | null;
   wunschdatum: string | null;
+  /** Ausgestellte VIP-Tickets (0028), ohne entfernte Gäste. */
+  tickets: number;
+  tisch: string | null;
+  betragCent: number | null;
+  bezahlt: boolean;
 };
 
 export async function holeVipAnfragen(): Promise<VipZeile[]> {
@@ -272,7 +296,8 @@ export async function holeVipAnfragen(): Promise<VipZeile[]> {
     .from("vip_anfragen")
     .select(
       `id, name, email, telefon, gaeste, paket, nachricht, status,
-       erstellt_am, wunschdatum, event:events(titel)`,
+       erstellt_am, wunschdatum, tisch, betrag_cent, bezahlt, event:events(titel),
+       vip_gaeste:gaeste(entfernt_am)`,
     )
     .order("erstellt_am", { ascending: false });
 
@@ -293,6 +318,12 @@ export async function holeVipAnfragen(): Promise<VipZeile[]> {
     erstelltAm: a.erstellt_am as string,
     wunschdatum: (a.wunschdatum as string | null) ?? null,
     event: (a.event as unknown as { titel: string } | null)?.titel ?? null,
+    tickets: ((a.vip_gaeste ?? []) as Array<{ entfernt_am: string | null }>).filter(
+      (g) => !g.entfernt_am,
+    ).length,
+    tisch: (a.tisch as string | null) ?? null,
+    betragCent: (a.betrag_cent as number | null) ?? null,
+    bezahlt: Boolean(a.bezahlt),
   }));
 }
 

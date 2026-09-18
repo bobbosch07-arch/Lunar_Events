@@ -107,6 +107,14 @@ export async function POST(anfrage: Request) {
             .update({ status: "storniert" })
             .eq("bestellung_id", bestellung.id)
             .eq("status", "gueltig");
+          // Garderobenmarken (0027) genauso, aber nur noch nicht abgegebene:
+          // Eine Jacke, die schon hängt, muss abholbar bleiben.
+          await db
+            .from("garderobe_marken")
+            .update({ status: "storniert" })
+            .eq("bestellung_id", bestellung.id)
+            .eq("status", "gueltig")
+            .is("abgegeben_am", null);
         }
       }
       break;

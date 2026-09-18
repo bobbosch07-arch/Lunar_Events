@@ -1,0 +1,79 @@
+/* Garderobenmarke (0027): dieselbe Sprache wie TicketKarte, nur kleiner —
+   eine Zeile mit QR-Code links, kein Kopf, keine Eventdaten. */
+
+.marke {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--navy-900);
+  color: var(--text-on-dark);
+  border: 1px dashed var(--border-dark);
+  border-radius: var(--radius-lg);
+}
+
+.code {
+  flex: none;
+  background: var(--ivory-50);
+  border-radius: var(--radius-sm);
+  padding: 8px;
+  line-height: 0;
+}
+
+.code svg {
+  display: block;
+  width: 112px;
+  height: 112px;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h4);
+  letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
+}
+
+.stueck {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-on-dark-muted);
+}
+
+.zustand {
+  margin-top: var(--space-2);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+}
+
+/* Die Bügelnummer ist das, wonach der Gast bei der Abholung gefragt wird. */
+.haengt {
+  color: var(--text-on-dark);
+  font-weight: var(--fw-bold);
+}
+
+.nummer {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  color: var(--text-on-dark-muted);
+  font-variant-numeric: tabular-nums;
+  /* break-all statt anywhere: sonst bricht der Code am Bindestrich, und
+     „G-“ steht allein in der ersten Zeile. */
+  word-break: break-all;
+}
+
+/* Abgeholt oder storniert: nicht mehr vorzeigen. Fläche und Text, nicht nur
+   Farbe — wie beim entwerteten Ticket. */
+.erledigt {
+  opacity: 0.6;
+}

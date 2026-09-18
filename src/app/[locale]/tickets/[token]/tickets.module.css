@@ -51,6 +51,49 @@
   gap: var(--space-5);
 }
 
+/* VIP (0028): unter jedem Ticket der Link nur für diesen Gast. */
+.eintrag {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  /* Ohne das wird die Rasterzelle so breit wie der Link darin (der bricht
+     nicht um), und auf dem Handy ließ sich die ganze Seite seitlich
+     verschieben. */
+  min-width: 0;
+}
+
+.gastLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.gastLinkWert {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: var(--fs-caption);
+  color: var(--text-on-dark-muted);
+}
+
+/* Garderobe (0027) — unter den Tickets, mit eigener Überschrift. */
+.abschnitt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  margin-top: var(--space-10);
+}
+
+.abschnittTitel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
+  color: var(--text-on-dark);
+}
+
 .abgesagt,
 .hinweisBand {
   padding: var(--space-4) var(--space-5);

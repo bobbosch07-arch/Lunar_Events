@@ -40,7 +40,14 @@ node scripts/gaesteliste-testen.mjs # Gästeliste mit echten Anmeldungen (Admin/
 node scripts/rollen-testen.mjs      # Rollen und zweiter Faktor, mit echten Einmalcodes
 node scripts/schichtplan-testen.mjs # Schichtplan: einteilen, sehen, ein- und auschecken
 node scripts/kasse-testen.mjs       # Abendkasse: bar, QR, Kontingent, Kassenstand, Rechte
+node scripts/garderobe-testen.mjs   # Garderobe: Kasse, Verfall, Nachbuchen, Tresen, Rechte
+node scripts/vip-testen.mjs         # VIP-Tickets: ausstellen, ändern, Einlass, stornieren
 ```
+
+`zahlung-testen.mjs` und `einlass-testen.mjs` sind älter und nehmen das
+**erste veröffentlichte Event** — seit es „The Opening“ gibt, also das echte.
+Sie scheitern derzeit an der Phasenfolge (0010), bevor sie etwas anlegen.
+Nicht laufen lassen, bis sie wie die anderen ein eigenes Test-Event anlegen.
 
 **`/api/status` sagt, womit eine Auslieferung wirklich verbunden ist** —
 Datenbank, Stripe, Mailversand, gefundene Variablennamen. Entstanden,
@@ -578,7 +585,9 @@ gesamten Historie.
 ### Rollen und zweiter Faktor (Migration 0022)
 
 **Rollen sind Aufgaben, keine Rechtestufen:** `admin`, `kasse`, `einlass`,
-`bar`, `security`, `runner`, `toiletten`. Die alte Bürorolle `team` ist weg —
+`bar`, `security`, `runner`, `toiletten`, seit 0027 auch `garderobe` (Stufe
+`garderobe`: die Garderobe selbst und alle, die Tickets scannen dürfen — wer
+sonst an der Bar steht, kann dort aushelfen). Die alte Bürorolle `team` ist weg —
 **ins Backoffice kommen nur Admins** (17.09.2026). Was eine Rolle darf, steht
 an **einer** Stelle: `ist_mitarbeiter()` mit den Stufen `admin`, `team`
 (gleichbedeutend mit admin, damit die bestehenden Zugriffsregeln gültig
@@ -684,6 +693,83 @@ beginn bis 18 Stunden zurück). Vorher nahm der Scanner `holeKommendeEvents()`
 und ließ ein Event fallen, sobald es begonnen hatte — um 23:30 wäre die Party
 von 23 Uhr aus der Auswahl verschwunden.
 
+### Garderobe (Migration 0027)
+
+Entschieden am 18.09.2026: **online bezahlen und QR-Code statt Papiermarke**
+(Rückfragen: „Beides“). Preis und freiwilliges Kontingent (Bügel) je Event,
+gekauft wird **je Stück**, höchstens **zwei je Ticket** (`garderobe_je_ticket()`
+und `GARDEROBE_JE_TICKET` — dieselbe Zahl zweimal). Unter 50 Cent lässt die
+Tabelle keine Garderobe zu (Stripe bucht so wenig nicht ab). Wer nichts gebucht
+hat, zahlt vor Ort bar mit Papiermarke wie bisher — das läuft nicht über uns.
+
+**Eine Marke ist kein Ticket.** Sie hat einen eigenen QR-Code (`G-` + 20 Zeichen;
+das Ticketalphabet hat keinen Bindestrich, so erkennt jeder Scanner sie) und
+hängt an der Bestellung, nicht an einem Ticket: Tickets dürfen frei
+weitergegeben werden, und bei vier Tickets mit zwei Jacken wäre sonst unklar,
+welches Ticket die Jacke hat. Das Kontingent läuft wie Fast Lane durch
+`reserviere(… p_garderobe)`, `raeume_reservierungen_auf` und
+`bestaetige_zahlung` (stellt die Marken aus); `waehle_vorkasse` braucht nichts,
+weil die Garderobe in `summe_cent` steckt.
+
+**Kaufen:** in der Kasse als Zusatz (Mengenwähler, beginnt bei 0 — § 312a
+Abs. 3 BGB) und **auf der Ticketseite nachbuchen**, bis `garderobe_bis()` (Ende
+des Events, ohne Ende sechs Stunden nach Beginn). Eine Nachbuchung ist eine
+**eigene Bestellung** (`nachbuchung_zu`, `reserviere_garderobe`, nur
+`service_role`), ohne Tickets, **nur Karte** (die Marke muss sofort gelten),
+ihre Marken stehen auf der Seite der ursprünglichen Bestellung, und die Mail
+heißt dann „Garderobe gebucht“. Nachweis ist der Ticketlink
+(`starteZahlungNachbuchung`), **kein Cookie** — siehe unten, warum. Ohne
+Stripe-Schlüssel bietet die Ticketseite kein Nachbuchen an. Bei einer
+Erstattung werden nur noch nicht abgegebene Marken storniert: Eine Jacke, die
+hängt, muss abholbar bleiben.
+
+**Am Tresen** (`/garderobe`, Rolle `garderobe` oder alle, die Tickets scannen
+dürfen): Abgabe = scannen und Bügelnummer eintippen, Abholung = scannen, die
+Nummer steht groß da und die Marke ist erledigt — **ein** Scan, kein zweiter
+Klick. Ausnahme: in den ersten drei Minuten nach der Abgabe
+(`gerade_abgegeben`), sonst gäbe ein versehentlicher zweiter Scan die Jacke
+aus, die gerade aufgehängt wurde. Ein **Unique-Index** hält pro Event jeden
+Bügel für genau eine hängende Marke frei — auch gegen zwei Geräte in derselben
+Sekunde. „Rückgängig“ geht einen Schritt zurück, außer der Bügel ist
+inzwischen neu vergeben.
+
+**Ohne Netz** wie der Einlass: `garderobe_liste()` liefert **Prüfsummen** statt
+Codes samt Name, Bügel und Zustand; das Gerät legt sie im `localStorage` ab,
+entscheidet ohne Netz daraus und reicht Abgaben und Abholungen alle 20 Sekunden
+nach. Was beim Nachreichen nicht passt (Bügel doppelt), steht als Hinweis oben.
+Eine Serveranfrage, die nach sechs Sekunden nicht antwortet, gilt wie kein Netz.
+Fällt der Akku des Gastes aus: **Namenssuche** am Tresen.
+
+### VIP-Tickets auf Namen (Migrationen 0028, 0029)
+
+Entschieden am 18.09.2026: VIP bleibt eine Anfrage; nach der Zusage stellt
+**ein Admin im Backoffice** die Tickets aus (`/backoffice/vip/<id>`), **jeder
+Gast mit Namen**. **Bezahlt wird außerhalb** (Tisch, Überweisung) — Betrag und
+„bezahlt“ stehen an der Anfrage nur zur Übersicht. Keine Ausweiskontrolle.
+
+**Jeder VIP-Gast ist ein Eintrag in `gaeste`** ohne Begleitung, mit
+`vip_anfrage_id`. Damit gilt alles aus der Gästeliste auch hier: ein echtes
+Ticket je Person (`art = vip`, `platz` = Tisch), QR und Namensliste entwerten
+dieselbe Zeile, Namensliste ohne Netz, und jeder Gast hat seinen eigenen Link.
+Dazu hat die Anfrage einen `token`: **ein Link mit allen Tickets des Tisches**,
+unter jedem Ticket der Link nur für diesen Gast. Die Mail geht an die Person,
+die angefragt hat. Die Gästeliste im Backoffice zeigt VIP-Einträge nicht, und
+`speichere_gast`/`entferne_gast` lassen sie in Ruhe — gepflegt wird über
+`speichere_vip()`, das immer **die ganze Liste** bekommt (mit ID umbenennen,
+ohne ID neu, fehlt jemand: storniert). Wer schon drin ist, lässt sich nicht
+entfernen; das Event bleibt fest, solange Tickets ausgestellt sind.
+`speichere_vip()` prüft alles, bevor es etwas ändert — ein `return` mitten in
+einer Funktion rollt nichts zurück. Der Tisch ist freier Text und steht genau
+so auf Ticket und Scanner („Tisch 4“, „Lounge links“).
+
+VIP-Tickets kommen obendrauf wie die Gästeliste und zählen nicht als Verkauf;
+die Eventliste zeigt sie als eigene Zeile.
+
+**0029:** Die Gäste einer Buchung entstehen in einer Transaktion, und `now()` ist
+die Zeit der Transaktion — alle hatten dasselbe `erstellt_am`, die Reihenfolge
+fiel auf die zufällige ID zurück, und die Namen standen durcheinander. Jetzt
+`clock_timestamp()`. Aufgefallen, weil das Prüfskript mal grün, mal rot war.
+
 ### Anmeldung fürs Team
 
 **Gäste melden sich per Link an, das Team zusätzlich mit Passwort.** Das
@@ -704,7 +790,7 @@ Die Kopfzeile zeigt „Backoffice" nur Team-Mitgliedern und prüft das im
 Browser: Sie hängt auch an statisch vorgerenderten Seiten, eine
 Serverprüfung machte die alle dynamisch.
 
-### Zwei Fallen, die hier zugeschnappt sind
+### Fallen, die hier zugeschnappt sind
 
 **Eine Funktion lässt sich nicht an eine Client-Komponente reichen.**
 `<VipTabelle formatiere={(iso) => …}>` brach die ganze VIP-Seite ab
@@ -718,6 +804,21 @@ Platzhalter, über den React später die Komponente findet.
 anlegen" brach beim Zeichnen ab — während „Event bearbeiten" lief, weil
 dessen Phasen aus der Datenbank kommen. Solche geteilten Werte gehören
 in eine Datei **ohne** `"use client"`: `src/lib/event-stand.ts`.
+
+**Next legt gleiche Datenbank-Anfragen innerhalb eines Seitenaufbaus
+zusammen** (Request Memoization, gilt für jeden GET-`fetch`). Wer liest, eine
+Zahlung bestätigt und wieder liest, bekam beim zweiten Mal die alte Antwort:
+Die Ticketseite zeigte die nachgebuchte Garderobenmarke erst nach dem
+Neuladen, die Tür-Zahlseite „offen“ statt „bezahlt“. `dienstClient()` gibt
+deshalb jeder Anfrage ein eigenes Abbruchsignal mit — so schaltet man es laut
+Next-Doku ab. `serverClient()` hat das nicht; wer dort denselben Ablauf baut,
+muss es nachziehen.
+
+**Setzt eine Server-Aktion ein Cookie, baut Next die aktuelle Seite neu auf.**
+Beim Nachbuchen der letzten freien Garderobe verschwand dadurch das Zahlformular:
+Die neu gerechnete Seite sah „nichts mehr frei“ und nahm das Blatt samt Stripe
+heraus. Die Nachbuchung setzt deshalb kein Cookie, der Ticketlink ist der
+Nachweis.
 
 ## Umgebungsvariablen
 
@@ -774,6 +875,8 @@ Fertig und geprüft:
 - Rollen (admin, kasse, einlass, bar, security, runner, toiletten), zweiter Faktor für admin und kasse, Anmelde-Mail
 - Schichtplan: einteilen, Plan per Mail, „Mein Plan“, Ein- und Auschecken, Stunden
 - Abendkasse: eigene Türphase, bar oder QR am Gasthandy, sofort einlassen, Kassenstand
+- Garderobe: in der Kasse und auf der Ticketseite, Marken mit QR, Tresen mit Bügelnummer (offline), Rolle garderobe
+- VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
 
 Offen:
 

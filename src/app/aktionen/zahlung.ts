@@ -44,12 +44,43 @@ export async function starteZahlungAnDerTuer(token: string): Promise<ZahlungErge
   return zahlungVorbereiten(data.id as string);
 }
 
+/**
+ * Dasselbe für nachgebuchte Garderobe (0027). Nachweis ist der Ticketlink
+ * der ursprünglichen Bestellung — die Nachbuchung muss zu ihr gehören. Ein
+ * Cookie wie in der Kasse wäre hier falsch: Setzt eine Server-Aktion eines,
+ * baut Next die Ticketseite neu auf, und war die letzte Marke gerade
+ * reserviert, verschwand das Zahlformular mitsamt dem Blatt.
+ */
+export async function starteZahlungNachbuchung(
+  token: string,
+  bestellungId: string,
+): Promise<ZahlungErgebnis> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return { ok: false, fehler: "unbekannt" };
+  const db = dienstClient();
+  const { data: ursprung } = await db
+    .from("bestellungen")
+    .select("id")
+    .eq("zugangstoken", token)
+    .maybeSingle();
+  if (!ursprung) return { ok: false, fehler: "unbekannt" };
+  const { data: nachbuchung } = await db
+    .from("bestellungen")
+    .select("id")
+    .eq("id", bestellungId)
+    .eq("nachbuchung_zu", ursprung.id as string)
+    .maybeSingle();
+  if (!nachbuchung) return { ok: false, fehler: "unbekannt" };
+  return zahlungVorbereiten(bestellungId);
+}
+
 /** Der gemeinsame Teil: Betrag aus der Datenbank, ein Zahlungsvorgang je Bestellung. */
 async function zahlungVorbereiten(bestellungId: string): Promise<ZahlungErgebnis> {
   const db = dienstClient();
   const { data: bestellung, error } = await db
     .from("bestellungen")
-    .select("id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, vorkasse, abendkasse, kunde:kunden(email)")
+    .select(
+      "id, nummer, status, gesamt_cent, zahlung_ref, reserviert_bis, vorkasse, abendkasse, nachbuchung_zu, kunde:kunden(email)",
+    )
     .eq("id", bestellungId)
     .single();
 
@@ -100,7 +131,9 @@ async function zahlungVorbereiten(bestellungId: string): Promise<ZahlungErgebnis
       currency: "eur",
       // An der Tür nur Karte (samt Apple Pay und Google Pay): Eine Lastschrift
       // gälte erst Tage später — der Gast wäre längst drin, wenn sie platzt.
-      ...(bestellung.abendkasse
+      // Dasselbe für nachgebuchte Garderobe (0027): Die wird oft erst am
+      // Abend selbst gebucht, und die Marke muss sofort gelten.
+      ...(bestellung.abendkasse || bestellung.nachbuchung_zu
         ? { payment_method_types: ["card"] }
         : { automatic_payment_methods: { enabled: true } }),
       // An der Abendkasse gibt es oft keine Adresse — dann eben kein Beleg per Mail.

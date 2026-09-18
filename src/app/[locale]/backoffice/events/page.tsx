@@ -97,6 +97,10 @@ async function Inhalt({ locale }: { locale: string }) {
                       {e.gaeste > 0 ? (
                         <div className={css.nebensache}>+ {e.gaeste} Gästeliste</div>
                       ) : null}
+                      {e.vip > 0 ? <div className={css.nebensache}>+ {e.vip} VIP</div> : null}
+                      {e.garderobe !== null && e.garderobe > 0 ? (
+                        <div className={css.nebensache}>{e.garderobe} × Garderobe</div>
+                      ) : null}
                     </td>
                     <td className={css.zahl}>{preisText(e.umsatzCent, locale)}</td>
                     <td>
@@ -114,8 +118,9 @@ async function Inhalt({ locale }: { locale: string }) {
         „Verkauft" zählt alle Standardphasen zusammen und enthält auch
         laufende Reservierungen — das ist Absicht, denn die blockieren
         tatsächlich Plätze. Der Umsatz zählt dagegen nur bezahlte
-        Bestellungen. Die Gästeliste kommt obendrauf und steht deshalb
-        darunter, nicht darin.
+        Bestellungen. Gästeliste und VIP kommen obendrauf und stehen deshalb
+        darunter, nicht darin. Die Garderobe zählt gebuchte Plätze, auch
+        laufende Reservierungen.
       </p>
     </>
   );

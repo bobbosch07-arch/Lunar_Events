@@ -135,6 +135,16 @@ export function EinlassScanner({ events }: { events: Event[] }) {
 
       if (navigator.vibrate) navigator.vibrate(40);
 
+      // Garderobenmarken (0027) beginnen mit "G-" — das Ticketalphabet hat
+      // keinen Bindestrich. Statt "Unbekannt" sagen, was es ist.
+      if (sauber.startsWith("G-")) {
+        setZustand({
+          art: "ergebnis",
+          wert: { ergebnis: "unbekannt", event: "Das ist eine Garderobenmarke, kein Ticket." },
+        });
+        return;
+      }
+
       if (!navigator.onLine) {
         // Ohne Netz entscheidet die Prüfsummenliste, ob der Code zu
         // diesem Event gehört. Die Entwertung wird nachgereicht.

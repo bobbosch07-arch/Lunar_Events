@@ -32,7 +32,7 @@ const db = createClient(
   { auth: { persistSession: false } },
 );
 
-const ROLLEN = ["admin", "kasse", "einlass", "bar", "security", "runner", "toiletten"];
+const ROLLEN = ["admin", "kasse", "einlass", "bar", "security", "runner", "toiletten", "garderobe"];
 const [, , email, zweites, drittes] = process.argv;
 
 async function auflisten() {

@@ -56,5 +56,15 @@ export function dienstClient() {
   }
   return createClient(URL!, schluessel, {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Next legt gleiche GET-Anfragen innerhalb eines Seitenaufbaus zusammen
+    // (Request Memoization). Für die Datenbank ist das falsch: Wer liest,
+    // bestätigt und wieder liest, bekommt beim zweiten Mal die alte Antwort.
+    // So zeigte die Ticketseite nach dem Nachbuchen die neue Garderobenmarke
+    // erst beim Neuladen, und die Tür-Zahlseite „offen" statt „bezahlt".
+    // Ein eigenes Abbruchsignal je Anfrage schaltet das ab.
+    global: {
+      fetch: (eingabe, optionen) =>
+        fetch(eingabe, { ...optionen, signal: optionen?.signal ?? new AbortController().signal }),
+    },
   });
 }

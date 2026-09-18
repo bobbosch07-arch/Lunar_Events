@@ -87,6 +87,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
           eventOrt={`${wartelisteEvent.ort.name}, ${wartelisteEvent.ort.stadt}`}
           posten={eintrag.bestellung.posten}
           fastlane={null}
+          garderobe={null}
           vorkasseMoeglich={vorkasseMoeglich(wartelisteEvent.beginn)}
           testmodus={testmodus}
           stripeAktiv={stripeAktiv}
@@ -175,6 +176,7 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
         eventOrt={`${event.ort.name}, ${event.ort.stadt}`}
         posten={posten}
         fastlane={event.fastlane ?? null}
+        garderobe={event.garderobe ?? null}
         vorkasseMoeglich={vorkasseMoeglich(event.beginn)}
         testmodus={testmodus}
         stripeAktiv={stripeAktiv}

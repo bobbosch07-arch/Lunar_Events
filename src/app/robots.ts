@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       // Nichts davon gehört in einen Suchindex: Kasse und Konto sind
       // persönlich, der Einlass ist Werkzeug, api liefert kein Lesbares.
-      disallow: ["/checkout", "/konto", "/einlass", "/api/", "/auth/"],
+      disallow: ["/checkout", "/konto", "/einlass", "/garderobe", "/api/", "/auth/"],
     },
     sitemap: `${eigeneAdresse()}/sitemap.xml`,
   };

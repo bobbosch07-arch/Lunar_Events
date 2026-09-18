@@ -43,6 +43,10 @@ function vorlage(): EventStand {
     fastlaneKontingent: "50",
     fastlaneBeschreibung: "",
     fastlaneVerkauft: 0,
+    garderobeAktiv: false,
+    garderobePreisEuro: "3,00",
+    garderobeKontingent: "",
+    garderobeVerkauft: 0,
     presaleAb: "",
     verkaufAb: "",
     phasen: [

@@ -49,6 +49,9 @@ async function Inhalt({ slug }: { slug: string }) {
       .select("id, event_id, name, email, begleitung, notiz, token, mail_gesendet_am, tickets(status)")
       .eq("event_id", event.id)
       .is("entfernt_am", null)
+      // VIP-Gäste (0028) stehen in derselben Tabelle, gepflegt werden sie
+      // aber an ihrer Anfrage.
+      .is("vip_anfrage_id", null)
       .order("name"),
     darfCodesAendern(),
     getFormatter(),

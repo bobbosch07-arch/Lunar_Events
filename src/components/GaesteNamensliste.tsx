@@ -254,6 +254,10 @@ export function GaesteNamensliste({
                 >
                   <span className={css.gastName}>
                     {g.name}
+                    {/* VIP-Gäste (0028) stehen mit auf der Liste, mit ihrem Platz. */}
+                    {g.vip ? (
+                      <span className={css.nebensache}>VIP{g.tisch ? ` · ${g.tisch}` : ""}</span>
+                    ) : null}
                     {g.notiz ? <span className={css.nebensache}>{g.notiz}</span> : null}
                   </span>
                   <span className={`${css.gastStand} ${rest === 0 ? css.gastFertig : ""}`}>

@@ -91,6 +91,10 @@ export function EventFormular({
       fastlane_kontingent:
         stand.fastlaneKontingent.trim() === "" ? null : Number(stand.fastlaneKontingent),
       fastlane_beschreibung: stand.fastlaneBeschreibung || null,
+      garderobe_aktiv: stand.garderobeAktiv,
+      garderobe_preis_cent: centAus(stand.garderobePreisEuro),
+      garderobe_kontingent:
+        stand.garderobeKontingent.trim() === "" ? null : Number(stand.garderobeKontingent),
       presale_ab: stand.presaleAb || null,
       verkauf_ab: stand.verkaufAb || null,
       phasen: stand.phasen.map((p, i) => ({
@@ -477,6 +481,65 @@ export function EventFormular({
                   value={stand.fastlaneBeschreibung}
                   onChange={(e) => setze("fastlaneBeschreibung", e.target.value)}
                 />
+              </div>
+            </>
+          ) : null}
+        </div>
+      </section>
+
+      {/* ---------- Garderobe (0027) ---------- */}
+      <section className={css.gruppe}>
+        <h2 className={css.gruppenTitel}>Garderobe</h2>
+        <div className={css.raster}>
+          <div className={`${css.feld} ${css.breit}`}>
+            <label className={css.schalter}>
+              <input
+                type="checkbox"
+                checked={stand.garderobeAktiv}
+                onChange={(e) => setze("garderobeAktiv", e.target.checked)}
+              />
+              Garderobe online anbieten
+            </label>
+            <span className={css.hinweis}>
+              Gäste buchen je Stück (Jacke, Tasche) in der Kasse dazu oder später
+              auf ihrer Ticketseite, höchstens zwei je Ticket. Am Tresen wird der
+              QR-Code gescannt und die Bügelnummer eingetippt — unter
+              „/garderobe“. Wer nichts gebucht hat, zahlt vor Ort wie bisher.
+            </span>
+          </div>
+          {stand.garderobeAktiv ? (
+            <>
+              <div className={css.feld}>
+                <label className={css.beschriftung} htmlFor="gd-preis">
+                  Preis je Stück (€)
+                </label>
+                <input
+                  id="gd-preis"
+                  inputMode="decimal"
+                  className={css.eingabe}
+                  value={stand.garderobePreisEuro}
+                  onChange={(e) => setze("garderobePreisEuro", e.target.value)}
+                />
+                <span className={css.hinweis}>Mindestens 0,50 € — weniger bucht Stripe nicht ab.</span>
+              </div>
+              <div className={css.feld}>
+                <label className={css.beschriftung} htmlFor="gd-kontingent">
+                  Plätze
+                </label>
+                <input
+                  id="gd-kontingent"
+                  type="number"
+                  min={stand.garderobeVerkauft}
+                  className={css.eingabe}
+                  placeholder="unbegrenzt"
+                  value={stand.garderobeKontingent}
+                  onChange={(e) => setze("garderobeKontingent", e.target.value)}
+                />
+                <span className={css.hinweis}>
+                  {stand.garderobeVerkauft > 0
+                    ? `${stand.garderobeVerkauft} schon gebucht (inkl. laufender Reservierungen).`
+                    : "So viele Bügel, wie online verkauft werden dürfen. Leer = unbegrenzt."}
+                </span>
               </div>
             </>
           ) : null}

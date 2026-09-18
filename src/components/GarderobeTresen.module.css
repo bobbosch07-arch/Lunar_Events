@@ -1,0 +1,89 @@
+/* Garderobentresen (0027). Das Gerüst — Kopf, Kamera, Ergebnisfeld,
+   Namensliste — kommt aus EinlassScanner.module.css; hier steht nur, was die
+   Garderobe zusätzlich braucht. */
+
+/* Wartet auf die Bügelnummer: weder grün noch rot, sondern "tu was". */
+.abgabe {
+  background: var(--navy-800);
+}
+
+/* Die Bügelnummer ist das Einzige, was bei der Abholung zählt — aus einem
+   Meter Abstand lesbar, auch über den Tresen hinweg. */
+.nummerGross {
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: clamp(4.5rem, 24vw, 9rem);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.nummerForm {
+  display: flex;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.nummerFeld {
+  width: 8.5rem;
+  min-height: 52px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: var(--radius-md);
+  background: var(--navy-950);
+  color: var(--text-on-dark);
+  font-family: var(--font-body);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-h3);
+  font-variant-numeric: tabular-nums;
+}
+
+.fehler {
+  font-weight: var(--fw-bold);
+  color: #fecaca;
+}
+
+.leise {
+  align-self: flex-start;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-on-dark-muted);
+  font-family: var(--font-body);
+  font-size: var(--fs-body-s);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.meldung {
+  padding: var(--space-3) var(--space-5);
+  background: var(--navy-900);
+  border-bottom: 1px solid var(--border-dark);
+  font-size: var(--fs-body);
+  font-weight: var(--fw-medium);
+}
+
+.konflikte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  background: #7c5308;
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+}
+
+.konflikte ul {
+  margin: 0;
+  padding-left: 1.2em;
+}
+
+.zurueck {
+  background: var(--navy-700);
+}
+
+.leer {
+  padding: var(--space-5);
+  color: var(--text-on-dark-muted);
+}

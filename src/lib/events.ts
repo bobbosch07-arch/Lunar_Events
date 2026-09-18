@@ -19,6 +19,7 @@ const AUSWAHL = `
   dresscode, veranstalter, abendkasse, abendkasse_hinweis, featured,
   fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
   fastlane_beschreibung, presale_ab, verkauf_ab,
+  garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
   ort:orte(*),
   phasen(*)
 `;
@@ -77,6 +78,15 @@ function fastlaneAus(z: Zeile): Veranstaltung["fastlane"] {
   };
 }
 
+/** Garderobe nur anbieten, wenn eingeschaltet und nicht voll (0027). */
+function garderobeAus(z: Zeile): Veranstaltung["garderobe"] {
+  if (!z.garderobe_aktiv) return null;
+  const kontingent = (z.garderobe_kontingent as number | null) ?? null;
+  const rest = kontingent === null ? null : kontingent - ((z.garderobe_verkauft as number) ?? 0);
+  if (rest !== null && rest <= 0) return null;
+  return { preis_cent: (z.garderobe_preis_cent as number) ?? 0, rest };
+}
+
 function baueEvent(z: Zeile): Veranstaltung {
   const phasen = nurOnline(((z.phasen as Zeile[]) ?? []).map(bauePhase));
   const zustaende = phasenZustaende(phasen);
@@ -124,6 +134,7 @@ function baueEvent(z: Zeile): Veranstaltung {
     // sondern noch nicht bepreist.
     ausverkauft: standard.length > 0 && kaufbar.length === 0,
     fastlane: fastlaneAus(z),
+    garderobe: garderobeAus(z),
     presale_ab: (z.presale_ab as string | null) ?? null,
     verkauf_ab: (z.verkauf_ab as string | null) ?? null,
   };

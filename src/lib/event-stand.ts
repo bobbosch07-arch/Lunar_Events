@@ -59,6 +59,13 @@ export type EventStand = {
   fastlaneBeschreibung: string;
   /** Nur zur Anzeige: schon verkaufte Fast-Lane-Plätze. */
   fastlaneVerkauft: number;
+  garderobeAktiv: boolean;
+  /** Je Stück. */
+  garderobePreisEuro: string;
+  /** Leer = unbegrenzt. */
+  garderobeKontingent: string;
+  /** Nur zur Anzeige: schon verkaufte Garderobenplätze. */
+  garderobeVerkauft: number;
   /** datetime-local in Berliner Zeit, "" = kein Presale */
   presaleAb: string;
   /** datetime-local in Berliner Zeit, "" = Verkauf sofort offen */

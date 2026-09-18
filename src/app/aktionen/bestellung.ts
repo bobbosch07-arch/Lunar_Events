@@ -70,6 +70,11 @@ function deuteFehler(meldung: string): ReservierungErgebnis {
   }
   if (meldung.includes("FASTLANE_AUSVERKAUFT") || meldung.includes("FASTLANE_NICHT_VERFUEGBAR"))
     return { ok: false, fehler: "fastlane_aus" };
+  if (meldung.includes("GARDEROBE_")) {
+    // Form: GARDEROBE_AUSVERKAUFT:<Rest> bzw. GARDEROBE_MENGE:<Höchstmenge>
+    const rest = Number(meldung.split(/GARDEROBE_[A-Z_]+:/)[1]?.match(/\d+/)?.[0] ?? 0);
+    return { ok: false, fehler: "garderobe_aus", rest };
+  }
   const codeKennung = Object.keys(CODE_GRUENDE).find((k) => meldung.includes(k));
   if (codeKennung) return { ok: false, fehler: "code", code: CODE_GRUENDE[codeKennung] };
   if (meldung.includes("PRESALE_ANDERE_ADRESSE")) return { ok: false, fehler: "presale_adresse" };
@@ -101,6 +106,8 @@ export async function reserviereBestellung(eingabe: {
   promo?: string | null;
   /** Token einer persönlichen Presale-Einladung */
   einladung?: string | null;
+  /** Wie viele Stück Garderobe (0027). */
+  garderobe?: number;
 }): Promise<ReservierungErgebnis> {
   if (eingabe.auswahl.length === 0) return { ok: false, fehler: "leer" };
 
@@ -116,6 +123,7 @@ export async function reserviereBestellung(eingabe: {
     p_fastlane: Math.max(0, Math.floor(eingabe.fastlane ?? 0)),
     p_code: eingabe.code ? normalisiereCode(eingabe.code) : null,
     p_einladung: eingabe.einladung ?? null,
+    p_garderobe: Math.max(0, Math.floor(eingabe.garderobe ?? 0)),
   });
 
   if (error) return deuteFehler(error.message);
@@ -366,6 +374,62 @@ export async function schliesseTestkaufAb(
   return { ok: true, nummer: data?.nummer };
 }
 
+export type NachbuchungErgebnis =
+  | { ok: true; bestellung_id: string; reserviert_bis: string; betrag_cent: number }
+  | { ok: false; fehler: "zu" | "voll" | "menge" | "unbekannt"; rest?: number };
+
+/**
+ * Garderobe auf der Ticketseite nachbuchen (0027). Der Nachweis ist der
+ * Ticketlink — wer ihn hat, hat auch die Tickets. Die Nachbuchung ist eine
+ * eigene Bestellung mit eigener Zahlung, bezahlt über
+ * `starteZahlungNachbuchung` — auch dort ist der Ticketlink der Nachweis.
+ *
+ * Nur mit Stripe: Ohne Zahlungsanbieter gibt es nichts nachzubuchen, und
+ * die Ticketseite bietet es dann auch nicht an.
+ */
+export async function bucheGarderobeNach(
+  token: string,
+  anzahl: number,
+): Promise<NachbuchungErgebnis> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return { ok: false, fehler: "unbekannt" };
+  if (!stripeEingerichtet()) return { ok: false, fehler: "zu" };
+  const menge = Math.floor(anzahl);
+  if (!(menge >= 1 && menge <= 40)) return { ok: false, fehler: "menge" };
+
+  const db = dienstClient();
+  const { data: id, error } = await db.rpc("reserviere_garderobe", {
+    p_token: token,
+    p_anzahl: menge,
+  });
+
+  if (error) {
+    const m = error.message;
+    const rest = Number(m.match(/GARDEROBE_[A-Z_]+:(\d+)/)?.[1] ?? 0);
+    if (m.includes("GARDEROBE_MENGE")) return { ok: false, fehler: "menge", rest };
+    if (m.includes("GARDEROBE_AUSVERKAUFT")) return { ok: false, fehler: "voll", rest };
+    if (m.includes("GARDEROBE_NICHT_VERFUEGBAR") || m.includes("EVENT_VORBEI")) {
+      return { ok: false, fehler: "zu" };
+    }
+    console.error("[garderobe] Nachbuchen fehlgeschlagen:", m);
+    return { ok: false, fehler: "unbekannt" };
+  }
+
+  const { data: bestellung } = await db
+    .from("bestellungen")
+    .select("reserviert_bis, gesamt_cent")
+    .eq("id", id as string)
+    .single();
+
+  // Bewusst kein Cookie: Bezahlt wird über `starteZahlungNachbuchung`, mit
+  // dem Ticketlink als Nachweis (siehe dort, warum).
+  return {
+    ok: true,
+    bestellung_id: id as string,
+    reserviert_bis: (bestellung?.reserviert_bis as string | undefined) ?? "",
+    betrag_cent: (bestellung?.gesamt_cent as number | undefined) ?? 0,
+  };
+}
+
 /** Liest die Bestellung, deren Nachweis im Cookie liegt. */
 export async function holeEigeneBestellung(bestellungId: string) {
   const store = await cookies();
@@ -377,6 +441,7 @@ export async function holeEigeneBestellung(bestellungId: string) {
     .select(
       `id, nummer, status, summe_cent, gebuehr_cent, gesamt_cent, bezahlt_am,
        reserviert_bis, zugangstoken, event_id, vorkasse, rabatt_cent, rabattcode, code_rabatt_cent,
+       garderobe_menge, garderobe_preis_cent,
        kunde:kunden(email, vorname, nachname),
        positionen:bestellpositionen(phase_name, menge, einzelpreis_cent, gebuehr_cent),
        event:events(slug, titel, beginn, ort:orte(name, stadt))`,

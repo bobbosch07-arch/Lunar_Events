@@ -87,6 +87,9 @@ export type GastEintrag = {
   id: string;
   name: string;
   notiz: string | null;
+  /** VIP-Gast (0028) — dann steht sein Platz in `tisch`. */
+  vip?: boolean;
+  tisch?: string | null;
   /** Personen mit gültigem oder eingelöstem Ticket */
   personen: number;
   drin: number;

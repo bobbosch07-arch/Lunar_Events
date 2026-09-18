@@ -4,7 +4,7 @@ import { Anmeldung } from "@/components/Anmeldung";
 import { Link } from "@/i18n/navigation";
 import { Logo } from "@/components/Logo";
 import { holeAngemeldeten } from "@/lib/konto";
-import { darfScannen, istRolle, ROLLEN_NAMEN } from "@/lib/rollen";
+import { darfGarderobe, darfScannen, istRolle, ROLLEN_NAMEN } from "@/lib/rollen";
 import { dienstClient, serverClient } from "@/lib/supabase/server";
 import { schichtStand, schichtStunden, type Schicht } from "@/lib/typen";
 import css from "../promoter/[token]/promoter.module.css";
@@ -151,6 +151,11 @@ export default async function MeinPlan({
       {rolle && darfScannen(rolle) ? (
         <Link href="/einlass" className={css.abschnittText}>
           Zum Scanner
+        </Link>
+      ) : null}
+      {rolle && darfGarderobe(rolle) ? (
+        <Link href="/garderobe" className={css.abschnittText}>
+          Zur Garderobe
         </Link>
       ) : null}
     </Rahmen>

@@ -81,7 +81,15 @@ async function Inhalt({ locale }: { locale: string }) {
                       <a href={`mailto:${b.email}`}>{b.email}</a>
                     </div>
                   </td>
-                  <td className={css.zahl}>{b.tickets}</td>
+                  <td className={css.zahl}>
+                    {b.nachbuchung ? "—" : b.tickets}
+                    {b.garderobe > 0 ? (
+                      <div className={css.nebensache}>
+                        {b.nachbuchung ? "nachgebucht: " : "+ "}
+                        {b.garderobe} Garderobe
+                      </div>
+                    ) : null}
+                  </td>
                   <td className={css.zahl}>
                     {preisText(b.gesamtCent, locale)}
                     {b.rabattcode ? (

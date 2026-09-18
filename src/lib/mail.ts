@@ -179,17 +179,35 @@ export type TicketMail = {
   ticketLink: string;
   /** Apple-Wallet-Pässe, die direkt anhängen. */
   paesse?: Array<{ name: string; inhaltBase64: string }>;
+  /**
+   * Garderobenmarken dieser Bestellung (0027). Eine Nachbuchung hat nur
+   * Marken und keine Tickets — dann heißt die Mail „Garderobe gebucht".
+   */
+  garderobe?: number;
 };
 
 export async function sendeTickets(daten: TicketMail): Promise<boolean> {
   const anrede = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
-  const stueck = daten.anzahl === 1 ? "dein Ticket" : `deine ${daten.anzahl} Tickets`;
+  const marken = daten.garderobe ?? 0;
+  const markenText = marken === 1 ? "eine Garderobenmarke" : `${marken} Garderobenmarken`;
+  const nurGarderobe = daten.anzahl === 0 && marken > 0;
+  const stueck = nurGarderobe
+    ? markenText
+    : daten.anzahl === 1
+      ? "dein Ticket"
+      : `deine ${daten.anzahl} Tickets`;
+  const verb = (nurGarderobe ? marken : daten.anzahl) === 1 ? "ist" : "sind";
+  const satz = nurGarderobe
+    ? `hier ${verb} ${markenText} für <strong>${daten.eventTitel}</strong>. Sie stehen mit QR-Code auf deiner Ticketseite, unter den Tickets.`
+    : `hier ${verb} ${stueck} für <strong>${daten.eventTitel}</strong>${
+        marken > 0 ? `, dazu ${markenText} — der QR-Code steht auf derselben Seite` : ""
+      }.`;
 
   const html = huelle(`
-${kopfBalken("Tickets sind da")}
+${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 16px;">${anrede}</p>
-<p style="margin:0 0 24px;">hier sind ${stueck} für <strong>${daten.eventTitel}</strong>.</p>
+<p style="margin:0 0 24px;">${satz}</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
@@ -220,7 +238,7 @@ Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 
   const text = `${anrede}
 
-hier sind ${stueck} für ${daten.eventTitel}.
+${satz.replace(/<\/?strong>/g, "")}
 
 Wann: ${daten.wann}
 Wo: ${daten.ort}
@@ -234,7 +252,9 @@ Lunar Events`;
 
   return versende({
     an: daten.an,
-    betreff: `${daten.eventTitel} — ${stueck.charAt(0).toUpperCase()}${stueck.slice(1)}`,
+    betreff: nurGarderobe
+      ? `${daten.eventTitel} — Garderobe`
+      : `${daten.eventTitel} — ${stueck.charAt(0).toUpperCase()}${stueck.slice(1)}`,
     html,
     text,
     anhaenge: daten.paesse,
@@ -583,6 +603,89 @@ Lunar Events`;
   return versende({
     an: daten.an,
     betreff: `Gästeliste: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+
+export type VipTicketMail = {
+  an: string;
+  /** Die anfragende Person — sie bekommt alle Tickets des Tisches. */
+  name: string;
+  eventTitel: string;
+  wann: string;
+  ort: string;
+  tisch: string | null;
+  gaeste: string[];
+  ticketLink: string;
+};
+
+/**
+ * VIP-Tickets (0028) an die Person, die angefragt hat: ein Link mit allen
+ * Tickets des Tisches, jedes mit Namen. Weiterleiten kann sie von dort aus
+ * einzeln — unter jedem Ticket steht ein eigener Link.
+ */
+export async function sendeVipTickets(daten: VipTicketMail): Promise<boolean> {
+  const name = maskiere(daten.name);
+  const liste = daten.gaeste.map((g) => `<li>${maskiere(g)}</li>`).join("");
+
+  const html = huelle(`
+${kopfBalken("VIP")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">Hallo ${name},</p>
+<p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da — ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
+<tr><td style="padding:16px 18px;${daten.tisch ? "border-bottom:1px solid #e4e0d7;" : ""}">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
+${
+  daten.tisch
+    ? `<tr><td style="padding:16px 18px;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Platz</div>
+<div style="font-size:15px;margin-top:2px;">${maskiere(daten.tisch)}</div></td></tr>`
+    : ""
+}
+</table>
+
+<p style="margin:0 0 8px;font-size:13px;color:#5e6268;">Auf der Liste:</p>
+<ul style="margin:0 0 24px;padding-left:20px;">${liste}</ul>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:8px;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Jede Person braucht ihr eigenes Ticket. Unter jedem Ticket steht ein Link nur für diese Person — schick ihn weiter, dann hat sie ihr Ticket selbst.
+Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
+</p>
+</td></tr>`);
+
+  const text = `Hallo ${daten.name},
+
+eure VIP-Tickets für ${daten.eventTitel} sind da — jedes auf einen Namen.
+
+Wann: ${daten.wann}
+Wo: ${daten.ort}${daten.tisch ? `\nPlatz: ${daten.tisch}` : ""}
+
+Auf der Liste:
+${daten.gaeste.map((g) => `- ${g}`).join("\n")}
+
+Tickets öffnen: ${daten.ticketLink}
+
+Unter jedem Ticket steht ein eigener Link zum Weiterleiten.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `VIP: ${daten.eventTitel}`,
     html,
     text,
   });

@@ -19,6 +19,7 @@ export const ROLLEN = [
   "security",
   "runner",
   "toiletten",
+  "garderobe",
 ] as const;
 
 export type Rolle = (typeof ROLLEN)[number];
@@ -31,6 +32,7 @@ export const ROLLEN_NAMEN: Record<Rolle, string> = {
   security: "Security",
   runner: "Runner",
   toiletten: "Toiletten",
+  garderobe: "Garderobe",
 };
 
 /** Nur Admins sehen Zahlen, Bestellungen und Kundendaten. */
@@ -41,6 +43,14 @@ export function darfBackoffice(rolle: Rolle): boolean {
 /** Einlass, Bar und Kasse scannen — Security, Runner und Toiletten nicht. */
 export function darfScannen(rolle: Rolle): boolean {
   return rolle === "admin" || rolle === "kasse" || rolle === "einlass" || rolle === "bar";
+}
+
+/**
+ * Garderobenmarken scannen (0027): die Garderobe selbst und alle, die auch
+ * Tickets scannen — wer sonst an der Bar steht, kann dort aushelfen.
+ */
+export function darfGarderobe(rolle: Rolle): boolean {
+  return rolle === "garderobe" || darfScannen(rolle);
 }
 
 /** Geld und Kundendaten nur mit zweitem Faktor (Fragebogen 16.09.2026). */

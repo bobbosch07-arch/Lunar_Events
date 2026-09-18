@@ -88,6 +88,8 @@ export type Veranstaltung = {
   ausverkauft: boolean;
   /** Nur gesetzt, wenn Fast Lane angeboten wird und noch Plätze hat. */
   fastlane?: FastLane | null;
+  /** Nur gesetzt, wenn die Garderobe online angeboten wird und Plätze hat (0027). */
+  garderobe?: Garderobe | null;
   /** Ab hier kauft, wer Presale-Zugang hat (0019). */
   presale_ab?: string | null;
   /** Ab hier kauft jeder. null = Verkauf offen. */
@@ -128,6 +130,37 @@ export type FastLane = {
   rest: number | null;
   beschreibung: string | null;
 };
+
+/** Die Garderobe, wie Kasse und Ticketseite sie anbieten (0027). */
+export type Garderobe = {
+  /** Je Stück. */
+  preis_cent: number;
+  /** Freie Plätze, null = unbegrenzt. */
+  rest: number | null;
+};
+
+/**
+ * Höchstens zwei Stück je Ticket — Jacke und Tasche. Dieselbe Zahl steht in
+ * der Datenbank (`garderobe_je_ticket()`, 0027); ändert sich eine, muss die
+ * andere mit.
+ */
+export const GARDEROBE_JE_TICKET = 2;
+
+/**
+ * Wann ein Event vorbei ist: das eingetragene Ende, ohne Ende sechs Stunden
+ * nach Beginn. Bis dahin lässt sich auch die Garderobe nachbuchen — dieselbe
+ * Regel steht in `garderobe_bis()` (0027).
+ */
+export function eventEnde(event: { beginn: string; ende: string | null }): Date {
+  if (event.ende) return new Date(event.ende);
+  return new Date(new Date(event.beginn).getTime() + 6 * 60 * 60 * 1000);
+}
+
+/** Bis wann sich die Garderobe auf der Ticketseite nachbuchen lässt. */
+export const garderobeBis = eventEnde;
+
+/** Zustand einer Marke am Tresen — hergeleitet, wie in `garderobe_zustand()`. */
+export type GarderobeZustand = "offen" | "haengt" | "abgeholt" | "storniert";
 
 /**
  * Eine Ticketphase ist das, was im Detail zur Auswahl steht:

@@ -336,5 +336,36 @@
     "abgelaufen": "Nicht mehr offen",
     "abgelaufenText": "Diese Zahlung ist abgelaufen oder wurde abgebrochen. Frag an der Kasse nach einem neuen Code.",
     "keineKarte": "Kartenzahlung ist gerade nicht eingerichtet. Bitte bar an der Kasse zahlen."
+  },
+  "garderobe": {
+    "titel": "Garderobe",
+    "kasseText": "Jacke oder Tasche abgeben, je Stück {preis}. Statt einer Papiermarke bekommst du einen QR-Code.",
+    "name": "Garderobe",
+    "vergriffen": "Die Garderobe ist gerade voll gebucht. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
+    "markeStueck": "Stück {nr} von {gesamt}",
+    "markeHinweis": "Am Garderobentresen scannen lassen.",
+    "markeHaengt": "Abgegeben · Bügel {nummer}",
+    "markeAbgeholt": "Abgeholt",
+    "markeStorniert": "Storniert",
+    "markeCode": "Garderobencode {code}",
+    "nachbuchenTitel": "Garderobe dazubuchen",
+    "nachbuchenText": "Je Stück {preis}, höchstens zwei je Ticket. Bezahlt wird mit Karte, Apple Pay oder Google Pay.",
+    "nachbuchenKnopf": "Weiter zur Zahlung",
+    "nachbuchenZustimmung": "Ich habe die <agb>AGB</agb> und die <datenschutz>Datenschutzerklärung</datenschutz> gelesen. Für Leistungen zu einem festen Veranstaltungstermin gibt es kein Widerrufsrecht.",
+    "nachbuchenVoll": "Die Garderobe ist voll gebucht.",
+    "nachbuchenMenge": "Mehr geht für diese Bestellung nicht — höchstens zwei Stück je Ticket.",
+    "nachbuchenZu": "Für dieses Event lässt sich keine Garderobe mehr buchen.",
+    "nachbuchenFehler": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
+    "nachbuchenAbbrechen": "Abbrechen",
+    "nachbuchenBetrag": "{anzahl} × Garderobe · {betrag}"
+  },
+  "ticketVip": {
+    "eyebrow": "VIP",
+    "warnungTitel": "Wer diesen Link hat, kommt rein.",
+    "warnung": "Jedes Ticket gilt für die Person, deren Name darauf steht, und genau einmal. Unter jedem Ticket steht ein eigener Link — schick ihn der Person, dann hat sie ihr Ticket selbst.",
+    "kopieren": "Kopieren",
+    "kopiert": "Kopiert",
+    "storniert": "Diese Buchung wurde storniert. Melde dich bei uns, falls das ein Versehen ist.",
+    "warnungEinzeln": "Dein Ticket gilt genau einmal. Ohne Handy geht es auch: Du stehst mit Namen auf der Liste."
   }
 }

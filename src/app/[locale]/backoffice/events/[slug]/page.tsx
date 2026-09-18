@@ -51,6 +51,7 @@ async function Inhalt({ slug }: { slug: string }) {
        mindestalter, dresscode, abendkasse, abendkasse_hinweis, featured,
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
+       garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv, abendkasse)`,
     )
@@ -107,6 +108,11 @@ async function Inhalt({ slug }: { slug: string }) {
       event.fastlane_kontingent === null ? "" : String(event.fastlane_kontingent),
     fastlaneBeschreibung: (event.fastlane_beschreibung as string | null) ?? "",
     fastlaneVerkauft: (event.fastlane_verkauft as number) ?? 0,
+    garderobeAktiv: (event.garderobe_aktiv as boolean) ?? false,
+    garderobePreisEuro: euroAus((event.garderobe_preis_cent as number) ?? 0),
+    garderobeKontingent:
+      event.garderobe_kontingent === null ? "" : String(event.garderobe_kontingent),
+    garderobeVerkauft: (event.garderobe_verkauft as number) ?? 0,
     presaleAb: event.presale_ab ? utcNachBerlinFeld(event.presale_ab as string) : "",
     verkaufAb: event.verkauf_ab ? utcNachBerlinFeld(event.verkauf_ab as string) : "",
     phasen,

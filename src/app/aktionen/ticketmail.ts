@@ -24,10 +24,11 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
   const { data: bestellung } = await db
     .from("bestellungen")
     .select(
-      `id, nummer, status, zugangstoken, mail_gesendet_am,
+      `id, nummer, status, zugangstoken, mail_gesendet_am, nachbuchung_zu,
        kunde:kunden(email, vorname),
        event:events(titel, beginn, ort:orte(name, stadt)),
-       tickets(id, code)`,
+       tickets(id, code),
+       garderobe_marken(id)`,
     )
     .eq("id", bestellungId)
     .single();
@@ -59,6 +60,19 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
   }).format(new Date(event.beginn));
 
   const tickets = (bestellung.tickets ?? []) as Array<{ code: string }>;
+  const marken = ((bestellung.garderobe_marken ?? []) as Array<{ id: string }>).length;
+
+  // Nachgebuchte Garderobe (0027) hat keine eigene Ticketseite: Die Marken
+  // stehen unter den Tickets der ursprünglichen Bestellung.
+  let seitenToken = bestellung.zugangstoken as string;
+  if (bestellung.nachbuchung_zu) {
+    const { data: ursprung } = await db
+      .from("bestellungen")
+      .select("zugangstoken")
+      .eq("id", bestellung.nachbuchung_zu as string)
+      .single();
+    if (ursprung?.zugangstoken) seitenToken = ursprung.zugangstoken as string;
+  }
 
   // Apple-Pässe hängen direkt an: Ein Tipp im Anhang, und das Ticket
   // liegt in Wallet — das ist der ganze Sinn der Sache. Google geht nur
@@ -99,8 +113,9 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     wann: `${wann} Uhr`,
     ort: `${event.ort.name}, ${event.ort.stadt}`,
     anzahl: tickets.length,
-    ticketLink: `${eigeneAdresse()}/tickets/${bestellung.zugangstoken}`,
+    ticketLink: `${eigeneAdresse()}/tickets/${seitenToken}`,
     paesse,
+    garderobe: marken,
   });
 
   if (geschickt) {

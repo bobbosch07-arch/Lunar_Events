@@ -8,8 +8,15 @@ import { StripeZahlung } from "./StripeZahlung";
 import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
 import { FastLaneAngebot } from "./FastLaneAngebot";
+import { Mengenwahl } from "./Mengenwahl";
 import { waehleVorkasse } from "@/app/aktionen/vorkasse";
-import type { CodeAblehnung, CodeVorschau, FastLane } from "@/lib/typen";
+import {
+  GARDEROBE_JE_TICKET,
+  type CodeAblehnung,
+  type CodeVorschau,
+  type FastLane,
+  type Garderobe,
+} from "@/lib/typen";
 import { preisText } from "@/lib/format";
 import { merkeCode, normalisiereCode, vergissCode } from "@/lib/rabatt";
 import {
@@ -47,6 +54,8 @@ type Props = {
   rueckkehrBasis: string;
   /** Fast-Lane-Upgrade, falls das Event es anbietet und Plätze frei sind. */
   fastlane: FastLane | null;
+  /** Garderobe je Stück, falls das Event sie online anbietet (0027). */
+  garderobe: Garderobe | null;
   /** Bankverbindung hinterlegt und das Event weit genug entfernt. */
   vorkasseMoeglich: boolean;
   /** Code aus dem Link, auf dem Server schon geprüft. */
@@ -78,6 +87,7 @@ const LEER: Formular = { vorname: "", nachname: "", email: "", telefon: "" };
 
 export function CheckoutFluss(props: Props) {
   const t = useTranslations("checkout");
+  const tg = useTranslations("garderobe");
   const locale = useLocale();
   const router = useRouter();
 
@@ -105,6 +115,9 @@ export function CheckoutFluss(props: Props) {
   const [laeuft, setLaeuft] = useState(false);
   const [stoerung, setStoerung] = useState<string | null>(null);
   const [fastlane, setFastlane] = useState(false);
+  // Garderobe: Stückzahl, beginnt bei 0 — ein kostenpflichtiges Extra wählt
+  // der Gast selbst (§ 312a Abs. 3 BGB), wie Fast Lane.
+  const [garderobe, setGarderobe] = useState(0);
   const [angebotOffen, setAngebotOffen] = useState(false);
   const [zfOffen, setZfOffen] = useState(false);
   const [bestellung, setBestellung] = useState<{
@@ -162,7 +175,14 @@ export function CheckoutFluss(props: Props) {
       ? props.fastlane
       : null;
   const fastlaneCent = fastlane && angebot ? angebot.preis_cent * anzahl : 0;
-  const gesamtMitFastlane = gesamt + fastlaneCent;
+  // Die Warteliste hält genau das zurück, was angeboten wurde — Garderobe
+  // lässt sich danach auf der Ticketseite nachbuchen.
+  const garderobeAngebot = props.warteliste ? null : props.garderobe;
+  const garderobeMax = garderobeAngebot
+    ? Math.min(GARDEROBE_JE_TICKET * anzahl, garderobeAngebot.rest ?? Infinity)
+    : 0;
+  const garderobeCent = garderobeAngebot ? garderobeAngebot.preis_cent * garderobe : 0;
+  const gesamtMitZusaetzen = gesamt + fastlaneCent + garderobeCent;
   // Vorkasse-Rabatt = die Servicegebühren. Ein Nachlass für diese
   // Zahlungsart, kein Aufschlag auf die anderen (§ 270a BGB) — deshalb
   // steht er als eigene Minuszeile da und nicht als "ohne Gebühr".
@@ -170,10 +190,10 @@ export function CheckoutFluss(props: Props) {
   // Vor der Reservierung die Vorschau, danach der Betrag, den die Datenbank
   // tatsächlich abzieht.
   const codeCent = bestellung ? bestellung.codeRabattCent : (code?.rabatt_cent ?? 0);
-  const gesamtEndCent = Math.max(0, gesamtMitFastlane - codeCent - rabattCent);
+  const gesamtEndCent = Math.max(0, gesamtMitZusaetzen - codeCent - rabattCent);
   // Kostet die Bestellung dank Code nichts, gibt es nichts zu bezahlen —
   // weder Karte noch Überweisung.
-  const kostenlos = codeCent > 0 && gesamtMitFastlane - codeCent <= 0;
+  const kostenlos = codeCent > 0 && gesamtMitZusaetzen - codeCent <= 0;
   const wege = [
     props.stripeAktiv ? "karte" : null,
     props.paypalClientId ? "paypal" : null,
@@ -304,6 +324,7 @@ export function CheckoutFluss(props: Props) {
           code: code?.code ?? null,
           promo: props.promo,
           einladung: props.einladung?.token ?? null,
+          garderobe: garderobeAngebot ? garderobe : 0,
         });
 
     setLaeuft(false);
@@ -347,6 +368,13 @@ export function CheckoutFluss(props: Props) {
       setStoerung(
         "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
       );
+      return;
+    }
+
+    if (!ergebnis.ok && ergebnis.fehler === "garderobe_aus") {
+      // Wie Fast Lane: Am Zusatz soll der Kauf nicht scheitern.
+      setGarderobe(0);
+      setStoerung(tg("vergriffen"));
       return;
     }
 
@@ -502,6 +530,23 @@ export function CheckoutFluss(props: Props) {
                     </button>
                   </span>
                 </label>
+              </div>
+            ) : null}
+
+            {garderobeAngebot && garderobeMax > 0 ? (
+              <div className={css.zusatz}>
+                <div className={css.zusatzText}>
+                  <strong>{tg("titel")}</strong>
+                  <span>
+                    {tg("kasseText", { preis: preisText(garderobeAngebot.preis_cent, locale) })}
+                  </span>
+                </div>
+                <Mengenwahl
+                  wert={garderobe}
+                  max={garderobeMax}
+                  aendern={setGarderobe}
+                  name={tg("name")}
+                />
               </div>
             ) : null}
 
@@ -891,6 +936,14 @@ export function CheckoutFluss(props: Props) {
                     Fast Lane <span className={css.zfMenge}>× {anzahl}</span>
                   </span>
                   <span className={css.zfWert}>{preisText(fastlaneCent, locale)}</span>
+                </div>
+              ) : null}
+              {garderobeCent > 0 ? (
+                <div className={css.zfZeile}>
+                  <span className={css.zfName}>
+                    {tg("name")} <span className={css.zfMenge}>× {garderobe}</span>
+                  </span>
+                  <span className={css.zfWert}>{preisText(garderobeCent, locale)}</span>
                 </div>
               ) : null}
               {codeCent > 0 && code ? (

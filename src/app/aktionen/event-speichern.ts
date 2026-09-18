@@ -46,6 +46,9 @@ export type EventEingabe = {
   fastlane_preis_cent: number;
   fastlane_kontingent: number | null;
   fastlane_beschreibung: string | null;
+  garderobe_aktiv: boolean;
+  garderobe_preis_cent: number;
+  garderobe_kontingent: number | null;
   /** Ortszeit aus dem Formular, "" oder null = nicht gesetzt */
   presale_ab: string | null;
   verkauf_ab: string | null;
@@ -129,6 +132,9 @@ export async function speichereEvent(
     fastlane_preis_cent: Math.max(0, eingabe.fastlane_preis_cent),
     fastlane_kontingent: eingabe.fastlane_kontingent,
     fastlane_beschreibung: eingabe.fastlane_beschreibung?.trim() || null,
+    garderobe_aktiv: eingabe.garderobe_aktiv,
+    garderobe_preis_cent: Math.max(0, eingabe.garderobe_preis_cent),
+    garderobe_kontingent: eingabe.garderobe_kontingent,
     presale_ab: presaleAb,
     verkauf_ab: verkaufAb,
     veranstalter: "Lunar Events",
@@ -146,6 +152,13 @@ export async function speichereEvent(
       return {
         ok: false,
         fehler: "Das Fast-Lane-Kontingent ist kleiner als die schon verkauften Plätze.",
+      };
+    }
+    if (error.message.includes("events_garderobe_gueltig")) {
+      return {
+        ok: false,
+        fehler:
+          "Garderobe: Der Preis muss mindestens 0,50 € sein, und es darf nicht weniger Plätze geben als schon gebucht sind.",
       };
     }
     if (error.code === "23505") {

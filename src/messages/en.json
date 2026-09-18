@@ -336,5 +336,36 @@
     "abgelaufen": "No longer open",
     "abgelaufenText": "This payment has expired or was cancelled. Ask at the door for a new code.",
     "keineKarte": "Card payment isn’t set up right now. Please pay cash at the door."
+  },
+  "garderobe": {
+    "titel": "Cloakroom",
+    "kasseText": "Drop off a jacket or bag, {preis} per item. Instead of a paper tag you get a QR code.",
+    "name": "Cloakroom",
+    "vergriffen": "The cloakroom just filled up. We removed it — tap Continue again.",
+    "markeStueck": "Item {nr} of {gesamt}",
+    "markeHinweis": "Show this at the cloakroom.",
+    "markeHaengt": "Checked in · hanger {nummer}",
+    "markeAbgeholt": "Collected",
+    "markeStorniert": "Cancelled",
+    "markeCode": "Cloakroom code {code}",
+    "nachbuchenTitel": "Add cloakroom",
+    "nachbuchenText": "{preis} per item, at most two per ticket. Pay by card, Apple Pay or Google Pay.",
+    "nachbuchenKnopf": "Continue to payment",
+    "nachbuchenZustimmung": "I have read the <agb>terms</agb> and the <datenschutz>privacy policy</datenschutz>. There is no right of withdrawal for services tied to a fixed event date.",
+    "nachbuchenVoll": "The cloakroom is fully booked.",
+    "nachbuchenMenge": "That's the maximum for this order — two items per ticket.",
+    "nachbuchenZu": "The cloakroom can no longer be booked for this event.",
+    "nachbuchenFehler": "That didn't work. Please try again.",
+    "nachbuchenAbbrechen": "Cancel",
+    "nachbuchenBetrag": "{anzahl} × cloakroom · {betrag}"
+  },
+  "ticketVip": {
+    "eyebrow": "VIP",
+    "warnungTitel": "Whoever has this link gets in.",
+    "warnung": "Each ticket is for the person named on it and works exactly once. Every ticket has its own link below it — send it to that person and they have their ticket themselves.",
+    "kopieren": "Copy",
+    "kopiert": "Copied",
+    "storniert": "This booking was cancelled. Get in touch if that's a mistake.",
+    "warnungEinzeln": "Your ticket works exactly once. No phone? No problem — your name is on the list."
   }
 }

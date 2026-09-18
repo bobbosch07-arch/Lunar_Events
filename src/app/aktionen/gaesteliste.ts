@@ -110,6 +110,7 @@ export async function verschickeGastTickets(id: string): Promise<{ ok: boolean; 
     .from("gaeste")
     .select("id, name, email, token, entfernt_am, event:events(slug, titel, beginn, ort:orte(name, stadt))")
     .eq("id", id)
+    .is("vip_anfrage_id", null)
     .maybeSingle();
   if (!gast || gast.entfernt_am || !gast.email) {
     return { ok: false, fehler: "Für diesen Eintrag gibt es keine Mailadresse." };

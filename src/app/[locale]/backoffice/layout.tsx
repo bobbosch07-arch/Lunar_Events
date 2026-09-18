@@ -73,6 +73,10 @@ export default async function BackofficeLayout({
           <Link href="/einlass" style={{ color: "#E4CE98" }}>
             Zum Einlass-Scanner
           </Link>
+        ) : rolle === "garderobe" ? (
+          <Link href="/garderobe" style={{ color: "#E4CE98" }}>
+            Zur Garderobe
+          </Link>
         ) : null}
       </main>
     );
