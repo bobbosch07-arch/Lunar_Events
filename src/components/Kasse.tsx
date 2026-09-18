@@ -233,7 +233,7 @@ export function Kasse({
         ) : !event || event.phasen.length === 0 ? (
           <p className={css.leer}>
             Für dieses Event gibt es keine Abendkassen-Phase. Im Backoffice beim Event eine
-            Phase anlegen und „Nur an der Abendkasse" ankreuzen.
+            Phase anlegen und „Nur an der Abendkasse“ ankreuzen.
           </p>
         ) : (
           <>
