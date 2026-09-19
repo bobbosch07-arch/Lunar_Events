@@ -92,6 +92,13 @@ Seite über `preview_start` mit `url` öffnen.
   (`scripts/logo_varianten.py`). Das Lockup ist **quadratisch**
   (Mond über Schriftzug): unter ~44 px Höhe ist der Schriftzug nicht mehr
   lesbar. Deshalb ist die Kopfzeile 92 px hoch — nicht aus Laune.
+- **Ton der Texte (19.09.2026, vom Kunden bestätigt): wie die About-Seite.**
+  Kurze, klare Sätze, „wir“, keine Superlative. **Kein Gedankenstrich als
+  Satzverbinder**: Punkt, Doppelpunkt, Komma oder Frage stattdessen. Keine
+  „nicht nur X, sondern Y“-Formeln und keine Werbewörter wie „elevated“ oder
+  „unvergesslich“, das liest sich nach KI. Striche bleiben nur für Spannen
+  („4–6 Gäste“) und leere Werte. Die Überschriften bleiben englische
+  Versalien („SEE YOU AFTER DARK.“).
 - **Preise ohne Kassenbon-Nullen:** `preisText()` in `src/lib/format.ts`
   setzt glatte Beträge als „29 €", krumme als „29,50 €".
 - **Keine erfundene Knappheit.** Restmengen werden nur angezeigt, wenn sie
