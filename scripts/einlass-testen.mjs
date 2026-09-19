@@ -26,6 +26,7 @@ const dienst = createClient(URL_, process.env.SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 const TEST_EMAIL = "einlasstest@lunar-events.de";
+const TEST_SLUG = "test-einlass";
 
 function pruefe(bedingung, text, zusatz = "") {
   console.log(`${bedingung ? "✓" : "✗"} ${text}${zusatz ? "  " + zusatz : ""}`);
@@ -77,6 +78,11 @@ async function aufraeumen() {
     }
     await dienst.from("kunden").delete().eq("id", kunde.id);
   }
+  const { data: ev } = await dienst.from("events").select("id").eq("slug", TEST_SLUG).maybeSingle();
+  if (ev) {
+    await dienst.from("phasen").delete().eq("event_id", ev.id);
+    await dienst.from("events").delete().eq("id", ev.id);
+  }
 
   const { data: konten } = await dienst.auth.admin.listUsers();
   const konto = konten.users.find((u) => u.email === TEST_EMAIL);
@@ -87,18 +93,33 @@ async function aufraeumen() {
 }
 
 async function durchspielen() {
-  // --- Ein bezahltes Ticket herstellen ---
-  const { data: event } = await dienst
+  // --- Ein bezahltes Ticket herstellen, auf einem eigenen Test-Event ---
+  // Früher nahm das Skript das nächste echte Event; das echte Event wird
+  // aber nicht angefasst.
+  const { data: ort } = await dienst.from("orte").select("id").limit(1).single();
+  const { data: event, error: evFehler } = await dienst
     .from("events")
-    .select("id, titel, phasen(id, art, aktiv, kontingent, verkauft)")
-    .eq("status", "veroeffentlicht")
-    .gt("beginn", new Date().toISOString())
-    .limit(1).single();
-
-  const phase = event.phasen.find(
-    (p) => p.art === "standard" && p.aktiv &&
-           (p.kontingent === null || p.verkauft < p.kontingent),
-  );
+    .insert({
+      slug: TEST_SLUG,
+      titel: "TEST EINLASS",
+      kategorie: "club",
+      status: "veroeffentlicht",
+      beginn: new Date(Date.now() + 30 * 86400000).toISOString(),
+      ort_id: ort.id,
+      veranstalter: "Lunar Events",
+    })
+    .select("id, titel")
+    .single();
+  if (evFehler) throw new Error(`Event: ${evFehler.message}`);
+  const { data: phase, error: phFehler } = await dienst
+    .from("phasen")
+    .insert({
+      event_id: event.id, name: "Online", art: "standard", preis_cent: 2000, gebuehr_cent: 200,
+      kontingent: 20, verkauft: 0, aktiv: true, leistungen: [], position: 0,
+    })
+    .select("id")
+    .single();
+  if (phFehler) throw new Error(`Phase: ${phFehler.message}`);
 
   const { data: bestellungId } = await dienst.rpc("reserviere", {
     p_event_id: event.id,
@@ -112,6 +133,9 @@ async function durchspielen() {
     p_zahlungsart: "frei",
     p_referenz: "einlasstest",
   });
+  // Kaufen geht nur bei veröffentlichten Events; danach wieder aus den
+  // öffentlichen Listen nehmen. Scannen geht auch beim Entwurf.
+  await dienst.from("events").update({ status: "entwurf" }).eq("id", event.id);
   const { data: tickets } = await dienst
     .from("tickets").select("code").eq("bestellung_id", bestellungId);
   const code = tickets[0].code;

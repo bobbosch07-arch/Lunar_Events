@@ -34,16 +34,26 @@ export type MeinTicket = TicketAnzeige & {
 };
 
 /**
- * Die eigenen Tickets. Welche das sind, entscheiden die Zugriffsregeln in
- * der Datenbank — hier wird nichts zusätzlich gefiltert, damit es keine
- * zweite Wahrheit gibt.
+ * Die eigenen Tickets. Die Zugriffsregeln allein reichen dafür nicht: Admins
+ * dürfen alle Tickets lesen (fürs Backoffice), hier sollen sie trotzdem nur
+ * ihre eigenen sehen. Deshalb wird zusätzlich auf den eigenen Kunden
+ * gefiltert (0031). `userId` kommt aus `holeAngemeldeten()`, also schon
+ * beim Auth-Server nachgeprüft.
  */
 export async function holeMeineTickets(
+  userId: string,
   formatiere: (iso: string) => string,
 ): Promise<MeinTicket[]> {
   if (!datenbankVerbunden()) return [];
 
   const db = await serverClient();
+  const { data: kunden } = await db
+    .from("kunden")
+    .select("id")
+    .eq("user_id", userId);
+  const kundenIds = (kunden ?? []).map((k) => k.id as string);
+  if (kundenIds.length === 0) return [];
+
   const { data, error } = await db
     .from("tickets")
     .select(
@@ -54,6 +64,7 @@ export async function holeMeineTickets(
        )`,
     )
     .eq("bestellung.status", "bezahlt")
+    .in("bestellung.kunde_id", kundenIds)
     .order("erstellt_am", { ascending: false });
 
   if (error) {

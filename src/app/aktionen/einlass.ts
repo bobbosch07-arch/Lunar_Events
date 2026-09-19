@@ -47,36 +47,22 @@ export async function entwerte(code: string): Promise<EinlassErgebnis> {
  * Bewusst Prüfsummen statt der Codes selbst: Damit kann das Gerät sagen
  * „dieser Code gehört zu diesem Event", aber niemand kann aus einem
  * verlorenen Telefon Tickets herstellen.
+ *
+ * Gerechnet wird in der Datenbank (`einlass_pruefsummen`, 0031): Personal
+ * darf die Tabelle `tickets` nicht lesen, die Codes verlassen sie also nie.
  */
 export async function holePruefsummen(
   eventId: string,
 ): Promise<{ ok: boolean; summen: string[] }> {
   const db = await serverClient();
-  const { data, error } = await db
-    .from("tickets")
-    .select("code")
-    .eq("event_id", eventId)
-    .eq("status", "gueltig");
+  const { data, error } = await db.rpc("einlass_pruefsummen", { p_event_id: eventId });
 
   if (error || !data) {
     console.error("[einlass] Prüfsummen laden fehlgeschlagen:", error?.message);
     return { ok: false, summen: [] };
   }
 
-  const summen = await Promise.all(
-    data.map((z) => pruefsumme(z.code as string)),
-  );
-  return { ok: true, summen };
-}
-
-/** Muss auf Server und Gerät dasselbe Ergebnis liefern. */
-async function pruefsumme(code: string): Promise<string> {
-  const daten = new TextEncoder().encode(code.trim().toUpperCase());
-  const digest = await crypto.subtle.digest("SHA-256", daten);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 16);
+  return { ok: true, summen: data as string[] };
 }
 
 /* ------------------------------------------------------------------ */

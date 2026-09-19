@@ -533,6 +533,20 @@ sagen „dieser Code gehört zu diesem Event", aber aus einem verlorenen
 Telefon lassen sich keine Tickets herstellen. Entwertungen werden
 gepuffert und nachgereicht.
 
+**Personal liest keine Tickets (Migration 0031).** Direkt aus `tickets` und
+`garderobe_marken` lesen nur Admins und der Kunde selbst. Vorher durfte
+jede Rolle mit Scan-Recht alle Tickets samt Codes lesen und die Garderobe
+alle Marken. Ein Code ist das Ticket, eine Marke die Jacke. Die Prüfsummen
+für den Scanner rechnet deshalb die Datenbank (`einlass_pruefsummen`), die
+Codes verlassen sie nie. `einlass_pruefsumme()` dort und `pruefsumme()` im
+Scanner müssen dasselbe liefern; die Selbstprüfung in 0031 hält einen
+bekannten Wert fest. **Wer für Personal etwas aus diesen Tabellen braucht,
+baut eine Funktion mit eigener Rollenprüfung**, wie Kasse, Garderobe und
+Gästeliste. Die Zugriffsregel wieder zu öffnen, ist der falsche Weg.
+„Meine Tickets“ filtert zusätzlich selbst auf den eigenen Kunden, weil
+Admins sonst dort alle Tickets sähen. Geprüft mit
+`scripts/personal-testen.mjs`.
+
 **Die Rolle steht in der Datenbank, nicht im Token.** Wer entzogen wird,
 kommt sofort nicht mehr durch, ohne dass eine Sitzung ablaufen muss.
 
@@ -921,8 +935,8 @@ Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live,
 Mail über Brevo läuft):
 
 **A. Vor dem Teilen des Links**
-1. Stripe-Webhook im **Live-Modus** anlegen (am 19.09. war keiner da) und
-   Testkauf mit Erstattung → Ticket „Storniert“.
+1. ~~Stripe-Webhook im Live-Modus, Testkauf mit Erstattung~~: erledigt
+   19.09., Ticket stand danach auf „Storniert“.
 2. About-Text: Die Geschichte wird mit dem Kunden erarbeitet; bis dahin
    steht auf About noch der Warnkasten. AGB, Datenschutz, Kontakt und
    Impressum sind seit 19.09. ohne Platzhalter, überall
@@ -931,9 +945,8 @@ Mail über Brevo läuft):
    geprüft.
 
 **B. Sicherheit und Geld**
-3. Personal-Lücke: `tickets_lesen` lässt alle mit Stufe `einlass` alle
-   Tickets samt Codes lesen, „Meine Tickets“ filtert nicht selbst. Plan:
-   nur Admins lesen direkt, Scanner über eine Prüfsummen-Funktion.
+3. ~~Personal-Lücke~~: erledigt 19.09. (0031, siehe „Einlass“), die
+   Garderobenmarken gleich mit.
 4. Automatische Erstattung bei Absage über Stripe (Fragebogen). Heute setzt
    „Abgesagt“ nur den Status; die Ticketseite verspricht die Erstattung.
 5. Zwei-Faktor-Pflicht auf „an“, sobald beide Admins TOTP haben.
@@ -945,8 +958,8 @@ Mail über Brevo läuft):
 11. Cookie-Banner und Pixel, erst mit Werbekonten.
 
 **D. Aufräumen**
-12. `zahlung-testen`/`einlass-testen` auf eigene Test-Events umstellen,
-    alte Test-Kundenzeilen löschen.
+12. `zahlung-testen` auf ein eigenes Test-Event umstellen (`einlass-testen`
+    ist seit 19.09. umgestellt), alte Test-Kundenzeilen löschen.
 
 **E. Nach dem ersten Event**
 13. Rechtstexte anwaltlich prüfen; Datenschutz um Presale, Warteliste,

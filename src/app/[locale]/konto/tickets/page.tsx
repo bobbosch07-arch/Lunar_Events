@@ -43,7 +43,7 @@ export default async function MeineTickets({
     );
   }
 
-  const tickets = await holeMeineTickets((iso) =>
+  const tickets = await holeMeineTickets(angemeldet.id, (iso) =>
     f.dateTime(new Date(iso), "mitZeit"),
   );
 

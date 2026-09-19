@@ -22,6 +22,7 @@ const SPEICHER_SUMMEN = "lunar.einlass.summen";
 
 type Gepuffert = { code: string; zeit: number };
 
+/** Muss dasselbe liefern wie `einlass_pruefsumme()` in der Datenbank (0031). */
 async function pruefsumme(code: string): Promise<string> {
   const daten = new TextEncoder().encode(code.trim().toUpperCase());
   const digest = await crypto.subtle.digest("SHA-256", daten);
