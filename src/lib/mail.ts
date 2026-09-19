@@ -143,7 +143,7 @@ function huelle(inhalt: string): string {
 <body style="margin:0;padding:0;background:#f7f5f0;">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f5f0;padding:32px 16px;">
 <tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fcfbf8;border:1px solid #e4e0d7;border-radius:8px;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#101418;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fcfbf8;border:1px solid #e4e0d7;border-radius:4px;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#101418;">
 ${inhalt}
 <tr><td style="padding:24px 28px;border-top:1px solid #e4e0d7;background:#f7f5f0;font-size:12px;line-height:1.6;color:#858990;">
 Lunar Events · <a href="${eigeneAdresse()}" style="color:#5e6268;">lunar-events.de</a><br />
@@ -209,7 +209,7 @@ ${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">${satz}</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
 <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
@@ -222,7 +222,7 @@ ${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
 </td></tr></table>
 
@@ -287,7 +287,7 @@ export async function meldeVipAnfrage(daten: VipMail): Promise<boolean> {
   const html = huelle(`
 ${kopfBalken("VIP-Anfrage")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;">
 ${zeilen
   .map(
     ([name, wert]) =>
@@ -297,7 +297,7 @@ ${zeilen
 </table>
 ${
   daten.nachricht
-    ? `<p style="margin:20px 0 0;padding:16px 18px;background:#f7f5f0;border-radius:6px;font-size:14px;line-height:1.7;">${daten.nachricht.replace(/</g, "&lt;")}</p>`
+    ? `<p style="margin:20px 0 0;padding:16px 18px;background:#f7f5f0;border-radius:3px;font-size:14px;line-height:1.7;">${daten.nachricht.replace(/</g, "&lt;")}</p>`
     : ""
 }
 <p style="margin:24px 0 0;font-size:13px;color:#5e6268;">
@@ -355,7 +355,7 @@ ${kopfBalken("Presale")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">du warst schon bei uns — deshalb kommst du vor allen anderen an Tickets für <strong>${maskiere(daten.eventTitel)}</strong>.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
 <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
@@ -365,7 +365,7 @@ ${kopfBalken("Presale")}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Zum Presale</a>
 </td></tr></table>
 
@@ -432,7 +432,7 @@ ${kopfBalken("Warteliste")}
 <p style="margin:0 0 24px;">du möchtest auf die Warteliste für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}) — für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Eintrag bestätigen</a>
 </td></tr></table>
 
@@ -489,7 +489,7 @@ ${kopfBalken("Du bist dran")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">für <strong>${maskiere(daten.eventTitel)}</strong> ist etwas frei geworden. ${stueck} für dich reserviert.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
 <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
@@ -502,7 +502,7 @@ ${kopfBalken("Du bist dran")}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.kaufLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Jetzt kaufen</a>
 </td></tr></table>
 
@@ -567,7 +567,7 @@ ${kopfBalken("Gästeliste")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">du stehst auf der Gästeliste für <strong>${maskiere(daten.eventTitel)}</strong>${mit}.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
 <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
@@ -577,7 +577,7 @@ ${kopfBalken("Gästeliste")}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen"}</a>
 </td></tr></table>
 
@@ -637,7 +637,7 @@ ${kopfBalken("VIP")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da — ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
 <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
@@ -657,7 +657,7 @@ ${
 <ul style="margin:0 0 24px;padding-left:20px;">${liste}</ul>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
 </td></tr></table>
 
@@ -713,7 +713,7 @@ export async function sendeAnmeldungImBackoffice(daten: AnmeldeMail): Promise<bo
 ${kopfBalken("Anmeldung")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 24px;">Jemand hat sich mit Admin-Rechten im Backoffice angemeldet.</p>
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;">
 ${zeilen
   .map(
     ([name, wert]) =>
@@ -777,12 +777,12 @@ ${kopfBalken("Dein Plan")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">hier ist deine Einteilung für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}${daten.ort ? `, ${maskiere(daten.ort)}` : ""}).</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:6px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 ${zeilen}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:8px;">
+<td style="background:#0b1728;border-radius:4px;">
 <a href="${daten.planLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Mein Plan</a>
 </td></tr></table>
 

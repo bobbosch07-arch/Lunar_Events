@@ -121,9 +121,9 @@
   --abschnitt-klein: clamp(var(--space-12), 6vw, var(--space-20));
 
   /* ---------- Radien ---------- */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-lg: 4px;
   --radius-pille: 999px;
 
   /* ---------- Breiten ---------- */

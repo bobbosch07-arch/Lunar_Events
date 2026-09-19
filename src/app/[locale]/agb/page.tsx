@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { Textseite, Block, Absatz, Liste, Luecke } from "@/components/Textseite";
+import { Textseite, Block, Absatz, Liste } from "@/components/Textseite";
 
 export const metadata: Metadata = {
   title: "AGB",
@@ -19,23 +19,19 @@ export default async function AGB({
     <Textseite
       titel="Allgemeine Geschäftsbedingungen"
       vorspann="Für den Kauf von Tickets über diese Seite."
-      warnung={{
-        titel: "Entwurf — juristisch prüfen lassen",
-        text: "Diese Bedingungen bilden ab, wie das System tatsächlich arbeitet. Sie sind aber kein anwaltlich geprüfter Text. Vor dem ersten echten Verkauf muss ein Fachanwalt darüber schauen — insbesondere über Widerruf, Absagefolgen und Haftung.",
-      }}
       stand="Stand: September 2026."
     >
       <Block titel="1. Wer verkauft">
         <Absatz>
-          Verkäufer der Tickets ist <Luecke>Firmierung</Luecke> („Lunar
-          Events"). Die vollständigen Angaben stehen im Impressum.
+          Verkäufer der Tickets ist Niklas Reyes Kretschmar, Einzelunternehmen,
+          handelnd als „Lunar Events“. Die vollständigen Angaben stehen im Impressum.
         </Absatz>
       </Block>
 
       <Block titel="2. Wie ein Vertrag zustande kommt">
         <Absatz>
           Die Darstellung der Tickets auf dieser Seite ist noch kein bindendes
-          Angebot. Mit dem Klick auf „Zahlungspflichtig bestellen" gibst du ein
+          Angebot. Mit dem Klick auf „Zahlungspflichtig bestellen“ gibst du ein
           Angebot ab. Der Vertrag kommt zustande, sobald wir die Bestellung
           bestätigen und die Tickets bereitstellen.
         </Absatz>
@@ -85,8 +81,8 @@ export default async function AGB({
         <Absatz>
           Wird eine Veranstaltung verschoben, behalten gekaufte Tickets ihre
           Gültigkeit für den Ersatztermin. Passt dir der neue Termin nicht,
-          kannst du das Ticket innerhalb von <Luecke>Frist festlegen</Luecke>{" "}
-          zurückgeben.
+          kannst du das Ticket innerhalb von 14 Tagen nach Bekanntgabe des neuen
+          Termins zurückgeben.
         </Absatz>
       </Block>
 

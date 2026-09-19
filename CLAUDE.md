@@ -69,6 +69,11 @@ Seite über `preview_start` mit `url` öffnen.
 - **Alle Tokens stehen in `src/styles/tokens.css`.** Komponenten greifen
   nur darauf zu. Keine eigenen Farben, keine eigenen Schriftgrade, keine
   eigenen Radien — das ist die härteste Regel im Briefing.
+- **Radien sind seit 19.09.2026 härter: 2 / 3 / 4 px** (`--radius-sm/md/lg`),
+  Wunsch des Kunden („weniger KI-mäßig“). Das weicht bewusst vom Briefing ab
+  („Radius 6–10 px“). Dieselben Werte stehen als Literale im Stripe-Formular
+  (`StripeZahlung`, 3 px) und in den Mails (`mail.ts`, 3 und 4 px) — wer die
+  Tokens ändert, muss dort mit.
 - **Dunkle Abschnitte laufen über `data-grund`**, nicht über eigene
   Dunkel-Varianten je Komponente: `<section data-grund="dunkel">` (oder
   `"tief"`, `"gedaempft"`) schreibt die semantischen Tokens um — `--grund`,
@@ -905,24 +910,46 @@ Fertig und geprüft:
 - Garderobe: in der Kasse und auf der Ticketseite, Marken mit QR, Tresen mit Bügelnummer (offline), Rolle garderobe
 - VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
 
-Offen:
+Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live,
+Mail über Brevo läuft):
 
-1. **Zugangsdaten nachtragen**: PayPal, Resend, Apple- und
-   Google-Wallet. Alles dafür ist gebaut; ohne Schlüssel bleibt es
-   stumm, und die Oberfläche verspricht nichts davon.
-2. **Mailversand** (`RESEND_API_KEY`). Ohne ihn sagt die
-   Bestätigungsseite ausdrücklich, dass die Seite die einzige Stelle mit
-   den Tickets ist — und niemand erfährt von neuen VIP-Anfragen außer
-   durchs Backoffice.
-4. **Echte Eventfotos.** Der Upload steht, die Bilder fehlen. Laut
-   Briefing tragen sie die halbe Gestaltung.
-5. **Firmendaten** für Impressum, AGB und Datenschutz — die Lücken sind
-   in den Seiten sichtbar markiert. Rechtstexte müssen anwaltlich geprüft
-   werden.
-6. **Newsletter-Bestätigung** (Double Opt-in). Das Formular steht,
-   verschickt wird bis dahin nichts.
-8. Stripe-Konto freischalten lassen. Ticketverkauf gilt als erhöhtes
-   Risiko; mit Sicherheitseinbehalt und verzögerter Auszahlung rechnen.
+**A. Vor dem Teilen des Links**
+1. Stripe-Webhook im **Live-Modus** anlegen (am 19.09. war keiner da) und
+   Testkauf mit Erstattung → Ticket „Storniert“.
+2. About-Text: Die Geschichte wird mit dem Kunden erarbeitet; bis dahin
+   steht auf About noch der Warnkasten. AGB, Datenschutz, Kontakt und
+   Impressum sind seit 19.09. ohne Platzhalter, überall
+   `kontakt@lunar-events.de`. Die Fristen (Rückgabe bei Verschiebung 14
+   Tage, VIP-Anfragen 6 Monate) sind Vorschläge, noch nicht anwaltlich
+   geprüft.
+
+**B. Sicherheit und Geld**
+3. Personal-Lücke: `tickets_lesen` lässt alle mit Stufe `einlass` alle
+   Tickets samt Codes lesen, „Meine Tickets“ filtert nicht selbst. Plan:
+   nur Admins lesen direkt, Scanner über eine Prüfsummen-Funktion.
+4. Automatische Erstattung bei Absage über Stripe (Fragebogen). Heute setzt
+   „Abgesagt“ nur den Status; die Ticketseite verspricht die Erstattung.
+5. Zwei-Faktor-Pflicht auf „an“, sobald beide Admins TOTP haben.
+
+**C. Verkauf und Kommunikation**
+6. Erinnerungsmail einen Tag vorher. 7. Newsletter mit Double-Opt-in.
+8. Klarna ab 50 € (PayPal/Klarna vorher in Stripe freischalten).
+9. Line-up-Feld je Event. 10. Englisch vollständig.
+11. Cookie-Banner und Pixel, erst mit Werbekonten.
+
+**D. Aufräumen**
+12. `zahlung-testen`/`einlass-testen` auf eigene Test-Events umstellen,
+    alte Test-Kundenzeilen löschen.
+
+**E. Nach dem ersten Event**
+13. Rechtstexte anwaltlich prüfen; Datenschutz um Presale, Warteliste,
+    Gästeliste, Schichtplan, Garderobe und VIP ergänzen.
+14. Neu bewerten: Tap to Pay/Kartenterminal, Getränkemarken, Galerie.
+
+**Beim Kunden:** Eventfotos, Social-Kanäle, Vorkasse-Konto in Vercel,
+Personal anlegen (auch `garderobe`), Brevo-Tarif, Supabase Pro vor dem
+ersten großen Event, AV-Verträge (Supabase, Vercel, Stripe, Brevo), PayPal
+und Wallet-Zugänge.
 
 Alle Seiten rendern **dynamisch**, weil sie Restkontingente anzeigen.
 Für Startseite und Eventliste wäre ein kurzes `revalidate` denkbar; das

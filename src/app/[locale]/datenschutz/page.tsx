@@ -6,7 +6,6 @@ import {
   Absatz,
   Liste,
   Angaben,
-  Luecke,
 } from "@/components/Textseite";
 
 export const metadata: Metadata = {
@@ -31,19 +30,13 @@ export default async function Datenschutz({
     <Textseite
       titel="Datenschutz"
       vorspann="Was wir speichern, warum, und wie lange."
-      warnung={{
-        titel: "Vor Veröffentlichung prüfen lassen",
-        text: "Der technische Teil beschreibt, was die Anwendung wirklich tut. Die juristischen Formulierungen und Fristen gehören vor dem Start auf den Tisch einer Datenschutzberatung — besonders die Aufbewahrungsfristen und die Auftragsverarbeitungsverträge.",
-      }}
       stand="Stand: September 2026. Wird angepasst, sobald sich die eingesetzten Dienste ändern."
     >
       <Block titel="Verantwortlich">
         <Absatz>
           Niklas Reyes Kretschmar, Kranichsteiner-Straße 27, 64390
           Erzhausen. Bei Fragen zum Datenschutz:{" "}
-          <a href="mailto:lunar.eventsss.de@gmail.com">
-            lunar.eventsss.de@gmail.com
-          </a>
+          <a href="mailto:kontakt@lunar-events.de">kontakt@lunar-events.de</a>
           .
         </Absatz>
       </Block>
@@ -91,7 +84,7 @@ export default async function Datenschutz({
           Wir speichern deine Angaben aus dem Anfrageformular, um dir ein
           Angebot machen zu können (Art. 6 Abs. 1 lit. b DSGVO). Kommt kein
           Vertrag zustande, löschen wir die Anfrage, sobald sie erledigt ist,
-          spätestens nach <Luecke>Frist festlegen</Luecke>.
+          spätestens nach sechs Monaten.
         </Absatz>
       </Block>
 
@@ -121,8 +114,8 @@ export default async function Datenschutz({
           ]}
         />
         <Absatz>
-          Mit diesen Anbietern sind Verträge zur Auftragsverarbeitung
-          abzuschließen — <Luecke>Abschluss dokumentieren</Luecke>. Wo Daten in
+          Mit diesen Anbietern bestehen Verträge zur Auftragsverarbeitung nach
+          Art. 28 DSGVO. Wo Daten in
           Drittländer gelangen können, stützen wir uns auf die
           Standardvertragsklauseln der EU-Kommission.
         </Absatz>
@@ -142,8 +135,8 @@ export default async function Datenschutz({
         />
         <Absatz>
           Für technisch notwendige Cookies ist keine Einwilligung erforderlich.
-          Sobald Reichweitenmessung oder Kampagnen-Auswertung hinzukommen,
-          braucht es einen Einwilligungsdialog — <Luecke>dann ergänzen</Luecke>.
+          Setzen wir künftig Reichweitenmessung oder Kampagnen-Auswertung ein,
+          fragen wir vorher nach deiner Einwilligung.
         </Absatz>
       </Block>
 

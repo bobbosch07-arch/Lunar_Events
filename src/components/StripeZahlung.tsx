@@ -97,7 +97,7 @@ export function StripeZahlung({
         colorDanger: "#a64040",
         fontFamily: "var(--font-body), system-ui, sans-serif",
         fontSizeBase: "16px",
-        borderRadius: "8px",
+        borderRadius: "3px",
         spacingUnit: "4px",
       },
       rules: {

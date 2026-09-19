@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 const NAME = "Niklas Reyes Kretschmar";
 const ANSCHRIFT = "Kranichsteiner-Straße 27, 64390 Erzhausen";
-const EMAIL = "lunar.eventsss.de@gmail.com";
+const EMAIL = "kontakt@lunar-events.de";
 
 export default async function Impressum({
   params,

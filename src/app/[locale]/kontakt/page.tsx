@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
-import { Textseite, Block, Absatz, Angaben, Luecke } from "@/components/Textseite";
+import { Textseite, Block, Absatz, Angaben } from "@/components/Textseite";
 import { Knopf } from "@/components/Knopf";
 
 export const metadata: Metadata = {
@@ -20,10 +20,6 @@ export default async function Kontakt({
     <Textseite
       titel="Kontakt"
       vorspann="Wir antworten meist am selben Tag."
-      warnung={{
-        titel: "Adressen einrichten",
-        text: "Die genannten E-Mail-Adressen müssen existieren und gelesen werden, bevor die Seite öffentlich geht. Eine Kontaktseite, auf der niemand antwortet, schadet mehr als keine.",
-      }}
     >
       <Block titel="Worum geht es?">
         <Angaben
@@ -51,7 +47,6 @@ export default async function Kontakt({
                 kontakt@lunar-events.de
               </a>,
             ],
-            ["Telefon", <Luecke key="t">Nummer und Erreichbarkeit</Luecke>],
           ]}
         />
       </Block>
