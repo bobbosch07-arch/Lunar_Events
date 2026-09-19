@@ -119,14 +119,16 @@
   transition: transform var(--dur-normal) var(--ease-aus), opacity var(--dur-schnell) var(--ease);
 }
 
+/* Die Balken liegen 6 px auseinander (5 px Abstand + 1 px Balken). Nur so
+   kreuzen sie sich in der Mitte, sonst wirkt das X abgeschnitten. */
 .offen .balken1 {
-  transform: translateY(3px) rotate(45deg);
+  transform: translateY(6px) rotate(45deg);
 }
 .offen .balken2 {
   opacity: 0;
 }
 .offen .balken3 {
-  transform: translateY(-3px) rotate(-45deg);
+  transform: translateY(-6px) rotate(-45deg);
 }
 
 .schublade {

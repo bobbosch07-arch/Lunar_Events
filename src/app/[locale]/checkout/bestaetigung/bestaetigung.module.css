@@ -173,3 +173,9 @@
   flex-wrap: wrap;
   gap: var(--space-3);
 }
+
+.steuer {
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--auf-grund-2);
+}

@@ -315,7 +315,7 @@ export function Ticketauswahl(props: Props) {
                       )}
                     </span>
                   </span>
-                  {phase.art !== "vip" && phase.gebuehr_cent > 0 ? (
+                  {phase.art !== "vip" && !phase.preis_verborgen && phase.gebuehr_cent > 0 ? (
                     <span className={css.gebuehr}>
                       inkl. {preisText(phase.gebuehr_cent, locale)} Gebühr
                     </span>
@@ -448,7 +448,7 @@ export function Ticketauswahl(props: Props) {
                     <span className={css.summeWert}>{preisText(summe, locale)}</span>
                   </div>
                   <span className={css.summeDetail}>
-                    {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} · inkl. Gebühren
+                    {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} · inkl. Gebühren · keine USt (§ 19 UStG)
                   </span>
                 </>
               ) : (

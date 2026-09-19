@@ -1,5 +1,6 @@
 "use server";
 
+import { darfMailSchicken } from "@/lib/drossel";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
 import { sendeWartelisteBestaetigung, versandEingerichtet } from "@/lib/mail";
@@ -39,6 +40,8 @@ export async function trageAufWarteliste(eingabe: {
   // Ohne Mailversand gäbe es weder Bestätigung noch Angebot — dann lieber
   // gleich sagen, dass es nicht geht.
   if (!datenbankVerbunden() || !versandEingerichtet()) return { ok: false, fehler: "versand" };
+  // Jeder Eintrag schickt eine Bestätigungsmail (0032).
+  if (!(await darfMailSchicken("warteliste", email))) return { ok: true, art: "mail" };
 
   const db = dienstClient();
   const { data, error } = await db.rpc("trage_in_warteliste", {

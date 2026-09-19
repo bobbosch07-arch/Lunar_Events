@@ -413,6 +413,12 @@
   background: var(--border-light);
 }
 
+.zfSteuer {
+  margin-top: var(--space-2);
+  font-size: var(--fs-caption);
+  color: var(--auf-grund-2);
+}
+
 .zfSumme {
   display: flex;
   align-items: baseline;

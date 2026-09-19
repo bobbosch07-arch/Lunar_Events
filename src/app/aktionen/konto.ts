@@ -6,6 +6,7 @@ import { serverClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
 import { pruefePasswort, SPAETER_COOKIE } from "@/lib/passwort";
 import { meldeAnmeldung } from "@/lib/anmeldemeldung";
+import { darfAdresse, darfAnschluss, darfMailSchicken, GRENZEN } from "@/lib/drossel";
 
 export type AnmeldeErgebnis =
   | { ok: true }
@@ -26,6 +27,7 @@ export async function sendeAnmeldelink(
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(adresse)) {
     return { ok: false, fehler: "email" };
   }
+  if (!(await darfMailSchicken("anmeldelink", adresse))) return { ok: false, fehler: "zu_oft" };
 
   const db = await serverClient();
   const ziel = new URL("/auth/bestaetigen", eigeneAdresse());
@@ -95,9 +97,19 @@ export async function meldeMitPasswortAn(
   email: string,
   passwort: string,
 ): Promise<PasswortErgebnis> {
+  // Gegen Durchprobieren: je Anschluss und je Adresse (0032). Supabase
+  // drosselt selbst auch, aber großzügiger und nicht je Adresse.
+  const adresse = String(email ?? "").trim().toLowerCase();
+  if (
+    !(await darfAnschluss("passwort", GRENZEN.passwort)) ||
+    !(await darfAdresse("passwort", adresse, GRENZEN.passwort))
+  ) {
+    return { ok: false, fehler: "zu_oft" };
+  }
+
   const db = await serverClient();
   const { error } = await db.auth.signInWithPassword({
-    email: email.trim().toLowerCase(),
+    email: adresse,
     password: passwort,
   });
 

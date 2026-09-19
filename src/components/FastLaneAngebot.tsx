@@ -47,7 +47,15 @@ export function FastLaneAngebot({
       // anhaken (§ 312a Abs. 3 BGB) — und ein untergeschobenes Upgrade
       // wäre genau der Druck, den das Briefing nicht will.
       setHaken(gewaehlt);
-      d.showModal();
+      // Ältere Safari-Versionen kennen showModal nicht oder scheitern daran.
+      // Dann lieber kein Angebot als eine Kasse, die nicht mehr reagiert
+      // (Rückmeldung iPhone, 19.09.2026).
+      try {
+        if (typeof d.showModal !== "function") throw new Error("kein dialog");
+        d.showModal();
+      } catch {
+        schliessen();
+      }
     }
     if (!offen && d.open) d.close();
     // gewaehlt bewusst nicht als Abhängigkeit: der Haken soll sich beim

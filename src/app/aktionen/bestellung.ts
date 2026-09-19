@@ -7,6 +7,14 @@ import { verschickeTickets } from "./ticketmail";
 import { CODE_MUSTER, normalisiereCode } from "@/lib/rabatt";
 import { holeWartelisteEintrag } from "@/lib/warteliste";
 import type { CodeAblehnung, CodeVorschau, VerkaufsStand } from "@/lib/typen";
+import {
+  darfAnschluss,
+  EMAIL_MUSTER,
+  GRENZEN,
+  MAX_JE_BESTELLUNG,
+  MAX_JE_PHASE,
+  MAX_POSTEN,
+} from "@/lib/drossel";
 
 /**
  * Der Kauf läuft über zwei Schritte, und beide gehören auf den Server:
@@ -109,17 +117,48 @@ export async function reserviereBestellung(eingabe: {
   /** Wie viele Stück Garderobe (0027). */
   garderobe?: number;
 }): Promise<ReservierungErgebnis> {
-  if (eingabe.auswahl.length === 0) return { ok: false, fehler: "leer" };
+  if (!Array.isArray(eingabe.auswahl) || eingabe.auswahl.length === 0) {
+    return { ok: false, fehler: "leer" };
+  }
+
+  // Die Grenzen der Oberfläche gelten hier noch einmal: Diese Aktion lässt
+  // sich aus der Konsole mit beliebigen Werten aufrufen (0032).
+  const mengen = eingabe.auswahl.map((p) => p?.menge);
+  if (
+    eingabe.auswahl.length > MAX_POSTEN ||
+    !mengen.every((m) => Number.isInteger(m) && m >= 1 && m <= MAX_JE_PHASE) ||
+    mengen.reduce((a, b) => a + b, 0) > MAX_JE_BESTELLUNG
+  ) {
+    return { ok: false, fehler: "menge" };
+  }
+  const email = String(eingabe.email ?? "").trim().toLowerCase();
+  if (!EMAIL_MUSTER.test(email) || email.length > 200) return { ok: false, fehler: "email" };
 
   const db = dienstClient();
+
+  // Höchstens drei unbezahlte Reservierungen je Adresse gleichzeitig …
+  const { count: offene } = await db
+    .from("bestellungen")
+    .select("id, kunde:kunden!inner(email)", { count: "exact", head: true })
+    .eq("status", "offen")
+    .eq("vorkasse", false)
+    .gt("reserviert_bis", new Date().toISOString())
+    .eq("kunde.email", email);
+  if ((offene ?? 0) >= GRENZEN.offeneJeAdresse) return { ok: false, fehler: "zu_viele" };
+
+  // … und höchstens 40 reservierte Tickets je Anschluss in 15 Minuten.
+  const anzahl = mengen.reduce((a, b) => a + b, 0);
+  if (!(await darfAnschluss("reservieren", GRENZEN.reservierenTickets, anzahl))) {
+    return { ok: false, fehler: "zu_viele" };
+  }
 
   const { data: bestellungId, error } = await db.rpc("reserviere", {
     p_event_id: eingabe.eventId,
     p_auswahl: eingabe.auswahl,
-    p_email: eingabe.email.trim().toLowerCase(),
-    p_vorname: eingabe.vorname.trim() || null,
-    p_nachname: eingabe.nachname.trim() || null,
-    p_telefon: eingabe.telefon?.trim() || null,
+    p_email: email,
+    p_vorname: String(eingabe.vorname ?? "").trim().slice(0, 100) || null,
+    p_nachname: String(eingabe.nachname ?? "").trim().slice(0, 100) || null,
+    p_telefon: String(eingabe.telefon ?? "").trim().slice(0, 40) || null,
     p_fastlane: Math.max(0, Math.floor(eingabe.fastlane ?? 0)),
     p_code: eingabe.code ? normalisiereCode(eingabe.code) : null,
     p_einladung: eingabe.einladung ?? null,
@@ -239,6 +278,11 @@ export async function pruefePresaleZugang(eingabe: {
 }): Promise<VerkaufsStand> {
   const db = dienstClient();
   const code = eingabe.code ? normalisiereCode(eingabe.code) : null;
+  // Nur wer einen Code mitbringt, zählt: Ohne Code fragt jede Eventseite hier
+  // an, das wäre bloßes Surfen (0032).
+  if (code && !(await darfAnschluss("codes", GRENZEN.codes))) {
+    return pruefePresaleZugang({ eventId: eingabe.eventId });
+  }
   const { data, error } = await db.rpc("pruefe_presale_zugang", {
     p_event_id: eingabe.eventId,
     p_code: code && CODE_MUSTER.test(code) ? code : null,
@@ -269,6 +313,8 @@ export async function pruefeRabattcode(eingabe: {
 }): Promise<CodeVorschau> {
   const code = normalisiereCode(eingabe.code);
   if (!CODE_MUSTER.test(code)) return { ergebnis: "unbekannt" };
+  // Gegen Durchprobieren (0032). Abgewiesen sieht aus wie ein falscher Code.
+  if (!(await darfAnschluss("codes", GRENZEN.codes))) return { ergebnis: "unbekannt" };
 
   const db = dienstClient();
   const { data, error } = await db.rpc("pruefe_rabattcode", {

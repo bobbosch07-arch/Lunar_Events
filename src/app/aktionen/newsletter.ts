@@ -1,5 +1,6 @@
 "use server";
 
+import { darfAnschluss, GRENZEN } from "@/lib/drossel";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
 
 export type NewsletterErgebnis =
@@ -25,6 +26,8 @@ export async function trageInVerteilerEin(
     return { ok: false, fehler: "email" };
   }
   if (!datenbankVerbunden()) return { ok: false, fehler: "unbekannt" };
+  // Sonst füllt ein Skript den Verteiler mit fremden Adressen (0032).
+  if (!(await darfAnschluss("newsletter", GRENZEN.mailAnschluss))) return { ok: true };
 
   const db = dienstClient();
   const { error } = await db

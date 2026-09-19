@@ -17,6 +17,20 @@ import {
 } from "@/app/aktionen/zahlung";
 import css from "./Checkout.module.css";
 
+/**
+ * Fehlt eine Zustimmung, bleibt der Knopf trotzdem bedienbar und zeigt, was
+ * fehlt. Ein stumm gesperrter Knopf wirkte auf dem iPhone kaputt (Kunde,
+ * 19.09.2026): Wer eines der Häkchen übersah, tippte ins Leere.
+ */
+export const ZUSTIMMUNG_FEHLT = "Bitte setz zuerst oben alle Häkchen.";
+
+export function zeigeFehlendeZustimmung() {
+  const block = document.getElementById("zustimmungen");
+  const offen = block?.querySelector<HTMLInputElement>("input[type=checkbox]:not(:checked)");
+  (offen ?? block)?.scrollIntoView({ behavior: "smooth", block: "center" });
+  offen?.focus({ preventScroll: true });
+}
+
 /** Wird einmal geladen und behalten — sonst holt jede Neuanzeige das Skript neu. */
 let stripeVersprechen: Promise<Stripe | null> | null = null;
 
@@ -147,9 +161,19 @@ function Formular({
   const [fehler, setFehler] = useState<string | null>(null);
   const [bereit, setBereit] = useState(false);
 
+  // Sind die Häkchen nachgeholt, verschwindet der Hinweis von selbst.
+  useEffect(() => {
+    if (freigegeben) setFehler((f) => (f === ZUSTIMMUNG_FEHLT ? null : f));
+  }, [freigegeben]);
+
   async function absenden(e: React.FormEvent) {
     e.preventDefault();
     if (!stripe || !elements || laeuft) return;
+    if (!freigegeben) {
+      setFehler(ZUSTIMMUNG_FEHLT);
+      zeigeFehlendeZustimmung();
+      return;
+    }
 
     setLaeuft(true);
     setFehler(null);
@@ -179,7 +203,7 @@ function Formular({
         <Knopf
           type="submit"
           groesse="gross"
-          disabled={!stripe || !bereit || !freigegeben || laeuft}
+          disabled={!stripe || !bereit || laeuft}
         >
           {laeuft ? "…" : t("jetztKaufen")}
         </Knopf>

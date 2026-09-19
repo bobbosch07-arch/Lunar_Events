@@ -17,6 +17,7 @@ import { dienstClient } from "@/lib/supabase/server";
 import { preisText } from "@/lib/format";
 import { eigeneAdresse } from "@/lib/stripe";
 import css from "./bestaetigung.module.css";
+import { steuerhinweis } from "@/lib/steuer";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -179,6 +180,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
                 </div>
               )}
             </dl>
+            <p className={css.steuer}>{steuerhinweis(locale)}</p>
           </div>
 
           {wartetAufUeberweisung ? (

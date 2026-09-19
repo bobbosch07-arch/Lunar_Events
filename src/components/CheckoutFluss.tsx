@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
-import { StripeZahlung } from "./StripeZahlung";
+import { StripeZahlung, ZUSTIMMUNG_FEHLT, zeigeFehlendeZustimmung } from "./StripeZahlung";
 import { Zaehler, zaehle } from "./Zaehler";
 import { PaypalZahlung } from "./PaypalZahlung";
 import { FastLaneAngebot } from "./FastLaneAngebot";
@@ -19,6 +19,7 @@ import {
   type Garderobe,
 } from "@/lib/typen";
 import { preisText } from "@/lib/format";
+import { steuerhinweis } from "@/lib/steuer";
 import { merkeCode, normalisiereCode, vergissCode } from "@/lib/rabatt";
 import {
   pruefeRabattcode,
@@ -395,7 +396,13 @@ export function CheckoutFluss(props: Props) {
             ? "Dieses Event nimmt keine Bestellungen mehr an."
             : ergebnis.fehler === "phase_zu"
               ? "Diese Ticketphase ist nicht mehr buchbar."
-              : t("fehler"),
+              : ergebnis.fehler === "zu_viele"
+                ? "Gerade laufen zu viele offene Reservierungen für diese Adresse oder diesen Anschluss. Bitte versuch es in ein paar Minuten noch einmal."
+                : ergebnis.fehler === "email"
+                  ? "Bitte prüf deine E-Mail-Adresse."
+                  : ergebnis.fehler === "menge"
+                    ? "Pro Bestellung gehen höchstens 20 Tickets."
+                    : "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
       );
       return;
     }
@@ -524,7 +531,7 @@ export function CheckoutFluss(props: Props) {
               </p>
             ) : null}
             {angebot ? (
-              <div className={css.zustimmungen}>
+              <div id="zustimmungen" className={css.zustimmungen}>
                 <label className={css.zustimmung}>
                   <input
                     type="checkbox"
@@ -769,8 +776,15 @@ export function CheckoutFluss(props: Props) {
                 {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
                 <div className={css.knoepfe}>
                   <Knopf
-                    onClick={kostenlosBestellen}
-                    disabled={!zugestimmt || laeuft}
+                    onClick={() => {
+                      if (!zugestimmt) {
+                        setStoerung(ZUSTIMMUNG_FEHLT);
+                        zeigeFehlendeZustimmung();
+                        return;
+                      }
+                      kostenlosBestellen();
+                    }}
+                    disabled={laeuft}
                     groesse="gross"
                   >
                     {laeuft ? "…" : t("code.kostenlosKnopf")}
@@ -991,6 +1005,7 @@ export function CheckoutFluss(props: Props) {
               <span className={css.zfSummeLabel}>{t("gesamt")}</span>
               <span className={css.zfSummeWert}>{preisText(gesamtEndCent, locale)}</span>
             </div>
+            <p className={css.zfSteuer}>{steuerhinweis(locale)}</p>
           </div>
         </aside>
       </div>

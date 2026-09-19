@@ -1,5 +1,6 @@
 "use server";
 
+import { darfMailSchicken } from "@/lib/drossel";
 import { dienstClient } from "@/lib/supabase/server";
 import { meldeVipAnfrage, versandEingerichtet } from "@/lib/mail";
 
@@ -41,6 +42,8 @@ export async function sendeVipAnfrage(eingabe: VipEingabe): Promise<VipErgebnis>
   if (!Number.isInteger(eingabe.gaeste) || eingabe.gaeste < 1 || eingabe.gaeste > 100) {
     return { ok: false, fehler: "gaeste" };
   }
+  // Jede Anfrage schickt eine Mail ans Team (0032). Stille Abwehr wie oben.
+  if (!(await darfMailSchicken("vip", email))) return { ok: true };
 
   const db = dienstClient();
   const { data: eventTitel } = eingabe.eventId

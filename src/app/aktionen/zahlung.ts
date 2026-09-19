@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
 import { stripe, eigeneAdresse } from "@/lib/stripe";
+import { darfAnschluss, GRENZEN } from "@/lib/drossel";
 
 const COOKIE = "lunar_bestellung";
 
@@ -75,6 +76,8 @@ export async function starteZahlungNachbuchung(
 
 /** Der gemeinsame Teil: Betrag aus der Datenbank, ein Zahlungsvorgang je Bestellung. */
 async function zahlungVorbereiten(bestellungId: string): Promise<ZahlungErgebnis> {
+  // Jeder Aufruf fragt bei Stripe an; aus der Konsole ginge das endlos (0032).
+  if (!(await darfAnschluss("zahlung", GRENZEN.zahlung))) return { ok: false, fehler: "zu_oft" };
   const db = dienstClient();
   const { data: bestellung, error } = await db
     .from("bestellungen")
