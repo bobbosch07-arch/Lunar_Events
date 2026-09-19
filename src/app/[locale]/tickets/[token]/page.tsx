@@ -202,8 +202,8 @@ export default async function TicketAnsicht({ params }: Props) {
           {event.status === "abgesagt" ? (
             <p className={css.abgesagt}>
               Diese Veranstaltung wurde abgesagt. Der Ticketpreis wird
-              erstattet — melde dich, falls nach zwei Wochen nichts
-              angekommen ist.
+              erstattet. Ist nach zwei Wochen nichts angekommen, melde dich
+              bei uns.
             </p>
           ) : vorbei ? (
             <p className={css.hinweisBand}>Dieses Event ist vorbei.</p>
@@ -246,7 +246,7 @@ export default async function TicketAnsicht({ params }: Props) {
           <div className={css.fuss}>
             <p className={css.warnung}>
               <strong>Wer diesen Link hat, kommt rein.</strong> Jeder Code lässt
-              sich genau einmal einlösen — gib den Link nur an Leute weiter,
+              sich genau einmal einlösen. Gib den Link nur an Leute weiter,
               denen du vertraust, und poste ihn nirgends öffentlich.
             </p>
             <p className={css.nummer}>

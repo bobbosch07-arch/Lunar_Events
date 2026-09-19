@@ -65,7 +65,7 @@ export function UeberweisungsDaten({
       </dl>
 
       <p className={css.wichtig}>
-        Als Verwendungszweck <strong>nur {nummer}</strong> angeben — sonst
+        Als Verwendungszweck <strong>nur {nummer}</strong> angeben. Sonst
         können wir die Zahlung deiner Bestellung nicht zuordnen.
       </p>
 
@@ -83,7 +83,7 @@ export function UeberweisungsDaten({
           </>
         ) : null}
         Deine Tickets erscheinen unter deinem Ticketlink, sobald die Zahlung
-        eingegangen ist — meist nach ein bis zwei Werktagen.
+        eingegangen ist, meist nach ein bis zwei Werktagen.
       </p>
     </section>
   );

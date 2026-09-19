@@ -37,8 +37,8 @@ export default async function Kontakt({
             [
               "VIP",
               <>
-                Tisch, Bottle Service, Gruppen ab vier Personen — dafür gibt es
-                ein eigenes Formular, das alles abfragt, was wir brauchen.
+                Tisch, Bottle Service oder Gruppen ab vier Personen? Dafür gibt
+                es ein eigenes Formular.
               </>,
             ],
             [
@@ -53,8 +53,8 @@ export default async function Kontakt({
 
       <Block titel="VIP anfragen">
         <Absatz>
-          Für Tische und Gruppen ist das Anfrageformular der schnellste Weg —
-          wir melden uns innerhalb von 24 Stunden.
+          Für Tische und Gruppen geht es über das Anfrageformular am
+          schnellsten. Wir melden uns innerhalb von 24 Stunden.
         </Absatz>
         <Knopf href="/vip" stil="gold">
           VIP anfragen

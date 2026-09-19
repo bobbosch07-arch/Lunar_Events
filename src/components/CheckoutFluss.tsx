@@ -373,7 +373,7 @@ export function CheckoutFluss(props: Props) {
       // Den ganzen Kauf daran scheitern zu lassen wäre falsch.
       waehleFastlane(false);
       setStoerung(
-        "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
+        "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen, tipp einfach noch einmal auf Weiter.",
       );
       return;
     }
@@ -532,8 +532,8 @@ export function CheckoutFluss(props: Props) {
                     onChange={(e) => waehleFastlane(e.target.checked)}
                   />
                   <span>
-                    <strong>Fast Lane</strong> — nicht anstehen, eigene Spur am
-                    Einlass. + {preisText(angebot.preis_cent * anzahl, locale)}{" "}
+                    <strong>Fast Lane</strong>: eigene Spur am Einlass, kein
+                    Anstehen. + {preisText(angebot.preis_cent * anzahl, locale)}{" "}
                     <button
                       type="button"
                       className={css.zfAendern}

@@ -1,7 +1,7 @@
 {
   "meta": {
     "titel": "Lunar Events",
-    "titelVorlage": "{seite} — Lunar Events",
+    "titelVorlage": "{seite} · Lunar Events",
     "beschreibung": "Ausgewählte Nächte in Darmstadt. Tickets und VIP-Tische direkt bei Lunar Events."
   },
   "nav": {
@@ -18,10 +18,10 @@
     "backoffice": "Backoffice"
   },
   "start": {
-    "heroTitel": "YOUR NIGHT.\nELEVATED.",
+    "heroTitel": "SEE YOU\nAFTER DARK.",
     "heroText": "Ausgewählte Nächte in Darmstadt.",
     "heroCta": "Events entdecken",
-    "heroCtaZwei": "Mehr erfahren",
+    "heroCtaZwei": "Wer wir sind",
     "featuredEyebrow": "Ausgewählt",
     "featuredTitel": "Die nächsten Nächte",
     "kommendEyebrow": "Kalender",
@@ -104,12 +104,12 @@
   "vip": {
     "eyebrow": "VIP Experience",
     "titel": "PRIVATE. PREMIUM. PERSONAL.",
-    "text": "VIP ist kein teureres Ticket. Es ist ein Tisch, ein Ansprechpartner und ein Abend, der vorher abgesprochen wurde.",
+    "text": "Bei VIP habt ihr euren eigenen Tisch und einen Ansprechpartner, der sich um euch kümmert. Was ihr trinken wollt und wann ihr kommt, sprechen wir vorher ab.",
     "cta": "VIP anfragen",
     "leistungen": {
       "tisch": "Eigener Tisch mit reservierter Fläche",
       "service": "Bottle Service am Platz",
-      "einlass": "Priority Entry ohne Anstehen",
+      "einlass": "Einlass ohne Anstehen",
       "absprache": "Persönliche Absprache vorab"
     },
     "formTitel": "VIP-Anfrage",
@@ -174,7 +174,7 @@
       "aufgebraucht": "Dieser Code ist schon aufgebraucht.",
       "passt_nicht": "Dieser Code gilt nicht für die gewählten Tickets.",
       "schon_genutzt": "Diesen Code hast du schon einmal eingelöst.",
-      "herausgenommen": "{grund} Wir haben ihn herausgenommen — tippe noch einmal auf Weiter.",
+      "herausgenommen": "{grund} Wir haben ihn herausgenommen. Tipp einfach noch einmal auf Weiter.",
       "kostenlosText": "Mit deinem Rabattcode kostet diese Bestellung nichts. Eine Zahlung ist nicht nötig.",
       "kostenlosKnopf": "Kostenlos bestellen"
     },
@@ -192,12 +192,12 @@
     "flaggeZustimmung": "Mir ist bekannt: Einlass erst ab {jahre} Jahren. Ohne gültigen Ausweis gibt es keinen Einlass und keine Erstattung."
   },
   "bestaetigung": {
-    "titel": "KAUF ERFOLGREICH",
+    "titel": "DU BIST DABEI.",
     "ticketsAnzeigen": "Tickets anzeigen",
     "bestellnummer": "Bestellnummer",
     "mailHinweis": "Die Tickets sind unterwegs an {email}. Nichts angekommen? Schau im Spam nach oder melde dich bei uns.",
     "walletHinweis": "Leg die Tickets in deine Wallet, dann hast du sie am Einlass sofort zur Hand.",
-    "mailFehltNoch": "Es gibt noch keinen Mailversand — diese Seite ist gerade die einzige Stelle mit deinen Tickets. Mach dir einen Screenshot oder lass den Tab offen, bis der Versand eingerichtet ist."
+    "mailFehltNoch": "Es gibt noch keinen Mailversand. Diese Seite ist gerade die einzige Stelle mit deinen Tickets, mach dir also einen Screenshot oder lass den Tab offen."
   },
   "ticket": {
     "titel": "Meine Tickets",
@@ -235,7 +235,7 @@
     "anmeldenTitel": "Anmelden",
     "anmeldenText": "Wir schicken dir einen Link per E-Mail. Kein Passwort nötig.",
     "linkSenden": "Link senden",
-    "linkGesendet": "Schau in dein Postfach — der Link ist unterwegs.",
+    "linkGesendet": "Der Link ist unterwegs. Schau in dein Postfach.",
     "abmeldenFrage": "Wirklich abmelden?"
   },
   "footer": {
@@ -269,7 +269,7 @@
     "eyebrow": "Promoter",
     "hallo": "Hallo {name}",
     "intro": "Hier siehst du, was über deine Links läuft. Die Zahlen sind immer aktuell.",
-    "pausiert": "Dein Link ist gerade pausiert — Klicks und Käufe zählen im Moment nicht.",
+    "pausiert": "Dein Link ist gerade pausiert. Klicks und Käufe zählen im Moment nicht.",
     "klicks": "Klicks",
     "tickets": "Tickets",
     "linksTitel": "Deine Links",
@@ -307,19 +307,19 @@
     "fehlerEventZu": "Für dieses Event gibt es keine Warteliste mehr.",
     "seite": "Warteliste",
     "unbestaetigtTitel": "Fast geschafft",
-    "unbestaetigtText": "Bestätige, dass du auf die Warteliste für {event} willst – für {anzahl, plural, one {# Ticket} other {# Tickets}}.",
+    "unbestaetigtText": "Bestätige, dass du für {anzahl, plural, one {# Ticket} other {# Tickets}} auf die Warteliste für {event} willst.",
     "bestaetigen": "Eintrag bestätigen",
     "wartetTitel": "Du stehst auf der Warteliste",
     "wartetText": "{anzahl, plural, one {# Ticket} other {# Tickets}} für {event}. Wird etwas frei, schreiben wir dir an {email}. Dann hast du {stunden} Stunden Zeit zum Kaufen, nachts mindestens bis 10 Uhr morgens.",
-    "reihenfolge": "Es geht der Reihe nach. Passt deine Anzahl gerade nicht zu dem, was frei ist, kommt der Nächste dran – du bleibst trotzdem vorne.",
+    "reihenfolge": "Es geht der Reihe nach. Passt deine Anzahl gerade nicht zu dem, was frei ist, kommt der Nächste dran. Du bleibst trotzdem vorne.",
     "austragen": "Von der Warteliste austragen",
     "austragenFrage": "Wirklich austragen? Dein Platz auf der Liste ist dann weg.",
     "ausgetragenTitel": "Ausgetragen",
     "ausgetragenText": "Du stehst nicht mehr auf der Warteliste für {event}.",
     "angebotTitel": "Du bist dran",
-    "angebotText": "{anzahl, plural, one {# Ticket ist} other {# Tickets sind}} für {event} für dich reserviert – bis {zeit} Uhr. Danach gehen sie an den Nächsten auf der Liste.",
+    "angebotText": "{anzahl, plural, one {# Ticket ist} other {# Tickets sind}} für {event} bis {zeit} Uhr für dich reserviert. Danach gehen sie an den Nächsten auf der Liste.",
     "kaufen": "Jetzt kaufen",
-    "freigeben": "Doch nicht – Tickets freigeben",
+    "freigeben": "Doch nicht? Tickets freigeben",
     "freigebenFrage": "Tickets wirklich freigeben? Sie gehen dann sofort an den Nächsten auf der Liste.",
     "ueberweisungTitel": "Wir warten auf deine Überweisung",
     "ueberweisungText": "Deine Tickets erscheinen, sobald die Zahlung angekommen ist. Die Bankverbindung steht bei deiner Bestellung.",
@@ -328,7 +328,7 @@
     "gekauftText": "Deine Tickets für {event} sind da.",
     "ticketsOeffnen": "Tickets öffnen",
     "verfallenTitel": "Die Frist ist abgelaufen",
-    "verfallenText": "Die Tickets sind an den Nächsten auf der Liste gegangen. Ist {event} noch ausverkauft, kannst du dich neu eintragen – dann hinten auf der Liste.",
+    "verfallenText": "Die Tickets sind an den Nächsten auf der Liste gegangen. Ist {event} noch ausverkauft, kannst du dich neu eintragen. Dann stehst du hinten auf der Liste.",
     "vorbeiTitel": "Dieses Event ist vorbei",
     "zumEvent": "Zum Event",
     "fehler": "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
@@ -336,10 +336,10 @@
   },
   "tuer": {
     "titel": "Abendkasse",
-    "text": "Bestellung {nummer}. Zahl mit Karte, Apple Pay oder Google Pay — sobald es durch ist, lässt dich die Kasse rein.",
+    "text": "Bestellung {nummer}. Zahl mit Karte, Apple Pay oder Google Pay. Sobald es durch ist, lässt dich die Kasse rein.",
     "zustimmung": "Ich habe die <agb>AGB</agb> und die <datenschutz>Datenschutzerklärung</datenschutz> gelesen. Für Veranstaltungstickets gibt es kein Widerrufsrecht.",
     "bezahlt": "Bezahlt",
-    "bezahltText": "Danke! Zeig diese Seite an der Kasse — dort bist du schon als bezahlt zu sehen.",
+    "bezahltText": "Danke! Zeig diese Seite an der Kasse. Dort bist du schon als bezahlt zu sehen.",
     "tickets": "Meine Tickets",
     "abgelaufen": "Nicht mehr offen",
     "abgelaufenText": "Diese Zahlung ist abgelaufen oder wurde abgebrochen. Frag an der Kasse nach einem neuen Code.",
@@ -349,7 +349,7 @@
     "titel": "Garderobe",
     "kasseText": "Jacke oder Tasche abgeben, je Stück {preis}. Statt einer Papiermarke bekommst du einen QR-Code.",
     "name": "Garderobe",
-    "vergriffen": "Die Garderobe ist gerade voll gebucht. Wir haben sie herausgenommen — tippe noch einmal auf Weiter.",
+    "vergriffen": "Die Garderobe ist gerade voll gebucht. Wir haben sie herausgenommen, tipp einfach noch einmal auf Weiter.",
     "markeStueck": "Stück {nr} von {gesamt}",
     "markeHinweis": "Am Garderobentresen scannen lassen.",
     "markeHaengt": "Abgegeben · Bügel {nummer}",
@@ -361,7 +361,7 @@
     "nachbuchenKnopf": "Weiter zur Zahlung",
     "nachbuchenZustimmung": "Ich habe die <agb>AGB</agb> und die <datenschutz>Datenschutzerklärung</datenschutz> gelesen. Für Leistungen zu einem festen Veranstaltungstermin gibt es kein Widerrufsrecht.",
     "nachbuchenVoll": "Die Garderobe ist voll gebucht.",
-    "nachbuchenMenge": "Mehr geht für diese Bestellung nicht — höchstens zwei Stück je Ticket.",
+    "nachbuchenMenge": "Mehr geht für diese Bestellung nicht: höchstens zwei Stück je Ticket.",
     "nachbuchenZu": "Für dieses Event lässt sich keine Garderobe mehr buchen.",
     "nachbuchenFehler": "Das hat nicht geklappt. Bitte versuch es noch einmal.",
     "nachbuchenAbbrechen": "Abbrechen",
@@ -370,7 +370,7 @@
   "ticketVip": {
     "eyebrow": "VIP",
     "warnungTitel": "Wer diesen Link hat, kommt rein.",
-    "warnung": "Jedes Ticket gilt für die Person, deren Name darauf steht, und genau einmal. Unter jedem Ticket steht ein eigener Link — schick ihn der Person, dann hat sie ihr Ticket selbst.",
+    "warnung": "Jedes Ticket gilt für die Person, deren Name darauf steht, und genau einmal. Unter jedem Ticket steht ein eigener Link. Schick ihn der Person, dann hat sie ihr Ticket selbst.",
     "kopieren": "Kopieren",
     "kopiert": "Kopiert",
     "storniert": "Diese Buchung wurde storniert. Melde dich bei uns, falls das ein Versehen ist.",

@@ -8,28 +8,27 @@ export const metadata: Metadata = {
 };
 
 /**
- * Die Antworten beschreiben, wie das System wirklich arbeitet — nicht, wie
- * es schön klänge. Ändert sich die Mechanik, gehört diese Seite mit
+ * Die Antworten beschreiben, wie das System wirklich arbeitet, nicht wie es
+ * schön klänge. Ändert sich die Mechanik, gehört diese Seite mit
  * angefasst.
  */
 const FRAGEN: Array<[string, string[]]> = [
   [
     "Wo finde ich meine Tickets?",
     [
-      "Direkt nach dem Kauf auf der Bestätigungsseite. Speichere sie oder mach einen Screenshot.",
-      "Sobald der Mailversand eingerichtet ist, kommen sie zusätzlich per E-Mail.",
+      "Direkt nach dem Kauf auf der Bestätigungsseite und per Mail. Außerdem kannst du dich mit derselben Adresse anmelden, dann liegen alle deine Tickets unter „Meine Tickets“.",
     ],
   ],
   [
     "Kann ich mein Ticket weitergeben?",
     [
-      "Ja. Wer den Code zuerst am Einlass vorzeigt, kommt rein — der Code lässt sich genau einmal einlösen. Gib ihn deshalb nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich.",
+      "Ja. Wer den Code zuerst am Einlass vorzeigt, kommt rein, denn der Code lässt sich genau einmal einlösen. Gib ihn deshalb nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich.",
     ],
   ],
   [
-    "Warum sehe ich ausverkaufte Ticketphasen?",
+    "Warum sehe ich nicht alle Preise?",
     [
-      "Weil das die Wahrheit ist. Du siehst, dass Early Bird weg ist und was jetzt gilt, statt dich zu fragen, ob es je günstiger war. Wir blenden nichts aus, um Druck zu erzeugen.",
+      "Du siehst, was schon weg ist, was gerade gilt und was als Nächstes kommt. Die Preise danach verraten wir erst, wenn es so weit ist. Früh kaufen lohnt sich also.",
     ],
   ],
   [
@@ -41,7 +40,7 @@ const FRAGEN: Array<[string, string[]]> = [
   [
     "Was ist VIP genau?",
     [
-      "Kein teureres Ticket, sondern ein eigener Tisch mit reservierter Fläche, Bottle Service am Platz, Einlass ohne Anstehen und eine Absprache vorab. Deshalb läuft VIP über eine Anfrage und nicht über den Warenkorb.",
+      "Ein eigener Tisch mit reservierter Fläche, Bottle Service am Platz und Einlass ohne Anstehen. Weil wir das vorher mit euch absprechen, läuft VIP über eine Anfrage und nicht über den Warenkorb.",
     ],
   ],
   [
@@ -59,7 +58,13 @@ const FRAGEN: Array<[string, string[]]> = [
   [
     "Ab welchem Alter komme ich rein?",
     [
-      "Das steht bei jedem Event. Bring einen Lichtbildausweis mit — ohne kommt niemand rein, auch nicht mit Ticket.",
+      "Das steht bei jedem Event. Bring einen Lichtbildausweis mit. Ohne kommt niemand rein, auch nicht mit Ticket.",
+    ],
+  ],
+  [
+    "Gibt es eine Garderobe?",
+    [
+      "Bei den meisten Events ja. Du kannst sie beim Ticketkauf dazubuchen oder später auf deiner Ticketseite. Statt einer Papiermarke bekommst du einen QR-Code. Hast du nichts gebucht, zahlst du vor Ort bar.",
     ],
   ],
 ];

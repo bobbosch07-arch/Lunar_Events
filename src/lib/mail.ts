@@ -200,7 +200,7 @@ export async function sendeTickets(daten: TicketMail): Promise<boolean> {
   const satz = nurGarderobe
     ? `hier ${verb} ${markenText} für <strong>${daten.eventTitel}</strong>. Sie stehen mit QR-Code auf deiner Ticketseite, unter den Tickets.`
     : `hier ${verb} ${stueck} für <strong>${daten.eventTitel}</strong>${
-        marken > 0 ? `, dazu ${markenText} — der QR-Code steht auf derselben Seite` : ""
+        marken > 0 ? `, dazu ${markenText}. Der QR-Code steht auf derselben Seite` : ""
       }.`;
 
   const html = huelle(`
@@ -229,9 +229,9 @@ ${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
 ${
   daten.paesse?.length
-    ? "Im Anhang liegen deine Pässe für Apple Wallet — einmal antippen, dann liegen sie auf dem Sperrbildschirm, sobald du am Veranstaltungsort bist.<br /><br />"
+    ? "Im Anhang liegen deine Pässe für Apple Wallet. Einmal antippen, dann liegen sie auf dem Sperrbildschirm, sobald du am Veranstaltungsort bist.<br /><br />"
     : ""
-}Der Link führt zu deinen Tickets mit QR-Code — am besten gleich speichern.
+}Der Link führt zu deinen Tickets mit QR-Code. Am besten gleich speichern.
 Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 </p>
 </td></tr>`);
@@ -246,15 +246,15 @@ Bestellnummer: ${daten.bestellnummer}
 
 Tickets öffnen: ${daten.ticketLink}
 
-Wer den Link hat, kommt rein — gib ihn nur an Leute weiter, denen du vertraust.
+Wer den Link hat, kommt rein. Gib ihn nur an Leute weiter, denen du vertraust.
 
 Lunar Events`;
 
   return versende({
     an: daten.an,
     betreff: nurGarderobe
-      ? `${daten.eventTitel} — Garderobe`
-      : `${daten.eventTitel} — ${stueck.charAt(0).toUpperCase()}${stueck.slice(1)}`,
+      ? `${daten.eventTitel} · Garderobe`
+      : `${daten.eventTitel} · ${stueck.charAt(0).toUpperCase()}${stueck.slice(1)}`,
     html,
     text,
     anhaenge: daten.paesse,
@@ -301,7 +301,7 @@ ${
     : ""
 }
 <p style="margin:24px 0 0;font-size:13px;color:#5e6268;">
-Im Formular steht „innerhalb von 24 Stunden“ — das ist eine Zusage.
+Im Formular steht „innerhalb von 24 Stunden“. Das ist eine Zusage.
 <br /><a href="${eigeneAdresse()}/backoffice/vip" style="color:#101418;">Im Backoffice bearbeiten</a>
 </p>
 </td></tr>`);
@@ -353,7 +353,7 @@ export async function sendePresaleEinladung(daten: PresaleEinladungMail): Promis
 ${kopfBalken("Presale")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 16px;">${anrede}</p>
-<p style="margin:0 0 24px;">du warst schon bei uns — deshalb kommst du vor allen anderen an Tickets für <strong>${maskiere(daten.eventTitel)}</strong>.</p>
+<p style="margin:0 0 24px;">du warst schon bei uns. Deshalb kommst du vor allen anderen an Tickets für <strong>${maskiere(daten.eventTitel)}</strong>.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
@@ -380,7 +380,7 @@ Keine Einladungen mehr? <a href="${daten.abmeldeLink}" style="color:#5e6268;">Hi
 
   const text = `${anredeText}
 
-du warst schon bei uns — deshalb kommst du vor allen anderen an Tickets für ${daten.eventTitel}.
+du warst schon bei uns. Deshalb kommst du vor allen anderen an Tickets für ${daten.eventTitel}.
 
 Wann: ${daten.wann}
 Öffentlicher Verkauf: ab ${daten.oeffentlichAb}
@@ -429,7 +429,7 @@ export async function sendeWartelisteBestaetigung(
 ${kopfBalken("Warteliste")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 16px;">${anrede}</p>
-<p style="margin:0 0 24px;">du möchtest auf die Warteliste für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}) — für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf.</p>
+<p style="margin:0 0 24px;">du möchtest auf die Warteliste für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}), für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
 <td style="background:#0b1728;border-radius:4px;">
@@ -440,19 +440,19 @@ ${kopfBalken("Warteliste")}
 Wird etwas frei, schreiben wir dir. Dann hast du ${ANGEBOT_STUNDEN} Stunden Zeit zum Kaufen.
 </p>
 <p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#858990;">
-Du hast dich nicht eingetragen? Dann ignoriere diese Mail — ohne Klick passiert nichts.
+Du hast dich nicht eingetragen? Dann ignoriere diese Mail. Ohne Klick passiert nichts.
 </p>
 </td></tr>`);
 
   const text = `${anredeText}
 
-du möchtest auf die Warteliste für ${daten.eventTitel} (${daten.wann}) — für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf:
+du möchtest auf die Warteliste für ${daten.eventTitel} (${daten.wann}), für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf:
 
 ${daten.link}
 
 Wird etwas frei, schreiben wir dir. Dann hast du ${ANGEBOT_STUNDEN} Stunden Zeit zum Kaufen.
 
-Du hast dich nicht eingetragen? Dann ignoriere diese Mail — ohne Klick passiert nichts.
+Du hast dich nicht eingetragen? Dann ignoriere diese Mail. Ohne Klick passiert nichts.
 
 Lunar Events`;
 
@@ -508,7 +508,7 @@ ${kopfBalken("Du bist dran")}
 
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
 Danach gehen die Tickets an den Nächsten auf der Liste.
-Doch keine Zeit? <a href="${daten.freigebenLink}" style="color:#5e6268;">Tickets freigeben</a> — dann ist der Nächste gleich dran.
+Doch keine Zeit? <a href="${daten.freigebenLink}" style="color:#5e6268;">Tickets freigeben</a>, dann ist der Nächste gleich dran.
 </p>
 </td></tr>`);
 
@@ -558,8 +558,8 @@ export async function sendeGaesteliste(daten: GaestelisteMail): Promise<boolean>
     daten.personen === 1
       ? ""
       : daten.personen === 2
-        ? " — mit einer Begleitung"
-        : ` — mit ${daten.personen - 1} Begleitungen`;
+        ? ", mit einer Begleitung"
+        : `, mit ${daten.personen - 1} Begleitungen`;
 
   const html = huelle(`
 ${kopfBalken("Gästeliste")}
@@ -582,7 +582,7 @@ ${kopfBalken("Gästeliste")}
 </td></tr></table>
 
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
-${daten.personen === 1 ? "Zeig den Code am Einlass." : "Jede Person braucht ihren eigenen Code — schick deiner Begleitung den Link oder zeigt die Codes nacheinander."}
+${daten.personen === 1 ? "Zeig den Code am Einlass." : "Jede Person braucht ihren eigenen Code. Schick deiner Begleitung den Link oder zeigt die Codes nacheinander."}
 Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.
 </p>
 </td></tr>`);
@@ -635,7 +635,7 @@ export async function sendeVipTickets(daten: VipTicketMail): Promise<boolean> {
 ${kopfBalken("VIP")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 16px;">Hallo ${name},</p>
-<p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da — ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
+<p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da: ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
 <tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
@@ -662,14 +662,14 @@ ${
 </td></tr></table>
 
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
-Jede Person braucht ihr eigenes Ticket. Unter jedem Ticket steht ein Link nur für diese Person — schick ihn weiter, dann hat sie ihr Ticket selbst.
+Jede Person braucht ihr eigenes Ticket. Unter jedem Ticket steht ein Link nur für diese Person. Schick ihn weiter, dann hat sie ihr Ticket selbst.
 Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 </p>
 </td></tr>`);
 
   const text = `Hallo ${daten.name},
 
-eure VIP-Tickets für ${daten.eventTitel} sind da — jedes auf einen Namen.
+eure VIP-Tickets für ${daten.eventTitel} sind da, jedes auf einen Namen.
 
 Wann: ${daten.wann}
 Wo: ${daten.ort}${daten.tisch ? `\nPlatz: ${daten.tisch}` : ""}
@@ -787,7 +787,7 @@ ${zeilen}
 </td></tr></table>
 
 <p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
-Unter „Mein Plan" steht immer der aktuelle Stand — wenn sich etwas ändert, gilt das dort.
+Unter „Mein Plan" steht immer der aktuelle Stand. Wenn sich etwas ändert, gilt das dort.
 Passt dir eine Schicht nicht, meld dich einfach.
 </p>
 </td></tr>`);

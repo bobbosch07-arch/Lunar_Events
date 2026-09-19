@@ -73,7 +73,7 @@ export function PaypalZahlung({ bestellungId, clientId, freigegeben }: Props) {
                 if (!antwort.ok) {
                   setFehler(
                     antwort.fehler === "bestaetigung"
-                      ? "Die Zahlung ist durch, aber die Tickets fehlen noch. Melde dich bitte mit deiner Bestellnummer — wir stellen sie sofort aus."
+                      ? "Die Zahlung ist durch, aber die Tickets fehlen noch. Melde dich bitte mit deiner Bestellnummer, dann stellen wir sie sofort aus."
                       : "Die Zahlung ist nicht durchgegangen. Es wurde nichts abgebucht.",
                   );
                   return;

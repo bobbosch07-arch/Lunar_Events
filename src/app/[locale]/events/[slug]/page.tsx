@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: event.titel,
     description: beschreibung,
     openGraph: {
-      title: `${event.titel} — Lunar Events`,
+      title: `${event.titel} · Lunar Events`,
       description: beschreibung,
       type: "website",
       siteName: t("titel"),

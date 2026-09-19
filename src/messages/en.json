@@ -1,7 +1,7 @@
 {
   "meta": {
     "titel": "Lunar Events",
-    "titelVorlage": "{seite} — Lunar Events",
+    "titelVorlage": "{seite} · Lunar Events",
     "beschreibung": "Selected nights in Darmstadt. Tickets and VIP tables straight from Lunar Events."
   },
   "nav": {
@@ -18,10 +18,10 @@
     "backoffice": "Backoffice"
   },
   "start": {
-    "heroTitel": "YOUR NIGHT.\nELEVATED.",
+    "heroTitel": "SEE YOU\nAFTER DARK.",
     "heroText": "Selected nights in Darmstadt.",
     "heroCta": "Discover events",
-    "heroCtaZwei": "Learn more",
+    "heroCtaZwei": "Who we are",
     "featuredEyebrow": "Selected",
     "featuredTitel": "The next nights",
     "kommendEyebrow": "Calendar",
@@ -104,12 +104,12 @@
   "vip": {
     "eyebrow": "VIP Experience",
     "titel": "PRIVATE. PREMIUM. PERSONAL.",
-    "text": "VIP isn't a pricier ticket. It's a table, a person to call, and a night agreed on beforehand.",
+    "text": "With VIP you get your own table and one person who looks after you. What you want to drink and when you arrive, we sort out beforehand.",
     "cta": "Request VIP",
     "leistungen": {
       "tisch": "Your own table with reserved space",
       "service": "Bottle service at the table",
-      "einlass": "Priority entry, no queue",
+      "einlass": "Skip the line",
       "absprache": "Everything agreed in advance"
     },
     "formTitel": "VIP request",
@@ -174,7 +174,7 @@
       "aufgebraucht": "This code has been used up.",
       "passt_nicht": "This code doesn’t apply to the selected tickets.",
       "schon_genutzt": "You’ve already used this code.",
-      "herausgenommen": "{grund} We’ve removed it — tap Continue again.",
+      "herausgenommen": "{grund} We've removed it. Just tap Continue again.",
       "kostenlosText": "With your discount code this order is free. No payment needed.",
       "kostenlosKnopf": "Order for free"
     },
@@ -192,12 +192,12 @@
     "flaggeZustimmung": "I understand: entry only from age {jahre}. Without valid ID there is no entry and no refund."
   },
   "bestaetigung": {
-    "titel": "PURCHASE COMPLETE",
+    "titel": "YOU'RE IN.",
     "ticketsAnzeigen": "View tickets",
     "bestellnummer": "Order number",
     "mailHinweis": "Your tickets are on their way to {email}. Nothing there? Check spam or get in touch.",
     "walletHinweis": "Add the tickets to your wallet and they're ready at the door.",
-    "mailFehltNoch": "Email delivery isn't set up yet — this page is currently the only place your tickets exist. Take a screenshot or keep the tab open until delivery is live."
+    "mailFehltNoch": "Email delivery isn't set up yet. This page is the only place your tickets exist right now, so take a screenshot or keep the tab open."
   },
   "ticket": {
     "titel": "My tickets",
@@ -235,7 +235,7 @@
     "anmeldenTitel": "Sign in",
     "anmeldenText": "We'll email you a link. No password needed.",
     "linkSenden": "Send link",
-    "linkGesendet": "Check your inbox — the link is on its way.",
+    "linkGesendet": "The link is on its way. Check your inbox.",
     "abmeldenFrage": "Sign out?"
   },
   "footer": {
@@ -269,7 +269,7 @@
     "eyebrow": "Promoter",
     "hallo": "Hi {name}",
     "intro": "This is what’s happening through your links. The numbers are always up to date.",
-    "pausiert": "Your link is paused right now — clicks and purchases don’t count at the moment.",
+    "pausiert": "Your link is paused right now. Clicks and purchases don't count at the moment.",
     "klicks": "Clicks",
     "tickets": "Tickets",
     "linksTitel": "Your links",
@@ -307,19 +307,19 @@
     "fehlerEventZu": "There’s no waitlist for this event anymore.",
     "seite": "Waitlist",
     "unbestaetigtTitel": "Almost there",
-    "unbestaetigtText": "Confirm that you want to join the waitlist for {event} – for {anzahl, plural, one {# ticket} other {# tickets}}.",
+    "unbestaetigtText": "Confirm that you want to join the waitlist for {event} for {anzahl, plural, one {# ticket} other {# tickets}}.",
     "bestaetigen": "Confirm",
     "wartetTitel": "You’re on the waitlist",
-    "wartetText": "{anzahl, plural, one {# ticket} other {# tickets}} for {event}. If something frees up, we’ll email {email}. You’ll then have {stunden} hours to buy – at night at least until 10 am.",
-    "reihenfolge": "It’s first come, first served. If your number of tickets doesn’t fit what’s free, the next person gets it – and you stay at the front.",
+    "wartetText": "{anzahl, plural, one {# ticket} other {# tickets}} for {event}. If something frees up, we'll email {email}. You'll then have {stunden} hours to buy, and at night at least until 10 am.",
+    "reihenfolge": "It's first come, first served. If your number of tickets doesn't fit what's free, the next person gets it. You still stay at the front.",
     "austragen": "Leave the waitlist",
     "austragenFrage": "Leave the waitlist? You’ll lose your place.",
     "ausgetragenTitel": "You’re off the list",
     "ausgetragenText": "You’re no longer on the waitlist for {event}.",
     "angebotTitel": "It’s your turn",
-    "angebotText": "{anzahl, plural, one {# ticket is} other {# tickets are}} held for you for {event} – until {zeit}. After that they go to the next person on the list.",
+    "angebotText": "{anzahl, plural, one {# ticket is} other {# tickets are}} held for you for {event} until {zeit}. After that they go to the next person on the list.",
     "kaufen": "Buy now",
-    "freigeben": "Can’t make it – release tickets",
+    "freigeben": "Can't make it? Release tickets",
     "freigebenFrage": "Release the tickets? They’ll go straight to the next person on the list.",
     "ueberweisungTitel": "Waiting for your bank transfer",
     "ueberweisungText": "Your tickets appear once the payment has arrived. The bank details are with your order.",
@@ -328,7 +328,7 @@
     "gekauftText": "Your tickets for {event} are ready.",
     "ticketsOeffnen": "Open tickets",
     "verfallenTitel": "Your hold has expired",
-    "verfallenText": "The tickets went to the next person on the list. If {event} is still sold out, you can sign up again – at the back of the list.",
+    "verfallenText": "The tickets went to the next person on the list. If {event} is still sold out, you can sign up again, at the back of the list.",
     "vorbeiTitel": "This event is over",
     "zumEvent": "View event",
     "fehler": "That didn’t work. Reload the page and try again.",
@@ -336,10 +336,10 @@
   },
   "tuer": {
     "titel": "Door sales",
-    "text": "Order {nummer}. Pay by card, Apple Pay or Google Pay — once it’s through, the door will let you in.",
+    "text": "Order {nummer}. Pay by card, Apple Pay or Google Pay. Once it's through, the door will let you in.",
     "zustimmung": "I have read the <agb>terms</agb> and the <datenschutz>privacy policy</datenschutz>. There is no right of withdrawal for event tickets.",
     "bezahlt": "Paid",
-    "bezahltText": "Thanks! Show this page at the door — you’re already marked as paid there.",
+    "bezahltText": "Thanks! Show this page at the door. You're already marked as paid there.",
     "tickets": "My tickets",
     "abgelaufen": "No longer open",
     "abgelaufenText": "This payment has expired or was cancelled. Ask at the door for a new code.",
@@ -349,7 +349,7 @@
     "titel": "Cloakroom",
     "kasseText": "Drop off a jacket or bag, {preis} per item. Instead of a paper tag you get a QR code.",
     "name": "Cloakroom",
-    "vergriffen": "The cloakroom just filled up. We removed it — tap Continue again.",
+    "vergriffen": "The cloakroom just filled up. We removed it, just tap Continue again.",
     "markeStueck": "Item {nr} of {gesamt}",
     "markeHinweis": "Show this at the cloakroom.",
     "markeHaengt": "Checked in · hanger {nummer}",
@@ -361,7 +361,7 @@
     "nachbuchenKnopf": "Continue to payment",
     "nachbuchenZustimmung": "I have read the <agb>terms</agb> and the <datenschutz>privacy policy</datenschutz>. There is no right of withdrawal for services tied to a fixed event date.",
     "nachbuchenVoll": "The cloakroom is fully booked.",
-    "nachbuchenMenge": "That's the maximum for this order — two items per ticket.",
+    "nachbuchenMenge": "That's the maximum for this order: two items per ticket.",
     "nachbuchenZu": "The cloakroom can no longer be booked for this event.",
     "nachbuchenFehler": "That didn't work. Please try again.",
     "nachbuchenAbbrechen": "Cancel",
@@ -370,10 +370,10 @@
   "ticketVip": {
     "eyebrow": "VIP",
     "warnungTitel": "Whoever has this link gets in.",
-    "warnung": "Each ticket is for the person named on it and works exactly once. Every ticket has its own link below it — send it to that person and they have their ticket themselves.",
+    "warnung": "Each ticket is for the person named on it and works exactly once. Every ticket has its own link below it. Send it to that person and they have their ticket themselves.",
     "kopieren": "Copy",
     "kopiert": "Copied",
     "storniert": "This booking was cancelled. Get in touch if that's a mistake.",
-    "warnungEinzeln": "Your ticket works exactly once. No phone? No problem — your name is on the list."
+    "warnungEinzeln": "Your ticket works exactly once. No phone? No problem, your name is on the list."
   }
 }

@@ -63,8 +63,8 @@ export default async function Konto({
                   <article className={css.kachel}>
                     <h2 className={css.kachelTitel}>Backoffice</h2>
                     <p className={css.kachelText}>
-                      Events, Bestellungen, VIP-Anfragen und Zahlungen —
-                      dieses Konto gehört zum Team.
+                      Events, Bestellungen, VIP-Anfragen und Zahlungen. Dieses
+                      Konto gehört zum Team.
                     </p>
                     <Knopf href="/backoffice">Zum Backoffice</Knopf>
                   </article>
@@ -72,8 +72,8 @@ export default async function Konto({
                 <article className={css.kachel}>
                   <h2 className={css.kachelTitel}>{t("meineTickets")}</h2>
                   <p className={css.kachelText}>
-                    Alle Tickets, die an diese Adresse gegangen sind — auch die
-                    aus Käufen ohne Konto.
+                    Alle Tickets, die an diese Adresse gegangen sind. Auch die,
+                    die du ohne Konto gekauft hast.
                   </p>
                   <Knopf href="/konto/tickets">{t("meineTickets")}</Knopf>
                 </article>

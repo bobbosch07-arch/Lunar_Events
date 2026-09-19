@@ -146,8 +146,8 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
             ) : (
               <p className={css.mailFehlt}>
                 Es gibt noch keinen Mailversand. Speichere dir den Ticketlink
-                unten — über ihn kommst du jederzeit an deine Tickets, auch
-                ohne Konto.
+                unten, über ihn kommst du jederzeit an deine Tickets, auch ohne
+                Konto.
               </p>
             )}
 
@@ -220,7 +220,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
             <span className={css.linkLabel}>Dein dauerhafter Ticketlink</span>
             <code className={css.linkWert}>{ticketAdresse}</code>
             <p className={css.linkHinweis}>
-              Speichere ihn dir. Wer den Link hat, kommt rein — gib ihn nur an
+              Speichere ihn dir. Wer den Link hat, kommt rein. Gib ihn nur an
               Leute weiter, denen du vertraust.
             </p>
           </div>
