@@ -941,3 +941,45 @@ Lunar Events`;
     text,
   });
 }
+
+export type NewsletterBestaetigungMail = { an: string; link: string };
+
+/**
+ * Double-Opt-in (C7): Erst der Klick auf diesen Link trägt die Adresse
+ * verbindlich in den Newsletter ein. Ohne Klick passiert nichts.
+ */
+export async function sendeNewsletterBestaetigung(
+  daten: NewsletterBestaetigungMail,
+): Promise<boolean> {
+  const html = huelle(`
+${kopfBalken("Newsletter")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 20px;">fast geschafft. Bestätige mit einem Klick, dass wir dir Neues von Lunar Events schicken dürfen: neue Events, Presale-Starts, hin und wieder etwas hinter den Kulissen.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:4px;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Anmeldung bestätigen</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#858990;">
+Du hast dich nicht angemeldet? Dann ignoriere diese Mail. Ohne Klick tragen wir dich nicht ein.
+</p>
+</td></tr>`);
+
+  const text = `Fast geschafft.
+
+Bestätige mit einem Klick, dass wir dir Neues von Lunar Events schicken dürfen:
+
+${daten.link}
+
+Du hast dich nicht angemeldet? Dann ignoriere diese Mail. Ohne Klick tragen wir dich nicht ein.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: "Bitte bestätige deine Newsletter-Anmeldung",
+    html,
+    text,
+  });
+}

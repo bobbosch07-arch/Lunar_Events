@@ -251,8 +251,9 @@
     "newsletterText": "Ein paar Mails im Jahr, nur wenn es etwas zu sagen gibt.",
     "newsletterFeld": "E-Mail",
     "newsletterCta": "Eintragen",
-    "newsletterDanke": "Eingetragen. Bis bald.",
-    "rechte": "© {jahr} Lunar Events"
+    "newsletterDanke": "Fast geschafft. Klick den Bestätigungslink in deiner Mail.",
+    "rechte": "© {jahr} Lunar Events",
+    "newsletterKeinVersand": "Das hat gerade nicht geklappt."
   },
   "allgemein": {
     "laden": "Einen Moment",
@@ -376,5 +377,17 @@
     "kopiert": "Kopiert",
     "storniert": "Diese Buchung wurde storniert. Melde dich bei uns, falls das ein Versehen ist.",
     "warnungEinzeln": "Dein Ticket gilt genau einmal. Ohne Handy geht es auch: Du stehst mit Namen auf der Liste."
+  },
+  "newsletter": {
+    "bestaetigenTitel": "Anmeldung bestätigen",
+    "bestaetigenText": "Ein Klick noch, dann bist du dabei.",
+    "bestaetigenKnopf": "Anmeldung bestätigen",
+    "bestaetigenErledigt": "Bestätigt. Willkommen bei Lunar Events.",
+    "abmeldenTitel": "Newsletter abbestellen",
+    "abmeldenText": "Du bekommst dann keine Newsletter-Mails mehr von uns.",
+    "abmeldenKnopf": "Abbestellen",
+    "abmeldenErledigt": "Erledigt. Wir schicken dir keinen Newsletter mehr.",
+    "fehler": "Dieser Link gilt nicht mehr.",
+    "zurueck": "Zur Startseite"
   }
 }

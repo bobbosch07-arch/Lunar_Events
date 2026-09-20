@@ -251,8 +251,9 @@
     "newsletterText": "A few mails a year, only when there's something to say.",
     "newsletterFeld": "Email",
     "newsletterCta": "Join",
-    "newsletterDanke": "You're in. See you soon.",
-    "rechte": "© {jahr} Lunar Events"
+    "newsletterDanke": "Almost there. Click the confirmation link in your email.",
+    "rechte": "© {jahr} Lunar Events",
+    "newsletterKeinVersand": "That didn’t work just now."
   },
   "allgemein": {
     "laden": "One moment",
@@ -376,5 +377,17 @@
     "kopiert": "Copied",
     "storniert": "This booking was cancelled. Get in touch if that's a mistake.",
     "warnungEinzeln": "Your ticket works exactly once. No phone? No problem, your name is on the list."
+  },
+  "newsletter": {
+    "bestaetigenTitel": "Confirm your sign-up",
+    "bestaetigenText": "One more click and you’re in.",
+    "bestaetigenKnopf": "Confirm sign-up",
+    "bestaetigenErledigt": "Confirmed. Welcome to Lunar Events.",
+    "abmeldenTitel": "Unsubscribe from the newsletter",
+    "abmeldenText": "You won’t get any more newsletter emails from us.",
+    "abmeldenKnopf": "Unsubscribe",
+    "abmeldenErledigt": "Done. We won’t send you the newsletter anymore.",
+    "fehler": "This link is no longer valid.",
+    "zurueck": "Back to the homepage"
   }
 }

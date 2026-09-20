@@ -33,7 +33,9 @@ export function Newsletter() {
             setFehler(
               antwort.fehler === "email"
                 ? "Diese Adresse stimmt nicht."
-                : "Das hat gerade nicht geklappt.",
+                : antwort.fehler === "kein_versand"
+                  ? "Newsletter-Anmeldung ist gerade nicht möglich."
+                  : "Das hat gerade nicht geklappt.",
             );
         });
       }}
