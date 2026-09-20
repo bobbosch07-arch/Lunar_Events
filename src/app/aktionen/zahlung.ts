@@ -1,8 +1,9 @@
 "use server";
 
+import type Stripe from "stripe";
 import { dienstClient } from "@/lib/supabase/server";
 import { bestellCookieGilt } from "@/lib/bestellcookie";
-import { stripe, eigeneAdresse } from "@/lib/stripe";
+import { stripe, eigeneAdresse, klarnaFuer, stripeKlarnaAktiv } from "@/lib/stripe";
 import { darfAnschluss, GRENZEN } from "@/lib/drossel";
 
 
@@ -126,26 +127,61 @@ async function zahlungVorbereiten(bestellungId: string): Promise<ZahlungErgebnis
     }
   }
 
-  const absicht = await s.paymentIntents.create(
-    {
-      amount: betrag,
-      currency: "eur",
-      // An der Tür nur Karte (samt Apple Pay und Google Pay): Eine Lastschrift
-      // gälte erst Tage später — der Gast wäre längst drin, wenn sie platzt.
-      // Dasselbe für nachgebuchte Garderobe (0027): Die wird oft erst am
-      // Abend selbst gebucht, und die Marke muss sofort gelten.
-      ...(bestellung.abendkasse || bestellung.nachbuchung_zu
-        ? { payment_method_types: ["card"] }
-        : { automatic_payment_methods: { enabled: true } }),
-      // An der Abendkasse gibt es oft keine Adresse — dann eben kein Beleg per Mail.
-      receipt_email: kunde?.email ?? undefined,
-      description: `Lunar Events · Bestellung ${bestellung.nummer}`,
-      // Der Webhook erkennt die Bestellung hieran wieder.
-      metadata: { bestellung_id: bestellungId, nummer: bestellung.nummer as string },
-    },
-    // Zwei schnelle Klicks sollen keinen zweiten Vorgang erzeugen.
-    { idempotencyKey: `bestellung-${bestellungId}` },
-  );
+  const basis = {
+    amount: betrag,
+    currency: "eur",
+    // An der Abendkasse gibt es oft keine Adresse — dann eben kein Beleg per Mail.
+    receipt_email: kunde?.email ?? undefined,
+    description: `Lunar Events · Bestellung ${bestellung.nummer}`,
+    // Der Webhook erkennt die Bestellung hieran wieder.
+    metadata: { bestellung_id: bestellungId, nummer: bestellung.nummer as string },
+  } satisfies Stripe.PaymentIntentCreateParams;
+
+  const erzeuge = (
+    zusatz: Partial<Stripe.PaymentIntentCreateParams>,
+    schluessel: string,
+  ) =>
+    s.paymentIntents.create(
+      { ...basis, ...zusatz } as Stripe.PaymentIntentCreateParams,
+      { idempotencyKey: schluessel },
+    );
+
+  const wallets: Partial<Stripe.PaymentIntentCreateParams> = {
+    automatic_payment_methods: { enabled: true },
+  };
+  const nurKarte: Partial<Stripe.PaymentIntentCreateParams> = {
+    payment_method_types: ["card"],
+  };
+  const karteUndKlarna: Partial<Stripe.PaymentIntentCreateParams> = {
+    payment_method_types: ["card", "klarna"],
+  };
+
+  let absicht;
+  if (bestellung.abendkasse || bestellung.nachbuchung_zu) {
+    // An der Tür nur Karte (samt Apple Pay und Google Pay): Eine Lastschrift
+    // gälte erst Tage später — der Gast wäre längst drin, wenn sie platzt.
+    // Dasselbe für nachgebuchte Garderobe (0027): Die wird oft erst am
+    // Abend selbst gebucht, und die Marke muss sofort gelten.
+    absicht = await erzeuge(nurKarte, `bestellung-${bestellungId}`);
+  } else if (stripeKlarnaAktiv()) {
+    // Ist Klarna im Konto, muss die Auswahl explizit sein: die automatische
+    // Wahl von Stripe zeigt Klarna sonst bei jedem Betrag, und die
+    // 50-€-Grenze (C8) griffe nicht. Karte und Wallets bleiben in beiden
+    // Fällen.
+    if (klarnaFuer(betrag)) {
+      try {
+        absicht = await erzeuge(karteUndKlarna, `bestellung-${bestellungId}-klarna`);
+      } catch (fehler) {
+        // Klarna doch nicht freigeschaltet: lieber ohne als der Kauf scheitert.
+        console.error("[zahlung] Klarna nicht möglich, ohne:", (fehler as Error).message);
+        absicht = await erzeuge(nurKarte, `bestellung-${bestellungId}`);
+      }
+    } else {
+      absicht = await erzeuge(nurKarte, `bestellung-${bestellungId}`);
+    }
+  } else {
+    absicht = await erzeuge(wallets, `bestellung-${bestellungId}`);
+  }
 
   await db
     .from("bestellungen")

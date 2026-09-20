@@ -70,6 +70,7 @@ export async function GET() {
           : "fehlt",
         paypalWebhook: Boolean(process.env.PAYPAL_WEBHOOK_ID),
         vorkasse: vorkasseEingerichtet(),
+        klarna: process.env.STRIPE_KLARNA === "an",
       },
       versand: {
         mail: versandEingerichtet(),

@@ -33,6 +33,30 @@ export function stripeImTestmodus(): boolean {
 }
 
 /**
+ * Klarna erst ab diesem Betrag anbieten (C8). Wunsch des Veranstalters:
+ * Ratenkauf lohnt sich unten herum nicht, und die Gebühr frisst kleine
+ * Beträge auf.
+ */
+export const KLARNA_AB_CENT = 5000;
+
+/**
+ * Ist die Klarna-Steuerung eingeschaltet? Der Schalter ist nötig, weil die
+ * automatische Zahlartenwahl von Stripe Klarna sonst bei **jedem** Betrag
+ * zeigt (die 50-€-Grenze griffe nicht) und weil Stripe die Zahlung ablehnt,
+ * wenn man Klarna anfordert, ohne es freigeschaltet zu haben. Der
+ * Veranstalter setzt ihn erst, wenn Klarna im Stripe-Konto wirklich aktiv
+ * ist. Solange er aus ist, bleibt die automatische Wahl wie bisher.
+ */
+export function stripeKlarnaAktiv(): boolean {
+  return process.env.STRIPE_KLARNA === "an";
+}
+
+/** Bekommt dieser Kauf Klarna? Nur mit Schalter und ab der Grenze. */
+export function klarnaFuer(betragCent: number): boolean {
+  return stripeKlarnaAktiv() && betragCent >= KLARNA_AB_CENT;
+}
+
+/**
  * Die eigene Adresse, absolut. Stripe braucht sie für die Rückleitung
  * nach der Zahlung, und relative Pfade akzeptiert es nicht.
  */
