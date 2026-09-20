@@ -959,7 +959,15 @@ Mail über Brevo läuft):
 5. Zwei-Faktor-Pflicht auf „an“, sobald beide Admins TOTP haben.
 
 **C. Verkauf und Kommunikation**
-6. Erinnerungsmail einen Tag vorher. 7. Newsletter mit Double-Opt-in.
+6. ~~Erinnerungsmail einen Tag vorher~~: erledigt 20.09. (0035). Der Takt
+   (`lunar_takt`, alle 5 Min) stößt über `stosse_erinnerung_an` die Route
+   `api/erinnerung/versand` an (pg_net, Schlüssel wie beim Warteliste-Versand),
+   sobald ein veröffentlichtes Event in den nächsten 24 Stunden beginnt und
+   bezahlte Bestellungen ohne Erinnerung hat. Je Bestellung eine Mail
+   (`sendeErinnerung`: Ticketlink, Einlasszeit, Anfahrt mit Karten-Link,
+   Dresscode, Wallet-Hinweis), einmalig über `bestellungen.erinnerung_am`.
+   Gästeliste und VIP-Tickets bekommen noch keine — später ergänzbar.
+7. Newsletter mit Double-Opt-in.
 8. Klarna ab 50 € (PayPal/Klarna vorher in Stripe freischalten).
 9. Line-up-Feld je Event. 10. Englisch vollständig.
 11. Cookie-Banner und Pixel, erst mit Werbekonten.

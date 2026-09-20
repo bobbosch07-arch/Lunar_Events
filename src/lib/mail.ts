@@ -863,3 +863,81 @@ Lunar Events`;
     text,
   });
 }
+
+export type ErinnerungMail = {
+  an: string;
+  vorname: string | null;
+  eventTitel: string;
+  /** Beginn, z. B. "Freitag, 14. November, 21:00" */
+  wann: string;
+  /** Einlasszeit, falls hinterlegt, sonst null (dann gilt der Beginn). */
+  einlass: string | null;
+  /** "H7 Eventlounge, Kranichsteiner Str. 1, 64390 Darmstadt" */
+  ort: string;
+  /** Karten-Link, falls Koordinaten vorliegen. */
+  karte: string | null;
+  dresscode: string | null;
+  ticketLink: string;
+};
+
+/**
+ * Einen Tag vor dem Event: die Tickets noch einmal zur Hand, dazu Einlass,
+ * Anfahrt und Dresscode. Der Wallet-Knopf sitzt auf der Ticketseite; hierhin
+ * führt der Link.
+ */
+export async function sendeErinnerung(daten: ErinnerungMail): Promise<boolean> {
+  const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+
+  const zeile = (label: string, wert: string) =>
+    `<tr><td style="padding:4px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#858990;width:110px;vertical-align:top;">${label}</td><td style="padding:4px 0;font-size:15px;">${wert}</td></tr>`;
+
+  const anfahrt = daten.karte
+    ? `${maskiere(daten.ort)}<br><a href="${daten.karte}" style="color:#0b1728;">Route ansehen</a>`
+    : maskiere(daten.ort);
+
+  const zeilen = [
+    zeile("Wann", daten.wann),
+    daten.einlass ? zeile("Einlass", daten.einlass) : "",
+    zeile("Wo", anfahrt),
+    daten.dresscode ? zeile("Dresscode", maskiere(daten.dresscode)) : "",
+  ].join("");
+
+  const html = huelle(`
+${kopfBalken("Morgen")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 20px;">morgen ist es so weit: <strong>${maskiere(daten.eventTitel)}</strong>. Hier noch einmal alles Wichtige und deine Tickets.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">${zeilen}</table>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#0b1728;border-radius:4px;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+Auf der Ticketseite kannst du die Tickets auch in Apple Wallet oder Google Wallet legen. Bring den QR-Code mit — gedruckt oder auf dem Handy.
+</p>
+</td></tr>`);
+
+  const text = `${anredeText}
+
+morgen ist es so weit: ${daten.eventTitel}. Hier noch einmal alles Wichtige und deine Tickets.
+
+Wann: ${daten.wann}${daten.einlass ? `\nEinlass: ${daten.einlass}` : ""}
+Wo: ${daten.ort}${daten.karte ? `\nRoute: ${daten.karte}` : ""}${daten.dresscode ? `\nDresscode: ${daten.dresscode}` : ""}
+
+Tickets öffnen: ${daten.ticketLink}
+
+Auf der Ticketseite kannst du die Tickets auch in Apple oder Google Wallet legen. Bring den QR-Code mit.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `Morgen: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}
