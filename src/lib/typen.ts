@@ -76,6 +76,8 @@ export type Veranstaltung = {
   bild: EventBild | null;
   mindestalter: number | null;
   dresscode: string | null;
+  /** Line-up: nur Namen (0036). */
+  lineup: string[];
   veranstalter: string;
   /** Abendkasse ist eine Zusage — deshalb ausdruecklich, nicht erschlossen. */
   abendkasse: boolean;

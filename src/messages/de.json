@@ -99,7 +99,8 @@
     "preisVerborgenVorlesen": "Preis wird noch bekannt gegeben",
     "fomoDanachVerborgen": "Danach {phase}: ???",
     "flaggeAlter": "Ü{jahre}",
-    "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen"
+    "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen",
+    "lineup": "Line-up"
   },
   "vip": {
     "eyebrow": "VIP Experience",

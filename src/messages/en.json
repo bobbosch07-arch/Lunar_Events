@@ -99,7 +99,8 @@
     "preisVerborgenVorlesen": "Price to be announced",
     "fomoDanachVerborgen": "Then {phase}: ???",
     "flaggeAlter": "{jahre}+",
-    "flaggeHinweis": "Entry {jahre}+ only · Bring your ID"
+    "flaggeHinweis": "Entry {jahre}+ only · Bring your ID",
+    "lineup": "Line-up"
   },
   "vip": {
     "eyebrow": "VIP Experience",

@@ -39,6 +39,7 @@ export type EventEingabe = {
   bild_fokus: string | null;
   mindestalter: number | null;
   dresscode: string | null;
+  lineup: string[];
   abendkasse: boolean;
   abendkasse_hinweis: string | null;
   /** Streichpreis (0030), null = keiner. */
@@ -127,6 +128,7 @@ export async function speichereEvent(
     bild_fokus: eingabe.bild_fokus || null,
     mindestalter: eingabe.mindestalter,
     dresscode: eingabe.dresscode?.trim() || null,
+    lineup: eingabe.lineup,
     abendkasse: eingabe.abendkasse,
     abendkasse_hinweis: eingabe.abendkasse_hinweis?.trim() || null,
     // 0 oder Unsinn heißt: kein Streichpreis (die Tabelle erlaubt nur > 0).

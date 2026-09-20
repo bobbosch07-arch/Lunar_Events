@@ -49,6 +49,8 @@ export type EventStand = {
   bildFokus: string;
   mindestalter: string;
   dresscode: string;
+  /** Line-up als Text, Namen mit Komma getrennt (0036). */
+  lineup: string;
   abendkasse: boolean;
   abendkasseHinweis: string;
   /** Streichpreis (0030), "" = keiner. */

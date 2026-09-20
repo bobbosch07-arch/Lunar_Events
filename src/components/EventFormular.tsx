@@ -83,6 +83,9 @@ export function EventFormular({
       bild_fokus: stand.bildFokus || null,
       mindestalter: stand.mindestalter ? Number(stand.mindestalter) : null,
       dresscode: stand.dresscode || null,
+      lineup: stand.lineup
+        ? stand.lineup.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
       abendkasse: stand.abendkasse,
       abendkasse_hinweis: stand.abendkasseHinweis || null,
       streichpreis_cent: stand.streichpreisEuro.trim() ? centAus(stand.streichpreisEuro) : null,
@@ -385,6 +388,18 @@ export function EventFormular({
               className={css.eingabe}
               value={stand.dresscode}
               onChange={(e) => setze("dresscode", e.target.value)}
+            />
+          </div>
+          <div className={`${css.feld} ${css.breit}`}>
+            <label className={css.beschriftung} htmlFor="lineup">
+              Line-up
+            </label>
+            <input
+              id="lineup"
+              className={css.eingabe}
+              placeholder="Namen mit Komma trennen, z. B. Amelie Lens, Sara Landry"
+              value={stand.lineup}
+              onChange={(e) => setze("lineup", e.target.value)}
             />
           </div>
           <div className={`${css.feld} ${css.breit}`}>

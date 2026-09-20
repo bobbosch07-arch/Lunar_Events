@@ -192,6 +192,19 @@ export default async function EventSeite({ params, searchParams }: Props) {
                       </p>
                     ))
                   : null}
+
+                {event.lineup.length > 0 ? (
+                  <div className={css.lineup}>
+                    <span className="eyebrow">{t("lineup")}</span>
+                    <ul className={css.lineupListe}>
+                      {event.lineup.map((name) => (
+                        <li key={name} className={css.lineupName}>
+                          {name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
               </div>
 
               <div>

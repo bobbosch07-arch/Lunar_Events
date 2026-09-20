@@ -48,7 +48,7 @@ async function Inhalt({ slug }: { slug: string }) {
     .select(
       `id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
        beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus,
-       mindestalter, dresscode, abendkasse, abendkasse_hinweis, featured,
+       mindestalter, dresscode, lineup, abendkasse, abendkasse_hinweis, featured,
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
        garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
@@ -100,6 +100,7 @@ async function Inhalt({ slug }: { slug: string }) {
     mindestalter:
       event.mindestalter === null ? "" : String(event.mindestalter),
     dresscode: (event.dresscode as string | null) ?? "",
+    lineup: ((event.lineup as string[] | null) ?? []).join(", "),
     abendkasse: (event.abendkasse as boolean) ?? false,
     abendkasseHinweis: (event.abendkasse_hinweis as string | null) ?? "",
     streichpreisEuro:

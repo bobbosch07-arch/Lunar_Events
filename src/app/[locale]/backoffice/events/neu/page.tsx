@@ -35,6 +35,7 @@ function vorlage(): EventStand {
     bildFokus: "center",
     mindestalter: "21",
     dresscode: "",
+    lineup: "",
     abendkasse: false,
     abendkasseHinweis: "",
     streichpreisEuro: "",

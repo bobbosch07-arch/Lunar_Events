@@ -16,7 +16,7 @@ import { phasenFolge, phasenZustaende } from "./typen";
 const AUSWAHL = `
   id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
   beginn, einlass, ende, bild_pfad, bild_alt, bild_fokus, mindestalter,
-  dresscode, veranstalter, abendkasse, abendkasse_hinweis, featured,
+  dresscode, lineup, veranstalter, abendkasse, abendkasse_hinweis, featured,
   fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
   fastlane_beschreibung, presale_ab, verkauf_ab,
   garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
@@ -135,6 +135,7 @@ function baueEvent(z: Zeile): Veranstaltung {
       : null,
     mindestalter: (z.mindestalter as number | null) ?? null,
     dresscode: (z.dresscode as string | null) ?? null,
+    lineup: (z.lineup as string[] | null) ?? [],
     veranstalter: (z.veranstalter as string) ?? "Lunar Events",
     abendkasse: (z.abendkasse as boolean) ?? false,
     abendkasse_hinweis: (z.abendkasse_hinweis as string | null) ?? null,
