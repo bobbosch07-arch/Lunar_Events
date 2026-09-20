@@ -160,3 +160,16 @@ export async function bucheAb(bestellungId: string): Promise<Buchung> {
 export async function leseBestellung(id: string): Promise<Buchung> {
   return ruf<Buchung>(`/v2/checkout/orders/${id}`);
 }
+
+/**
+ * Erstattet eine Zahlung vollständig — `captureId` ist die Beleg-Kennung
+ * aus der Abbuchung (steht bei uns in `bestellungen.zahlung_ref`). Wirft bei
+ * einem Fehler; die aufrufende Aktion markiert die Bestellung dann als
+ * „von Hand erstatten". Idempotent über die Beleg-Kennung.
+ */
+export async function erstatteZahlung(captureId: string): Promise<{ id: string; status: string }> {
+  return ruf<{ id: string; status: string }>(
+    `/v2/payments/captures/${captureId}/refund`,
+    { methode: "POST", koerper: {}, idempotenz: `lunar-refund-${captureId}` },
+  );
+}

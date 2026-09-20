@@ -947,8 +947,15 @@ Mail über Brevo läuft):
 **B. Sicherheit und Geld**
 3. ~~Personal-Lücke~~: erledigt 19.09. (0031, siehe „Einlass“), die
    Garderobenmarken gleich mit.
-4. Automatische Erstattung bei Absage über Stripe (Fragebogen). Heute setzt
-   „Abgesagt“ nur den Status; die Ticketseite verspricht die Erstattung.
+4. ~~Automatische Erstattung bei Absage~~: erledigt 20.09. (0034). Absagen
+   setzt nur den Status; ein eigener, bestätigter Knopf „Allen erstatten“
+   (`erstatteEvent`) löst die Rückzahlungen aus. `storniere_fuer_absage`
+   entwertet Tickets und Marken, schließt Freibestellungen, markiert
+   Vorkasse/Bar zum manuellen Erstatten (Spalte `erstattung_faellig`, in der
+   Bestellliste sichtbar) und gibt Stripe/PayPal zum API-Erstatten zurück.
+   Bestätigt werden die Rückzahlungen wie jede Erstattung über die Webhooks
+   (Status → `erstattet`); `erstattet_am` hält einen zweiten Aufruf ab. Jeder
+   Gast bekommt eine Absage-Mail (`sendeAbsage`, `absage_mail_am`).
 5. Zwei-Faktor-Pflicht auf „an“, sobald beide Admins TOTP haben.
 
 **C. Verkauf und Kommunikation**

@@ -114,6 +114,13 @@ async function Inhalt({ locale }: { locale: string }) {
                     <span className={`${css.marke_} ${marke(b.status)}`}>
                       {b.status === "offen" && b.vorkasse ? "wartet auf Überweisung" : b.status}
                     </span>
+                    {b.erstattungFaellig ? (
+                      <div style={{ marginTop: 8 }}>
+                        <span className={`${css.marke_} ${css.schlecht}`}>
+                          von Hand erstatten
+                        </span>
+                      </div>
+                    ) : null}
                     {b.status === "offen" && b.vorkasse ? (
                       <div style={{ marginTop: 8 }}>
                         {b.reserviertBis ? (

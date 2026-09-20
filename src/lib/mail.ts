@@ -816,3 +816,50 @@ Lunar Events`;
     text,
   });
 }
+
+export type AbsageMail = {
+  an: string;
+  vorname: string | null;
+  eventTitel: string;
+  wann: string;
+  /** true = wir zahlen automatisch zurück; false = Vorkasse/Bar, wir melden uns. */
+  automatisch: boolean;
+};
+
+/**
+ * Ein Event fällt aus. Ehrlich sagen, was mit dem Geld passiert — sonst
+ * wundert sich jemand über eine Rückbuchung ohne Erklärung.
+ */
+export async function sendeAbsage(daten: AbsageMail): Promise<boolean> {
+  const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+  const geld = daten.automatisch
+    ? "Den vollen Ticketpreis inklusive Gebühren erstatten wir dir automatisch auf dem Weg, auf dem du gezahlt hast. Bis das Geld ankommt, können ein paar Tage vergehen."
+    : "Den vollen Ticketpreis inklusive Gebühren zahlen wir dir zurück. Weil du per Überweisung oder bar gezahlt hast, melden wir uns dafür kurz bei dir.";
+
+  const html = huelle(`
+${kopfBalken("Abgesagt")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 20px;">leider müssen wir <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}) absagen. Das tut uns aufrichtig leid.</p>
+<p style="margin:0 0 20px;">${geld}</p>
+<p style="margin:0;font-size:13px;line-height:1.7;color:#5e6268;">Fragen? Antworte einfach auf diese Mail oder schreib an kontakt@lunar-events.de.</p>
+</td></tr>`);
+
+  const text = `${anredeText}
+
+leider müssen wir ${daten.eventTitel} (${daten.wann}) absagen. Das tut uns aufrichtig leid.
+
+${geld}
+
+Fragen? Antworte einfach auf diese Mail oder schreib an kontakt@lunar-events.de.
+
+Lunar Events`;
+
+  return versende({
+    an: daten.an,
+    betreff: `Abgesagt: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}
