@@ -75,9 +75,17 @@ export async function POST(anfrage: Request) {
     resource?: {
       id?: string;
       custom_id?: string;
+      amount?: { value?: string; currency_code?: string };
       supplementary_data?: { related_ids?: { order_id?: string } };
     };
   };
+
+  // Der eingezogene Betrag aus der Meldung, in Cent — für den Abgleich (0033).
+  const betrag = ereignis.resource?.amount;
+  const bezahltCent =
+    betrag?.currency_code === "EUR" && betrag.value
+      ? Math.round(Number(betrag.value) * 100)
+      : null;
 
   const db = dienstClient();
   const bestellungId = ereignis.resource?.custom_id;
@@ -93,6 +101,7 @@ export async function POST(anfrage: Request) {
         p_bestellung_id: bestellungId,
         p_zahlungsart: "paypal",
         p_referenz: ereignis.resource?.id ?? "paypal",
+        p_erwartet_cent: Number.isFinite(bezahltCent) ? bezahltCent : null,
       });
       if (error) {
         console.error("[paypal] Bestätigung fehlgeschlagen:", error.message);

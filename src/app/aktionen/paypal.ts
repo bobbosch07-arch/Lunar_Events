@@ -1,15 +1,12 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
-import { erstelleBestellung, bucheAb, leseBestellung } from "@/lib/paypal";
+import { erstelleBestellung, bucheAb, leseBestellung, eingezogenCent } from "@/lib/paypal";
+import { bestellCookieGilt } from "@/lib/bestellcookie";
 import { verschickeTickets } from "./ticketmail";
 
-const COOKIE = "lunar_bestellung";
-
 async function gehoertMir(bestellungId: string): Promise<boolean> {
-  const store = await cookies();
-  return store.get(COOKIE)?.value === bestellungId;
+  return bestellCookieGilt(bestellungId);
 }
 
 /**
@@ -86,6 +83,20 @@ export async function paypalAbschliessen(
 
   const db = dienstClient();
 
+  // Die PayPal-Kennung muss die sein, die wir zu dieser Bestellung angelegt
+  // haben (0033). Sonst ließe sich die Zahlung einer billigen Bestellung an
+  // eine teure hängen — der Client wählt paypalId sonst frei.
+  const { data: bestellung } = await db
+    .from("bestellungen")
+    .select("zahlung_ref, gesamt_cent, status")
+    .eq("id", bestellungId)
+    .single();
+  if (!bestellung) return { ok: false, fehler: "unbekannt" };
+  if (bestellung.status === "bezahlt") return { ok: true, nummer: "" };
+  if (bestellung.zahlung_ref !== paypalId) {
+    return { ok: false, fehler: "nicht_deine_bestellung" };
+  }
+
   try {
     let buchung = await bucheAb(paypalId);
 
@@ -106,6 +117,8 @@ export async function paypalAbschliessen(
       p_bestellung_id: bestellungId,
       p_zahlungsart: "paypal",
       p_referenz: belegId,
+      // Was PayPal wirklich eingezogen hat, gegen den Bestellbetrag (0033).
+      p_erwartet_cent: eingezogenCent(buchung),
     });
 
     if (error) {

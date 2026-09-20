@@ -1,8 +1,8 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { dienstClient, serverClient } from "@/lib/supabase/server";
+import { bestellCookieGilt } from "@/lib/bestellcookie";
 import {
   VORKASSE_FRIST_TAGE,
   VORKASSE_MINDEST_TAGE,
@@ -10,7 +10,6 @@ import {
 } from "@/lib/vorkasse";
 import { verschickeTickets } from "./ticketmail";
 
-const COOKIE = "lunar_bestellung";
 
 export type VorkasseErgebnis =
   | { ok: true; bis: string }
@@ -35,8 +34,7 @@ export type VorkasseErgebnis =
 export async function waehleVorkasse(bestellungId: string): Promise<VorkasseErgebnis> {
   if (!vorkasseEingerichtet()) return { ok: false, fehler: "nicht_eingerichtet" };
 
-  const store = await cookies();
-  if (store.get(COOKIE)?.value !== bestellungId) {
+  if (!(await bestellCookieGilt(bestellungId))) {
     return { ok: false, fehler: "nicht_deine_bestellung" };
   }
 

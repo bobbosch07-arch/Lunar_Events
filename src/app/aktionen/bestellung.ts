@@ -1,6 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
 import { stripe, stripeEingerichtet } from "@/lib/stripe";
 import { verschickeTickets } from "./ticketmail";
@@ -23,9 +22,7 @@ import {
  * sich Tickets ohne Zahlung ausstellen.
  */
 
-const COOKIE = "lunar_bestellung";
-/** So lange gilt der Nachweis, die eigene Bestellung sehen zu dürfen. */
-const COOKIE_DAUER = 60 * 60 * 4;
+import { setzeBestellCookie, bestellCookieGilt } from "@/lib/bestellcookie";
 
 export type Auswahlposten = { phase_id: string; menge: number };
 
@@ -194,14 +191,7 @@ export async function reserviereBestellung(eingabe: {
   // Der Nachweis, diese Bestellung ansehen zu dürfen. Gastkäufe haben
   // kein Konto — ohne das Cookie käme niemand an seine eigene
   // Bestätigungsseite.
-  const store = await cookies();
-  store.set(COOKIE, bestellungId as string, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: COOKIE_DAUER,
-    path: "/",
-  });
+  await setzeBestellCookie(bestellungId as string);
 
   return {
     ok: true,
@@ -247,14 +237,7 @@ export async function uebernimmAngebot(eingabe: {
     .eq("id", angebot.bestellung.id);
   if (hinweis) console.error("[bestellung] Werbehinweis nicht vermerkt:", hinweis.message);
 
-  const store = await cookies();
-  store.set(COOKIE, angebot.bestellung.id, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: COOKIE_DAUER,
-    path: "/",
-  });
+  await setzeBestellCookie(angebot.bestellung.id);
 
   return {
     ok: true,
@@ -342,8 +325,7 @@ export async function pruefeRabattcode(eingabe: {
 export async function schliesseKostenlosAb(
   bestellungId: string,
 ): Promise<{ ok: true } | { ok: false; fehler: string }> {
-  const store = await cookies();
-  if (store.get(COOKIE)?.value !== bestellungId) {
+  if (!(await bestellCookieGilt(bestellungId))) {
     return { ok: false, fehler: "nicht_deine_bestellung" };
   }
 
@@ -395,8 +377,7 @@ export async function schliesseTestkaufAb(
     return { ok: false, fehler: "zahlung_eingerichtet" };
   }
 
-  const store = await cookies();
-  if (store.get(COOKIE)?.value !== bestellungId) {
+  if (!(await bestellCookieGilt(bestellungId))) {
     return { ok: false, fehler: "nicht_deine_bestellung" };
   }
 
@@ -441,6 +422,9 @@ export async function bucheGarderobeNach(
   if (!stripeEingerichtet()) return { ok: false, fehler: "zu" };
   const menge = Math.floor(anzahl);
   if (!(menge >= 1 && menge <= 40)) return { ok: false, fehler: "menge" };
+  // Die „2 je Ticket"-Grenze deckelt das schon, aber ohne Bremse ließe sich
+  // die Nachbuchung in Serie anlegen (0032).
+  if (!(await darfAnschluss("zahlung", GRENZEN.zahlung))) return { ok: false, fehler: "zu" };
 
   const db = dienstClient();
   const { data: id, error } = await db.rpc("reserviere_garderobe", {
@@ -478,8 +462,7 @@ export async function bucheGarderobeNach(
 
 /** Liest die Bestellung, deren Nachweis im Cookie liegt. */
 export async function holeEigeneBestellung(bestellungId: string) {
-  const store = await cookies();
-  if (store.get(COOKIE)?.value !== bestellungId) return null;
+  if (!(await bestellCookieGilt(bestellungId))) return null;
 
   const db = dienstClient();
   const { data } = await db
@@ -530,6 +513,7 @@ export async function stelleZahlungSicher(bestellungId: string): Promise<void> {
       p_bestellung_id: bestellungId,
       p_zahlungsart: "stripe",
       p_referenz: absicht.id,
+      p_erwartet_cent: absicht.amount_received ?? absicht.amount,
     });
     if (error) console.error("[zahlung] Nachtrag fehlgeschlagen:", error.message);
     else await verschickeTickets(bestellungId);

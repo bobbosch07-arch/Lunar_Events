@@ -57,6 +57,8 @@ export async function POST(anfrage: Request) {
         p_bestellung_id: bestellungId,
         p_zahlungsart: "stripe",
         p_referenz: absicht.id,
+        // Was Stripe wirklich eingezogen hat, gegen den Bestellbetrag (0033).
+        p_erwartet_cent: absicht.amount_received ?? absicht.amount,
       });
 
       if (error) {

@@ -1,11 +1,10 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { dienstClient } from "@/lib/supabase/server";
+import { bestellCookieGilt } from "@/lib/bestellcookie";
 import { stripe, eigeneAdresse } from "@/lib/stripe";
 import { darfAnschluss, GRENZEN } from "@/lib/drossel";
 
-const COOKIE = "lunar_bestellung";
 
 export type ZahlungErgebnis =
   | { ok: true; clientSecret: string; betrag_cent: number }
@@ -21,8 +20,7 @@ export type ZahlungErgebnis =
 export async function starteZahlung(
   bestellungId: string,
 ): Promise<ZahlungErgebnis> {
-  const store = await cookies();
-  if (store.get(COOKIE)?.value !== bestellungId) {
+  if (!(await bestellCookieGilt(bestellungId))) {
     return { ok: false, fehler: "nicht_deine_bestellung" };
   }
   return zahlungVorbereiten(bestellungId);

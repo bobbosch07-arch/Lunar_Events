@@ -131,9 +131,23 @@ export type Buchung = {
   id: string;
   status: string;
   purchase_units?: Array<{
-    payments?: { captures?: Array<{ id: string; status: string }> };
+    payments?: {
+      captures?: Array<{
+        id: string;
+        status: string;
+        amount?: { value: string; currency_code: string };
+      }>;
+    };
   }>;
 };
+
+/** Der tatsächlich eingezogene Betrag in Cent, oder null, wenn keiner dasteht. */
+export function eingezogenCent(buchung: Buchung): number | null {
+  const betrag = buchung.purchase_units?.[0]?.payments?.captures?.[0]?.amount;
+  if (!betrag || betrag.currency_code !== "EUR") return null;
+  const cent = Math.round(Number(betrag.value) * 100);
+  return Number.isFinite(cent) ? cent : null;
+}
 
 export async function bucheAb(bestellungId: string): Promise<Buchung> {
   return ruf<Buchung>(`/v2/checkout/orders/${bestellungId}/capture`, {
