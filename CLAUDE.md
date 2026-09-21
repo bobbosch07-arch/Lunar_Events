@@ -967,10 +967,23 @@ Mail über Brevo läuft):
    (`sendeErinnerung`: Ticketlink, Einlasszeit, Anfahrt mit Karten-Link,
    Dresscode, Wallet-Hinweis), einmalig über `bestellungen.erinnerung_am`.
    Gästeliste und VIP-Tickets bekommen noch keine — später ergänzbar.
-7. Newsletter mit Double-Opt-in.
-8. Klarna ab 50 € (PayPal/Klarna vorher in Stripe freischalten).
-9. Line-up-Feld je Event. 10. Englisch vollständig.
-11. Cookie-Banner und Pixel, erst mit Werbekonten.
+7. ~~Newsletter mit Double-Opt-in~~: erledigt 20.09. (0037). Bestätigungs-
+   und Abmeldelink, `bestaetige_newsletter`/`melde_newsletter_ab`,
+   `sendeNewsletterBestaetigung`. Auf der Liste steht erst, wer klickt.
+8. ~~Klarna ab 50 €~~: erledigt 20.09. Schalter `STRIPE_KLARNA=an` (erst nach
+   dem Freischalten in Stripe setzen); dann wählt der Checkout die Zahlarten
+   explizit, Klarna nur ab 50 € (`klarnaFuer`, `KLARNA_AB_CENT`). Ohne den
+   Schalter wie bisher automatisch. Wichtig: automatische Wahl zeigt Klarna
+   sonst bei jedem Betrag.
+9. ~~Line-up-Feld je Event~~: erledigt 20.09. (0036, `events.lineup text[]`).
+10. ~~Englisch vollständig~~: erledigt 20.09. — die **Kundenflächen** sind in
+    en übersetzt (Checkout, Ticketseite, Konto, Anmeldung, VIP-Anfrage,
+    Newsletter, Fehlerseiten, Überweisung). de/en-Schlüssel paritätisch
+    (412/412). **Bewusst deutsch geblieben:** Rechts- und Inhaltsseiten
+    (Impressum, AGB, Datenschutz, About, Kontakt — deutsche Rechtsdokumente)
+    und alle internen Werkzeuge (Backoffice, Scanner, „Mein Plan", Kasse).
+11. Cookie-Banner und Pixel, erst mit Werbekonten (**blockiert:** braucht die
+    Pixel-IDs/Werbekonten vom Kunden).
 
 **D. Aufräumen**
 12. `zahlung-testen` auf ein eigenes Test-Event umstellen (`einlass-testen`

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Knopf } from "./Knopf";
 import { preisText } from "@/lib/format";
 import { KNAPP_AB, type FastLane } from "@/lib/typen";
@@ -36,6 +36,7 @@ export function FastLaneAngebot({
   schliessen: () => void;
 }) {
   const locale = useLocale();
+  const t = useTranslations("fastlane");
   const fenster = useRef<HTMLDialogElement>(null);
   const [haken, setHaken] = useState(gewaehlt);
 
@@ -97,7 +98,7 @@ export function FastLaneAngebot({
           type="button"
           className={css.zu}
           onClick={schliessen}
-          aria-label="Schließen"
+          aria-label={t("schliessen")}
         >
           <svg viewBox="0 0 20 20" width="18" height="18" aria-hidden="true">
             <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -106,18 +107,17 @@ export function FastLaneAngebot({
 
         <span className={css.marke} aria-hidden="true">!</span>
 
-        <span className="eyebrow">Upgrade</span>
+        <span className="eyebrow">{t("upgrade")}</span>
         <h2 id="fastlane-titel" className={css.titel}>
-          Fast Lane
+          {t("titel")}
         </h2>
         <p className={css.text}>
-          {angebot.beschreibung ||
-            "Eigene Spur am Einlass: Du gehst an der Schlange vorbei und bist direkt drin."}
+          {angebot.beschreibung || t("standardtext")}
         </p>
 
         <p className={css.preis}>
           + {preisText(angebot.preis_cent, locale)}{" "}
-          <span className={css.preisZusatz}>pro Ticket</span>
+          <span className={css.preisZusatz}>{t("proTicket")}</span>
         </p>
 
         <label className={`${css.wahl} ${haken ? css.wahlAn : ""}`}>
@@ -127,20 +127,20 @@ export function FastLaneAngebot({
             onChange={(e) => setHaken(e.target.checked)}
           />
           <span>
-            Fast Lane für {anzahl === 1 ? "mein Ticket" : `alle ${anzahl} Tickets`}
+            {t("fuerTickets", { anzahl })}
             <span className={css.wahlPreis}> · + {preisText(gesamt, locale)}</span>
           </span>
         </label>
 
         {knapp ? (
           <p className={css.knapp}>
-            Noch {angebot.rest} {angebot.rest === 1 ? "Fast-Lane-Platz" : "Fast-Lane-Plätze"}.
+            {t("restKnapp", { rest: angebot.rest ?? 0 })}
           </p>
         ) : null}
 
         <div className={css.knoepfe}>
           <Knopf onClick={() => uebernehmen(haken)} voll>
-            {haken ? "Mit Fast Lane weiter" : "Ohne Fast Lane weiter"}
+            {haken ? t("weiterMit") : t("weiterOhne")}
           </Knopf>
         </div>
       </div>

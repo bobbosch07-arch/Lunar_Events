@@ -62,11 +62,8 @@ export default async function Konto({
                 {team ? (
                   <article className={css.kachel}>
                     <h2 className={css.kachelTitel}>Backoffice</h2>
-                    <p className={css.kachelText}>
-                      Events, Bestellungen, VIP-Anfragen und Zahlungen. Dieses
-                      Konto gehört zum Team.
-                    </p>
-                    <Knopf href="/backoffice">Zum Backoffice</Knopf>
+                    <p className={css.kachelText}>{t("teamText")}</p>
+                    <Knopf href="/backoffice">{t("zumBackoffice")}</Knopf>
                   </article>
                 ) : null}
                 <article className={css.kachel}>
@@ -100,8 +97,8 @@ export default async function Konto({
               {fehler ? (
                 <p className={css.stoerung}>
                   {fehler === "abgelaufen"
-                    ? "Der Anmeldelink ist abgelaufen oder wurde schon benutzt. Fordere einen neuen an."
-                    : "Der Anmeldelink war unvollständig. Fordere einen neuen an."}
+                    ? t("anmeldelinkAbgelaufen")
+                    : t("anmeldelinkUnvollstaendig")}
                 </p>
               ) : null}
               <Anmeldung weiter="/konto/tickets" />

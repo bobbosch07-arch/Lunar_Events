@@ -31,14 +31,13 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 
   // Bei Vorkasse ist noch nichts bezahlt — "Kauf erfolgreich" im Tab wäre
   // eine Zusage, die erst der Zahlungseingang einlöst.
+  const t = await getTranslations({ locale, namespace: "bestaetigung" });
   if (b) {
     const bestellung = await holeEigeneBestellung(b);
     if (bestellung?.status === "offen" && (bestellung as { vorkasse?: boolean }).vorkasse) {
-      return { title: "Bestellung eingegangen", robots };
+      return { title: t("titelVorkasse"), robots };
     }
   }
-
-  const t = await getTranslations({ locale, namespace: "bestaetigung" });
   return { title: t("titel"), robots };
 }
 
@@ -158,14 +157,14 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
                 <dd className={css.tab}>{bestellung.nummer as string}</dd>
               </div>
               <div>
-                <dt>Summe</dt>
+                <dt>{t("summe")}</dt>
                 <dd className={css.tab}>
                   {preisText(bestellung.gesamt_cent as number, locale)}
                 </dd>
               </div>
               {(bestellung.code_rabatt_cent as number) > 0 ? (
                 <div>
-                  <dt>Rabatt</dt>
+                  <dt>{t("rabatt")}</dt>
                   <dd className={css.tab}>
                     − {preisText(bestellung.code_rabatt_cent as number, locale)}
                   </dd>
@@ -175,7 +174,7 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
                   die Tickets entstehen ja erst danach. */}
               {wartetAufUeberweisung ? null : (
                 <div>
-                  <dt>Tickets</dt>
+                  <dt>{t("tickets")}</dt>
                   <dd className={css.tab}>{tickets.length}</dd>
                 </div>
               )}

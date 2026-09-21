@@ -130,7 +130,12 @@
     "gesendetTitel": "Anfrage ist da.",
     "gesendetText": "Wir melden uns innerhalb von 24 Stunden bei dir.",
     "pflichtfeld": "Bitte ausfüllen",
-    "emailUngueltig": "Diese E-Mail-Adresse stimmt nicht"
+    "emailUngueltig": "Diese E-Mail-Adresse stimmt nicht",
+    "paket4_6": "Tisch für 4–6 Gäste",
+    "paket6_10": "Tisch für 6–10 Gäste",
+    "paketGross": "Großer Tisch ab 10 Gästen",
+    "paketNochOffen": "Noch offen",
+    "firma": "Firma (bitte frei lassen)"
   },
   "checkout": {
     "titel": "Kasse",
@@ -190,7 +195,30 @@
     "wartelisteAdresse": "Das Angebot gilt für die Adresse, mit der du dich eingetragen hast.",
     "wartelisteVorbei": "Dein Angebot ist abgelaufen. Die Tickets sind an den Nächsten auf der Liste gegangen.",
     "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen",
-    "flaggeZustimmung": "Mir ist bekannt: Einlass erst ab {jahre} Jahren. Ohne gültigen Ausweis gibt es keinen Einlass und keine Erstattung."
+    "flaggeZustimmung": "Mir ist bekannt: Einlass erst ab {jahre} Jahren. Ohne gültigen Ausweis gibt es keinen Einlass und keine Erstattung.",
+    "storVorbei": "Dieses Event nimmt keine Bestellungen mehr an.",
+    "storPhaseZu": "Diese Ticketphase ist nicht mehr buchbar.",
+    "storZuViele": "Gerade laufen zu viele offene Reservierungen für diese Adresse oder diesen Anschluss. Bitte versuch es in ein paar Minuten noch einmal.",
+    "storEmail": "Bitte prüf deine E-Mail-Adresse.",
+    "storMenge": "Pro Bestellung gehen höchstens 20 Tickets.",
+    "storAllgemein": "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
+    "storNichtGenug": "„{phase}“ ist inzwischen vergriffen. Verfügbar: {rest}.",
+    "storVorkasseKnapp": "Für dieses Event ist es für eine Überweisung zu knapp. Bitte wähle eine andere Zahlungsart.",
+    "storVorkasseAbgelaufen": "Die Reservierung ist abgelaufen. Bitte wähle die Tickets noch einmal.",
+    "fastlaneRaus": "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen, tipp einfach noch einmal auf Weiter.",
+    "ticketsFuerEvent": "{anzahl, plural, one {# Ticket} other {# Tickets}} für {event}.",
+    "fastlaneEinzeiler": "eigene Spur am Einlass, kein Anstehen.",
+    "mehrErfahren": "Mehr erfahren",
+    "ueberweisungVorkasse": "Überweisung (Vorkasse)",
+    "ticketsNachEingang": "Tickets nach Zahlungseingang",
+    "gebuehrRabattEingang": "{betrag} Rabatt · Tickets nach Zahlungseingang",
+    "ueberweisungAbzug": " Für die Überweisung ziehen wir {betrag} ab.",
+    "vorkasseRabattZeile": "Vorkasse-Rabatt",
+    "perUeberweisungBestellen": "Verbindlich per Überweisung bestellen",
+    "ppBedingungen": "Bitte zuerst die Bedingungen bestätigen.",
+    "ppNichtVorbereitet": "Die Zahlung konnte nicht vorbereitet werden.",
+    "ppTicketsFehlen": "Die Zahlung ist durch, aber die Tickets fehlen noch. Melde dich bitte mit deiner Bestellnummer, dann stellen wir sie sofort aus.",
+    "ppAbgebrochen": "PayPal hat abgebrochen. Versuch es bitte noch einmal."
   },
   "bestaetigung": {
     "titel": "DU BIST DABEI.",
@@ -198,7 +226,11 @@
     "bestellnummer": "Bestellnummer",
     "mailHinweis": "Die Tickets sind unterwegs an {email}. Nichts angekommen? Schau im Spam nach oder melde dich bei uns.",
     "walletHinweis": "Leg die Tickets in deine Wallet, dann hast du sie am Einlass sofort zur Hand.",
-    "mailFehltNoch": "Es gibt noch keinen Mailversand. Diese Seite ist gerade die einzige Stelle mit deinen Tickets, mach dir also einen Screenshot oder lass den Tab offen."
+    "mailFehltNoch": "Es gibt noch keinen Mailversand. Diese Seite ist gerade die einzige Stelle mit deinen Tickets, mach dir also einen Screenshot oder lass den Tab offen.",
+    "summe": "Summe",
+    "rabatt": "Rabatt",
+    "tickets": "Tickets",
+    "titelVorkasse": "Bestellung eingegangen"
   },
   "ticket": {
     "titel": "Meine Tickets",
@@ -223,7 +255,14 @@
     "gastAbgesagt": "Diese Veranstaltung wurde abgesagt.",
     "gastWarnungTitel": "Wer diesen Link hat, kommt rein.",
     "gastWarnung": "Jeder Code gilt für eine Person und genau einmal. Deine Begleitung kann ihren Code auch von deinem Handy zeigen. Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.",
-    "weitereEvents": "Weitere Events"
+    "weitereEvents": "Weitere Events",
+    "abgesagtBanner": "Diese Veranstaltung wurde abgesagt. Der Ticketpreis wird erstattet. Ist nach zwei Wochen nichts angekommen, melde dich bei uns.",
+    "vorbeiBand": "Dieses Event ist vorbei.",
+    "linkWarnungTitel": "Wer diesen Link hat, kommt rein.",
+    "linkWarnungText": "Jeder Code lässt sich genau einmal einlösen. Gib den Link nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich.",
+    "bestellnummer": "Bestellnummer {nummer}",
+    "statusEingeloest": "Eingelöst",
+    "statusStorniert": "Storniert"
   },
   "konto": {
     "titel": "Account",
@@ -237,7 +276,19 @@
     "anmeldenText": "Wir schicken dir einen Link per E-Mail. Kein Passwort nötig.",
     "linkSenden": "Link senden",
     "linkGesendet": "Der Link ist unterwegs. Schau in dein Postfach.",
-    "abmeldenFrage": "Wirklich abmelden?"
+    "abmeldenFrage": "Wirklich abmelden?",
+    "teamText": "Events, Bestellungen, VIP-Anfragen und Zahlungen. Dieses Konto gehört zum Team.",
+    "zumBackoffice": "Zum Backoffice",
+    "anmeldelinkAbgelaufen": "Der Anmeldelink ist abgelaufen oder wurde schon benutzt. Fordere einen neuen an.",
+    "anmeldelinkUnvollstaendig": "Der Anmeldelink war unvollständig. Fordere einen neuen an.",
+    "anmeldeFalsch": "Adresse oder Passwort stimmen nicht.",
+    "anmeldeZuOft": "Zu viele Versuche. Warte ein paar Minuten.",
+    "anmeldeKeinTeam": "Dieses Konto hat keinen Backoffice-Zugang.",
+    "anmeldeFehler": "Das hat nicht geklappt. Versuch es bitte noch einmal.",
+    "anmeldeEmail": "Diese E-Mail-Adresse stimmt nicht.",
+    "nurTeam": "Nur für das Lunar-Team.",
+    "mitLink": "Kein Passwort? Anmeldelink per Mail schicken",
+    "mitPasswort": "Mit Passwort anmelden"
   },
   "footer": {
     "events": "Events",
@@ -265,7 +316,10 @@
     "speichern": "Speichern",
     "nichtGefundenTitel": "Diese Seite gibt es nicht",
     "nichtGefundenText": "Vielleicht ist der Link alt. Hier geht es zu den Events.",
-    "zurStartseite": "Zur Startseite"
+    "zurStartseite": "Zur Startseite",
+    "stoerung": "Störung",
+    "kennungSupport": "Kennung für den Support:",
+    "alleEvents": "Alle Events"
   },
   "promoter": {
     "eyebrow": "Promoter",
@@ -334,7 +388,8 @@
     "vorbeiTitel": "Dieses Event ist vorbei",
     "zumEvent": "Zum Event",
     "fehler": "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
-    "datenschutz": "Datenschutz"
+    "datenschutz": "Datenschutz",
+    "firma": "Firma (bitte frei lassen)"
   },
   "tuer": {
     "titel": "Abendkasse",
@@ -389,5 +444,28 @@
     "abmeldenErledigt": "Erledigt. Wir schicken dir keinen Newsletter mehr.",
     "fehler": "Dieser Link gilt nicht mehr.",
     "zurueck": "Zur Startseite"
+  },
+  "fastlane": {
+    "schliessen": "Schließen",
+    "upgrade": "Upgrade",
+    "titel": "Fast Lane",
+    "standardtext": "Eigene Spur am Einlass: Du gehst an der Schlange vorbei und bist direkt drin.",
+    "proTicket": "pro Ticket",
+    "fuerTickets": "Fast Lane {anzahl, plural, one {für mein Ticket} other {für alle # Tickets}}",
+    "restKnapp": "{rest, plural, one {Noch # Fast-Lane-Platz.} other {Noch # Fast-Lane-Plätze.}}",
+    "weiterMit": "Mit Fast Lane weiter",
+    "weiterOhne": "Ohne Fast Lane weiter"
+  },
+  "ueberweisung": {
+    "vorkasse": "Vorkasse",
+    "jetztUeberweisen": "Jetzt überweisen",
+    "empfaenger": "Empfänger",
+    "betrag": "Betrag",
+    "verwendungszweck": "Verwendungszweck",
+    "bank": "Bank",
+    "verwendungHinweis": "Als Verwendungszweck <b>nur {nummer}</b> angeben. Sonst können wir die Zahlung deiner Bestellung nicht zuordnen.",
+    "rabattEnthalten": "Darin enthalten: {betrag} Vorkasse-Rabatt.",
+    "fristHinweis": "Deine Plätze sind bis <b>{frist} Uhr</b> reserviert. Kommt die Zahlung bis dahin nicht an, werden sie wieder freigegeben. ",
+    "ticketsHinweis": "Deine Tickets erscheinen unter deinem Ticketlink, sobald die Zahlung eingegangen ist, meist nach ein bis zwei Werktagen."
   }
 }

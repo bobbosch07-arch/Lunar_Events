@@ -190,23 +190,17 @@ export default async function TicketAnsicht({ params }: Props) {
             </p>
             {event.einlass ? (
               <p className={css.einlass}>
-                Einlass ab {f.dateTime(new Date(event.einlass), {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}{" "}
-                Uhr
+                {t("einlassAb", { zeit: f.dateTime(new Date(event.einlass), { hour: "2-digit", minute: "2-digit" }) })}
               </p>
             ) : null}
           </div>
 
           {event.status === "abgesagt" ? (
             <p className={css.abgesagt}>
-              Diese Veranstaltung wurde abgesagt. Der Ticketpreis wird
-              erstattet. Ist nach zwei Wochen nichts angekommen, melde dich
-              bei uns.
+              {t("abgesagtBanner")}
             </p>
           ) : vorbei ? (
-            <p className={css.hinweisBand}>Dieses Event ist vorbei.</p>
+            <p className={css.hinweisBand}>{t("vorbeiBand")}</p>
           ) : null}
 
           <div className={css.raster}>
@@ -245,15 +239,13 @@ export default async function TicketAnsicht({ params }: Props) {
 
           <div className={css.fuss}>
             <p className={css.warnung}>
-              <strong>Wer diesen Link hat, kommt rein.</strong> Jeder Code lässt
-              sich genau einmal einlösen. Gib den Link nur an Leute weiter,
-              denen du vertraust, und poste ihn nirgends öffentlich.
+              <strong>{t("linkWarnungTitel")}</strong> {t("linkWarnungText")}
             </p>
             <p className={css.nummer}>
-              Bestellnummer {bestellung.nummer as string}
+              {t("bestellnummer", { nummer: bestellung.nummer as string })}
             </p>
             <Knopf href="/events" stil="linieHell" groesse="klein">
-              Weitere Events
+              {t("weitereEvents")}
             </Knopf>
           </div>
         </div>

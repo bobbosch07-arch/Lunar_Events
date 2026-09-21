@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { PayPalScriptProvider, PayPalButtons } from "@paypal/react-paypal-js";
 import { useRouter } from "@/i18n/navigation";
 import { paypalBestellungAnlegen, paypalAbschliessen } from "@/app/aktionen/paypal";
@@ -15,6 +16,7 @@ type Props = {
 
 export function PaypalZahlung({ bestellungId, clientId, freigegeben }: Props) {
   const router = useRouter();
+  const t = useTranslations("checkout");
   const [fehler, setFehler] = useState<string | null>(null);
 
   return (
@@ -40,7 +42,7 @@ export function PaypalZahlung({ bestellungId, clientId, freigegeben }: Props) {
             if (!freigegeben) {
               e.preventDefault();
               e.stopPropagation();
-              setFehler("Bitte zuerst die Bedingungen bestätigen.");
+              setFehler(t("ppBedingungen"));
             }
           }}
         >
@@ -58,8 +60,8 @@ export function PaypalZahlung({ bestellungId, clientId, freigegeben }: Props) {
                 if (!antwort.ok) {
                   setFehler(
                     antwort.fehler === "abgelaufen"
-                      ? "Die Reservierung ist abgelaufen. Bitte wähle die Tickets neu."
-                      : "Die Zahlung konnte nicht vorbereitet werden.",
+                      ? t("abgelaufen")
+                      : t("ppNichtVorbereitet"),
                   );
                   throw new Error(antwort.fehler);
                 }
@@ -73,15 +75,15 @@ export function PaypalZahlung({ bestellungId, clientId, freigegeben }: Props) {
                 if (!antwort.ok) {
                   setFehler(
                     antwort.fehler === "bestaetigung"
-                      ? "Die Zahlung ist durch, aber die Tickets fehlen noch. Melde dich bitte mit deiner Bestellnummer, dann stellen wir sie sofort aus."
-                      : "Die Zahlung ist nicht durchgegangen. Es wurde nichts abgebucht.",
+                      ? t("ppTicketsFehlen")
+                      : t("fehler"),
                   );
                   return;
                 }
                 router.push(`/checkout/bestaetigung?b=${bestellungId}`);
               }}
               onError={() => {
-                setFehler("PayPal hat abgebrochen. Versuch es bitte noch einmal.");
+                setFehler(t("ppAbgebrochen"));
               }}
             />
           </div>

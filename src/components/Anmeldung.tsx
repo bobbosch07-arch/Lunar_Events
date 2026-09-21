@@ -49,12 +49,12 @@ export function Anmeldung({
       setLaeuft(false);
       setFehler(
         antwort.fehler === "falsch"
-          ? "Adresse oder Passwort stimmen nicht."
+          ? t("anmeldeFalsch")
           : antwort.fehler === "zu_oft"
-            ? "Zu viele Versuche. Warte ein paar Minuten."
+            ? t("anmeldeZuOft")
             : antwort.fehler === "kein_team"
-              ? "Dieses Konto hat keinen Backoffice-Zugang."
-              : "Das hat nicht geklappt. Versuch es bitte noch einmal.",
+              ? t("anmeldeKeinTeam")
+              : t("anmeldeFehler"),
       );
       return;
     }
@@ -68,10 +68,10 @@ export function Anmeldung({
     }
     setFehler(
       ergebnis.fehler === "email"
-        ? "Diese E-Mail-Adresse stimmt nicht."
+        ? t("anmeldeEmail")
         : ergebnis.fehler === "zu_oft"
-          ? "Zu viele Versuche. Warte ein paar Minuten."
-          : "Das hat nicht geklappt. Versuch es bitte noch einmal.",
+          ? t("anmeldeZuOft")
+          : t("anmeldeFehler"),
     );
   }
 
@@ -100,7 +100,7 @@ export function Anmeldung({
       <span className="eyebrow">{t("anmeldenTitel")}</span>
       <h2 className={css.titel}>{mitPasswort ? "Backoffice" : t("meineTickets")}</h2>
       <p className={css.text}>
-        {mitPasswort ? "Nur für das Lunar-Team." : t("anmeldenText")}
+        {mitPasswort ? t("nurTeam") : t("anmeldenText")}
       </p>
       {abgelaufen ? (
         <p className={css.fehlertext} role="status">
@@ -170,8 +170,8 @@ export function Anmeldung({
           }}
         >
           {art === "passwort"
-            ? "Kein Passwort? Anmeldelink per Mail schicken"
-            : "Mit Passwort anmelden"}
+            ? t("mitLink")
+            : t("mitPasswort")}
         </button>
       ) : null}
     </form>

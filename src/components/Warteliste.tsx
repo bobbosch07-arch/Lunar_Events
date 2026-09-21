@@ -125,7 +125,7 @@ export function Warteliste({ eventId }: { eventId: string }) {
             </div>
 
             <div className={css.falle} aria-hidden="true">
-              <label htmlFor="warteliste-firma">Firma (bitte frei lassen)</label>
+              <label htmlFor="warteliste-firma">{t("firma")}</label>
               <input
                 id="warteliste-firma"
                 name="firma"

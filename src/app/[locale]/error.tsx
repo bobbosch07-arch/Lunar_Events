@@ -25,7 +25,7 @@ export default function Fehler({
   return (
     <main className={css.flaeche}>
       <div className={`seitenbreite ${css.mitte}`}>
-        <span className="eyebrow">Störung</span>
+        <span className="eyebrow">{t("stoerung")}</span>
         <h1 className={css.titel}>{t("fehlerTitel")}</h1>
         <p className={css.text}>{t("fehlerText")}</p>
         <div className={css.knoepfe}>
@@ -36,7 +36,7 @@ export default function Fehler({
         </div>
         {error.digest ? (
           <p className={css.kennung}>
-            Kennung für den Support: <strong>{error.digest}</strong>
+            {t("kennungSupport")} <strong>{error.digest}</strong>
           </p>
         ) : null}
       </div>

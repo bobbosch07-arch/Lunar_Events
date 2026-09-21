@@ -374,7 +374,7 @@ export function CheckoutFluss(props: Props) {
       // Den ganzen Kauf daran scheitern zu lassen wäre falsch.
       waehleFastlane(false);
       setStoerung(
-        "Fast Lane ist gerade vergriffen. Wir haben sie herausgenommen, tipp einfach noch einmal auf Weiter.",
+        t("fastlaneRaus"),
       );
       return;
     }
@@ -391,18 +391,18 @@ export function CheckoutFluss(props: Props) {
       // nicht erst danach.
       setStoerung(
         ergebnis.fehler === "nicht_genug"
-          ? `„${ergebnis.phase}" ist inzwischen vergriffen. Verfügbar: ${ergebnis.rest ?? 0}.`
+          ? t("storNichtGenug", { phase: ergebnis.phase ?? "", rest: ergebnis.rest ?? 0 })
           : ergebnis.fehler === "vorbei" || ergebnis.fehler === "nicht_verfuegbar"
-            ? "Dieses Event nimmt keine Bestellungen mehr an."
+            ? t("storVorbei")
             : ergebnis.fehler === "phase_zu"
-              ? "Diese Ticketphase ist nicht mehr buchbar."
+              ? t("storPhaseZu")
               : ergebnis.fehler === "zu_viele"
-                ? "Gerade laufen zu viele offene Reservierungen für diese Adresse oder diesen Anschluss. Bitte versuch es in ein paar Minuten noch einmal."
+                ? t("storZuViele")
                 : ergebnis.fehler === "email"
-                  ? "Bitte prüf deine E-Mail-Adresse."
+                  ? t("storEmail")
                   : ergebnis.fehler === "menge"
-                    ? "Pro Bestellung gehen höchstens 20 Tickets."
-                    : "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal.",
+                    ? t("storMenge")
+                    : t("storAllgemein"),
       );
       return;
     }
@@ -445,9 +445,9 @@ export function CheckoutFluss(props: Props) {
       setLaeuft(false);
       setStoerung(
         ergebnis.fehler === "zu_kurzfristig"
-          ? "Für dieses Event ist es für eine Überweisung zu knapp. Bitte wähle eine andere Zahlungsart."
+          ? t("storVorkasseKnapp")
           : ergebnis.fehler === "abgelaufen"
-            ? "Die Reservierung ist abgelaufen. Bitte wähle die Tickets noch einmal."
+            ? t("storVorkasseAbgelaufen")
             : t("fehler"),
       );
       return;
@@ -518,7 +518,7 @@ export function CheckoutFluss(props: Props) {
               </p>
             ))}
             <p className={css.hinweis}>
-              {anzahl} {anzahl === 1 ? "Ticket" : "Tickets"} für {props.eventTitel}.
+              {t("ticketsFuerEvent", { anzahl, event: props.eventTitel })}
             </p>
             {props.warteliste?.bis ? (
               <p className={css.codeAktiv}>
@@ -539,14 +539,14 @@ export function CheckoutFluss(props: Props) {
                     onChange={(e) => waehleFastlane(e.target.checked)}
                   />
                   <span>
-                    <strong>Fast Lane</strong>: eigene Spur am Einlass, kein
-                    Anstehen. + {preisText(angebot.preis_cent * anzahl, locale)}{" "}
+                    <strong>Fast Lane</strong>: {t("fastlaneEinzeiler")}{" "}
+                    + {preisText(angebot.preis_cent * anzahl, locale)}{" "}
                     <button
                       type="button"
                       className={css.zfAendern}
                       onClick={() => setAngebotOffen(true)}
                     >
-                      Mehr erfahren
+                      {t("mehrErfahren")}
                     </button>
                   </span>
                 </label>
@@ -746,8 +746,10 @@ export function CheckoutFluss(props: Props) {
                   onChange={(e) => setAgb(e.target.checked)}
                 />
                 <span>
-                  Ich habe die <Link href="/agb">AGB</Link> und die{" "}
-                  <Link href="/datenschutz">Datenschutzerklärung</Link> gelesen.
+                  {t.rich("agbText", {
+                    agb: (c) => <Link href="/agb">{c}</Link>,
+                    datenschutz: (c) => <Link href="/datenschutz">{c}</Link>,
+                  })}
                 </span>
               </label>
               <label className={css.zustimmung}>
@@ -834,11 +836,11 @@ export function CheckoutFluss(props: Props) {
                           checked={zahlweg === "vorkasse"}
                           onChange={() => setZahlweg("vorkasse")}
                         />
-                        <span className={css.zahlartName}>Überweisung (Vorkasse)</span>
+                        <span className={css.zahlartName}>{t("ueberweisungVorkasse")}</span>
                         <span className={css.zahlartNotiz}>
                           {gebuehren > 0
-                            ? `${preisText(gebuehren, locale)} Rabatt · Tickets nach Zahlungseingang`
-                            : "Tickets nach Zahlungseingang"}
+                            ? t("gebuehrRabattEingang", { betrag: preisText(gebuehren, locale) })
+                            : t("ticketsNachEingang")}
                         </span>
                       </label>
                     ) : null}
@@ -852,7 +854,7 @@ export function CheckoutFluss(props: Props) {
                       einige Tage reserviert; die Tickets erscheinen, sobald die
                       Überweisung angekommen ist.
                       {gebuehren > 0
-                        ? ` Für die Überweisung ziehen wir ${preisText(gebuehren, locale)} ab.`
+                        ? t("ueberweisungAbzug", { betrag: preisText(gebuehren, locale) })
                         : ""}
                     </p>
                     {stoerung ? <p className={css.stoerung}>{stoerung}</p> : null}
@@ -862,7 +864,7 @@ export function CheckoutFluss(props: Props) {
                         disabled={!zugestimmt || laeuft}
                         groesse="gross"
                       >
-                        {laeuft ? "…" : "Verbindlich per Überweisung bestellen"}
+                        {laeuft ? "…" : t("perUeberweisungBestellen")}
                       </Knopf>
                     </div>
                   </>
@@ -993,7 +995,7 @@ export function CheckoutFluss(props: Props) {
               ) : null}
               {rabattCent > 0 ? (
                 <div className={css.zfZeile}>
-                  <span className={css.zfName}>Vorkasse-Rabatt</span>
+                  <span className={css.zfName}>{t("vorkasseRabattZeile")}</span>
                   <span className={css.zfWert}>− {preisText(rabattCent, locale)}</span>
                 </div>
               ) : null}

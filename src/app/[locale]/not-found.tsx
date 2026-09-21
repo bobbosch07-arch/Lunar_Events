@@ -18,7 +18,7 @@ export default function NichtGefunden() {
           <h1 className={css.titel}>{t("nichtGefundenTitel")}</h1>
           <p className={css.text}>{t("nichtGefundenText")}</p>
           <div className={css.knoepfe}>
-            <Knopf href="/events">Alle Events</Knopf>
+            <Knopf href="/events">{t("alleEvents")}</Knopf>
             <Knopf href="/" stil="linie">
               {t("zurStartseite")}
             </Knopf>

@@ -130,7 +130,12 @@
     "gesendetTitel": "Request received.",
     "gesendetText": "We'll come back to you within 24 hours.",
     "pflichtfeld": "Please fill this in",
-    "emailUngueltig": "That email address doesn't look right"
+    "emailUngueltig": "That email address doesn't look right",
+    "paket4_6": "Table for 4–6 guests",
+    "paket6_10": "Table for 6–10 guests",
+    "paketGross": "Large table, 10+ guests",
+    "paketNochOffen": "Still open",
+    "firma": "Company (please leave blank)"
   },
   "checkout": {
     "titel": "Checkout",
@@ -190,7 +195,30 @@
     "wartelisteAdresse": "The offer is for the address you signed up with.",
     "wartelisteVorbei": "Your offer has expired. The tickets went to the next person on the list.",
     "flaggeHinweis": "Entry {jahre}+ only · Bring your ID",
-    "flaggeZustimmung": "I understand: entry only from age {jahre}. Without valid ID there is no entry and no refund."
+    "flaggeZustimmung": "I understand: entry only from age {jahre}. Without valid ID there is no entry and no refund.",
+    "storVorbei": "This event is no longer taking orders.",
+    "storPhaseZu": "This ticket phase is no longer available.",
+    "storZuViele": "Too many open reservations for this address or connection right now. Please try again in a few minutes.",
+    "storEmail": "Please check your email address.",
+    "storMenge": "Up to 20 tickets per order.",
+    "storAllgemein": "That didn’t work. Reload the page and try again.",
+    "storNichtGenug": "“{phase}” has sold out in the meantime. Available: {rest}.",
+    "storVorkasseKnapp": "It’s too close to this event for a bank transfer. Please choose another payment method.",
+    "storVorkasseAbgelaufen": "Your reservation has expired. Please choose your tickets again.",
+    "fastlaneRaus": "Fast Lane just sold out. We’ve removed it — just tap Continue again.",
+    "ticketsFuerEvent": "{anzahl, plural, one {# ticket} other {# tickets}} for {event}.",
+    "fastlaneEinzeiler": "your own lane at the door, no queue.",
+    "mehrErfahren": "Learn more",
+    "ueberweisungVorkasse": "Bank transfer (prepay)",
+    "ticketsNachEingang": "Tickets once payment arrives",
+    "gebuehrRabattEingang": "{betrag} discount · tickets once payment arrives",
+    "ueberweisungAbzug": " For the transfer we deduct {betrag}.",
+    "vorkasseRabattZeile": "Prepay discount",
+    "perUeberweisungBestellen": "Order by bank transfer",
+    "ppBedingungen": "Please accept the terms first.",
+    "ppNichtVorbereitet": "The payment could not be prepared.",
+    "ppTicketsFehlen": "The payment went through, but the tickets are still missing. Please get in touch with your order number and we’ll issue them right away.",
+    "ppAbgebrochen": "PayPal cancelled. Please try again."
   },
   "bestaetigung": {
     "titel": "YOU'RE IN.",
@@ -198,7 +226,11 @@
     "bestellnummer": "Order number",
     "mailHinweis": "Your tickets are on their way to {email}. Nothing there? Check spam or get in touch.",
     "walletHinweis": "Add the tickets to your wallet and they're ready at the door.",
-    "mailFehltNoch": "Email delivery isn't set up yet. This page is the only place your tickets exist right now, so take a screenshot or keep the tab open."
+    "mailFehltNoch": "Email delivery isn't set up yet. This page is the only place your tickets exist right now, so take a screenshot or keep the tab open.",
+    "summe": "Total",
+    "rabatt": "Discount",
+    "tickets": "Tickets",
+    "titelVorkasse": "Order received"
   },
   "ticket": {
     "titel": "My tickets",
@@ -223,7 +255,14 @@
     "gastAbgesagt": "This event has been cancelled.",
     "gastWarnungTitel": "Anyone with this link gets in.",
     "gastWarnung": "Each code is for one person and works exactly once. Your plus-one can show their code from your phone. No phone? No problem: you’re on the list by name.",
-    "weitereEvents": "More events"
+    "weitereEvents": "More events",
+    "abgesagtBanner": "This event has been cancelled. The ticket price will be refunded. If nothing has arrived after two weeks, get in touch.",
+    "vorbeiBand": "This event is over.",
+    "linkWarnungTitel": "Whoever has this link gets in.",
+    "linkWarnungText": "Each code can be redeemed exactly once. Only share this link with people you trust, and never post it publicly.",
+    "bestellnummer": "Order number {nummer}",
+    "statusEingeloest": "Redeemed",
+    "statusStorniert": "Cancelled"
   },
   "konto": {
     "titel": "Account",
@@ -237,7 +276,19 @@
     "anmeldenText": "We'll email you a link. No password needed.",
     "linkSenden": "Send link",
     "linkGesendet": "The link is on its way. Check your inbox.",
-    "abmeldenFrage": "Sign out?"
+    "abmeldenFrage": "Sign out?",
+    "teamText": "Events, orders, VIP requests and payments. This account belongs to the team.",
+    "zumBackoffice": "Go to backoffice",
+    "anmeldelinkAbgelaufen": "The sign-in link has expired or was already used. Request a new one.",
+    "anmeldelinkUnvollstaendig": "The sign-in link was incomplete. Request a new one.",
+    "anmeldeFalsch": "Email or password is incorrect.",
+    "anmeldeZuOft": "Too many attempts. Wait a few minutes.",
+    "anmeldeKeinTeam": "This account has no backoffice access.",
+    "anmeldeFehler": "That didn’t work. Please try again.",
+    "anmeldeEmail": "This email address is not valid.",
+    "nurTeam": "For the Lunar team only.",
+    "mitLink": "No password? Send a sign-in link by email",
+    "mitPasswort": "Sign in with password"
   },
   "footer": {
     "events": "Events",
@@ -265,7 +316,10 @@
     "speichern": "Save",
     "nichtGefundenTitel": "This page doesn't exist",
     "nichtGefundenText": "The link may be old. Here are the events.",
-    "zurStartseite": "To the homepage"
+    "zurStartseite": "To the homepage",
+    "stoerung": "Error",
+    "kennungSupport": "Reference for support:",
+    "alleEvents": "All events"
   },
   "promoter": {
     "eyebrow": "Promoter",
@@ -334,7 +388,8 @@
     "vorbeiTitel": "This event is over",
     "zumEvent": "View event",
     "fehler": "That didn’t work. Reload the page and try again.",
-    "datenschutz": "Privacy"
+    "datenschutz": "Privacy",
+    "firma": "Company (please leave blank)"
   },
   "tuer": {
     "titel": "Door sales",
@@ -389,5 +444,28 @@
     "abmeldenErledigt": "Done. We won’t send you the newsletter anymore.",
     "fehler": "This link is no longer valid.",
     "zurueck": "Back to the homepage"
+  },
+  "fastlane": {
+    "schliessen": "Close",
+    "upgrade": "Upgrade",
+    "titel": "Fast Lane",
+    "standardtext": "Your own lane at the door: skip the queue and walk straight in.",
+    "proTicket": "per ticket",
+    "fuerTickets": "Fast Lane {anzahl, plural, one {for my ticket} other {for all # tickets}}",
+    "restKnapp": "{rest, plural, one {# Fast Lane spot left.} other {# Fast Lane spots left.}}",
+    "weiterMit": "Continue with Fast Lane",
+    "weiterOhne": "Continue without Fast Lane"
+  },
+  "ueberweisung": {
+    "vorkasse": "Prepay",
+    "jetztUeberweisen": "Transfer now",
+    "empfaenger": "Recipient",
+    "betrag": "Amount",
+    "verwendungszweck": "Reference",
+    "bank": "Bank",
+    "verwendungHinweis": "Use <b>only {nummer}</b> as the reference. Otherwise we can’t match the payment to your order.",
+    "rabattEnthalten": "Included: {betrag} prepay discount.",
+    "fristHinweis": "Your spots are reserved until <b>{frist}</b>. If payment doesn’t arrive by then, they’ll be released. ",
+    "ticketsHinweis": "Your tickets appear at your ticket link once payment has arrived, usually within one or two business days."
   }
 }

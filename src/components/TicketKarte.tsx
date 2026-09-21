@@ -1,4 +1,5 @@
 import QRCode from "qrcode";
+import { getTranslations } from "next-intl/server";
 import { Logo } from "./Logo";
 import { WalletKnoepfe } from "./WalletKnoepfe";
 import css from "./TicketKarte.module.css";
@@ -40,6 +41,7 @@ async function qrSvg(inhalt: string): Promise<string> {
 
 export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
   const svg = await qrSvg(ticket.code);
+  const t = await getTranslations("ticket");
   const entwertet = ticket.status !== "gueltig";
 
   return (
@@ -57,9 +59,9 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
           }`}
         >
           {ticket.status === "entwertet"
-            ? "Eingelöst"
+            ? t("statusEingeloest")
             : ticket.status === "storniert"
-              ? "Storniert"
+              ? t("statusStorniert")
               : [ticket.phase_name, ticket.platz, ticket.fastlane ? "Fast Lane" : null]
                   .filter(Boolean)
                   .join(" · ")}

@@ -16,10 +16,10 @@ type Props = {
 };
 
 const PAKETE = [
-  "Tisch für 4–6 Gäste",
-  "Tisch für 6–10 Gäste",
-  "Großer Tisch ab 10 Gästen",
-  "Noch offen",
+  { wert: "Tisch für 4–6 Gäste", schluessel: "paket4_6" },
+  { wert: "Tisch für 6–10 Gäste", schluessel: "paket6_10" },
+  { wert: "Großer Tisch ab 10 Gästen", schluessel: "paketGross" },
+  { wert: "Noch offen", schluessel: "paketNochOffen" },
 ] as const;
 
 type Felder = {
@@ -233,8 +233,8 @@ export function VipFormular({ events, vorauswahl }: Props) {
           >
             <option value="">{t("paketOffen")}</option>
             {PAKETE.map((p) => (
-              <option key={p} value={p}>
-                {p}
+              <option key={p.wert} value={p.wert}>
+                {t(p.schluessel)}
               </option>
             ))}
           </select>
@@ -255,7 +255,7 @@ export function VipFormular({ events, vorauswahl }: Props) {
       </div>
 
       <div className={css.falle} aria-hidden="true">
-        <label htmlFor="vip-firma">Firma (bitte frei lassen)</label>
+        <label htmlFor="vip-firma">{t("firma")}</label>
         <input
           id="vip-firma"
           name="firma"

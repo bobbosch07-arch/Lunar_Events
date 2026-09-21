@@ -1,3 +1,4 @@
+import { getTranslations } from "next-intl/server";
 import { bankdaten } from "@/lib/vorkasse";
 import { preisText } from "@/lib/format";
 import css from "./Ueberweisung.module.css";
@@ -12,7 +13,7 @@ import css from "./Ueberweisung.module.css";
  * hervorgehoben — ohne ihn lässt sich eine Zahlung keiner Bestellung
  * zuordnen.
  */
-export function UeberweisungsDaten({
+export async function UeberweisungsDaten({
   nummer,
   betragCent,
   rabattCent,
@@ -27,9 +28,10 @@ export function UeberweisungsDaten({
 }) {
   const bank = bankdaten();
   if (!bank) return null;
+  const t = await getTranslations("ueberweisung");
 
   const frist = bis
-    ? new Intl.DateTimeFormat("de-DE", {
+    ? new Intl.DateTimeFormat(locale === "en" ? "en-GB" : "de-DE", {
         timeZone: "Europe/Berlin",
         weekday: "long",
         day: "2-digit",
@@ -40,19 +42,19 @@ export function UeberweisungsDaten({
     : null;
 
   const zeilen: Array<[string, string, boolean?]> = [
-    ["Empfänger", bank.inhaber],
+    [t("empfaenger"), bank.inhaber],
     ["IBAN", bank.iban, true],
     ...(bank.bic ? ([["BIC", bank.bic, true]] as Array<[string, string, boolean]>) : []),
-    ...(bank.bank ? ([["Bank", bank.bank]] as Array<[string, string]>) : []),
-    ["Betrag", preisText(betragCent, locale), true],
-    ["Verwendungszweck", nummer, true],
+    ...(bank.bank ? ([[t("bank"), bank.bank]] as Array<[string, string]>) : []),
+    [t("betrag"), preisText(betragCent, locale), true],
+    [t("verwendungszweck"), nummer, true],
   ];
 
   return (
     <section className={css.block} aria-labelledby="ueberweisung-titel">
-      <span className="eyebrow">Vorkasse</span>
+      <span className="eyebrow">{t("vorkasse")}</span>
       <h2 id="ueberweisung-titel" className={css.titel}>
-        Jetzt überweisen
+        {t("jetztUeberweisen")}
       </h2>
 
       <dl className={css.liste}>
@@ -65,25 +67,20 @@ export function UeberweisungsDaten({
       </dl>
 
       <p className={css.wichtig}>
-        Als Verwendungszweck <strong>nur {nummer}</strong> angeben. Sonst
-        können wir die Zahlung deiner Bestellung nicht zuordnen.
+        {t.rich("verwendungHinweis", { nummer, b: (c) => <strong>{c}</strong> })}
       </p>
 
       {rabattCent > 0 ? (
         <p className={css.text}>
-          Darin enthalten: {preisText(rabattCent, locale)} Vorkasse-Rabatt.
+          {t("rabattEnthalten", { betrag: preisText(rabattCent, locale) })}
         </p>
       ) : null}
 
       <p className={css.text}>
-        {frist ? (
-          <>
-            Deine Plätze sind bis <strong>{frist} Uhr</strong> reserviert. Kommt
-            die Zahlung bis dahin nicht an, werden sie wieder freigegeben.{" "}
-          </>
-        ) : null}
-        Deine Tickets erscheinen unter deinem Ticketlink, sobald die Zahlung
-        eingegangen ist, meist nach ein bis zwei Werktagen.
+        {frist
+          ? t.rich("fristHinweis", { frist, b: (c) => <strong>{c}</strong> })
+          : null}
+        {t("ticketsHinweis")}
       </p>
     </section>
   );
