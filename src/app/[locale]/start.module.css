@@ -169,3 +169,54 @@
     align-self: stretch;
   }
 }
+
+/* Social-Reihe im Hero (Instagram + WhatsApp), unter den Haupt-Knoepfen. */
+.heroSozial {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+}
+
+.sozialKnopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 8px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(252, 251, 248, 0.28);
+  color: var(--text-on-dark);
+  text-decoration: none;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  transition:
+    border-color var(--dur-normal) var(--ease),
+    color var(--dur-normal) var(--ease),
+    transform var(--dur-schnell) var(--ease);
+}
+
+.sozialKnopf:hover {
+  border-color: var(--gold-500);
+  color: var(--gold-500);
+}
+
+.sozialKnopf:active {
+  transform: translateY(1px);
+}
+
+.sozialKnopf svg {
+  flex: none;
+}
+
+@media (max-width: 520px) {
+  .heroSozial {
+    align-self: stretch;
+  }
+  .sozialKnopf {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+}
