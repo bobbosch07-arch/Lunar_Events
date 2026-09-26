@@ -1,8 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import css from "./CommunitySektion.module.css";
 
-const INSTAGRAM =
-  "https://www.instagram.com/lunar_events.de?stkn=b3NxM2xjYTFtZ21i&utm_source=qr";
+const INSTAGRAM = "https://www.instagram.com/lunar_events.de";
 const WHATSAPP =
   "https://chat.whatsapp.com/KJGl6e2ag8t1cwdSMUh2Xf?s=sw&p=i&mlu=4&ilr=4";
 
