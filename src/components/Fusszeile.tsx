@@ -4,7 +4,7 @@ import { Logo } from "./Logo";
 import { Newsletter } from "./Newsletter";
 import css from "./Fusszeile.module.css";
 
-const INSTAGRAM = "https://instagram.com/lunar.events";
+const INSTAGRAM = "https://www.instagram.com/lunar_events.de";
 
 export function Fusszeile() {
   const t = useTranslations("footer");

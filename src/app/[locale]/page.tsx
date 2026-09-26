@@ -3,6 +3,7 @@ import { Kopfzeile } from "@/components/Kopfzeile";
 import { Fusszeile } from "@/components/Fusszeile";
 import { EventKarte } from "@/components/EventKarte";
 import { VipSektion } from "@/components/VipSektion";
+import { CommunitySektion } from "@/components/CommunitySektion";
 import { Knopf } from "@/components/Knopf";
 import { Logo } from "@/components/Logo";
 import { holeFeaturedEvents, holeKommendeEvents } from "@/lib/events";
@@ -105,6 +106,8 @@ export default async function Startseite({
             <VipSektion />
           </div>
         </section>
+
+        <CommunitySektion />
 
         <section className="abschnitt" data-grund="gedaempft">
           <div className="seitenbreite">

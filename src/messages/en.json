@@ -30,7 +30,12 @@
     "markeEyebrow": "Lunar",
     "markeTitel": "THE NIGHT STARTS HERE.",
     "markeText": "We don't run events on a conveyor belt. We run a few nights a year, and they land.",
-    "alleEvents": "All events"
+    "alleEvents": "All events",
+    "communityEyebrow": "Stay in the loop",
+    "communityTitel": "Don’t miss a night",
+    "communityText": "New events, presale drops and insider news first — on Instagram and in our WhatsApp community.",
+    "communityInsta": "Follow on Instagram",
+    "communityWhatsapp": "Join WhatsApp Insiders"
   },
   "events": {
     "titel": "Events",

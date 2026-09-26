@@ -30,7 +30,12 @@
     "markeEyebrow": "Lunar",
     "markeTitel": "THE NIGHT STARTS HERE.",
     "markeText": "Wir machen keine Veranstaltungen am laufenden Band. Wir machen ein paar Nächte im Jahr, und die sitzen.",
-    "alleEvents": "Alle Events"
+    "alleEvents": "Alle Events",
+    "communityEyebrow": "Bleib dabei",
+    "communityTitel": "Verpass keine Nacht",
+    "communityText": "Neue Events, Presale-Starts und Insider-Infos zuerst — auf Instagram und in unserer WhatsApp-Community.",
+    "communityInsta": "Auf Instagram folgen",
+    "communityWhatsapp": "WhatsApp-Insiders beitreten"
   },
   "events": {
     "titel": "Events",
