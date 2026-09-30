@@ -5,7 +5,7 @@
   padding: 0;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  background: var(--ivory-50);
+  background: var(--grund);
   color: var(--text-primary);
   box-shadow: var(--schatten-hoch);
   overflow: auto;
@@ -17,7 +17,7 @@
 
 /* Abgedunkelt, nicht verschwommen — das Briefing schließt Glaseffekte aus. */
 .fenster::backdrop {
-  background: rgba(7, 17, 31, 0.62);
+  background: rgba(20, 6, 46, 0.72);
   animation: abdunkeln 220ms var(--ease);
 }
 
@@ -65,7 +65,7 @@
 }
 
 .zu:hover {
-  background: var(--ivory-100);
+  background: var(--grund-2);
   color: var(--text-primary);
 }
 
@@ -79,8 +79,8 @@
   height: 44px;
   margin-bottom: var(--space-1);
   border-radius: 50%;
-  background: var(--navy-950);
-  color: var(--gold-500);
+  background: var(--signal);
+  color: var(--auf-signal);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
   font-size: 1.4rem;
@@ -137,13 +137,13 @@
   margin-top: 2px;
   width: 20px;
   height: 20px;
-  accent-color: var(--navy-900);
+  accent-color: var(--signal);
   flex: none;
 }
 
 .wahlAn {
-  border-color: var(--navy-900);
-  box-shadow: inset 3px 0 0 var(--gold-500);
+  border-color: var(--signal);
+  box-shadow: inset 3px 0 0 var(--akzent);
 }
 
 .wahlPreis {

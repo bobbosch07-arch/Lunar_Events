@@ -1,0 +1,55 @@
+.band {
+  position: relative;
+  z-index: calc(var(--z-kopf) + 1);
+  overflow: hidden;
+  white-space: nowrap;
+  padding-block: 10px;
+  background: var(--signal);
+  color: var(--auf-signal);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-label);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.spur {
+  display: inline-flex;
+  animation: lauf 38s linear infinite;
+}
+
+/* Wer drüberfährt, will lesen */
+.band:hover .spur {
+  animation-play-state: paused;
+}
+
+.teil {
+  display: inline-flex;
+}
+
+.punkt {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+.stern {
+  width: 0.85em;
+  height: 0.85em;
+  flex: none;
+}
+
+@keyframes lauf {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Ohne Bewegung steht der Anfang still da — die erste Hälfte reicht. */
+@media (prefers-reduced-motion: reduce) {
+  .spur {
+    animation: none;
+  }
+}

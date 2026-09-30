@@ -14,6 +14,7 @@ import { mitZweitemFaktor, sitzungAbgelaufen, zweiFaktorPflicht } from "@/lib/si
 import { serverClient } from "@/lib/supabase/server";
 import { stripeEingerichtet } from "@/lib/stripe";
 import css from "../einlass/einlass.module.css";
+import { KlassischerLook } from "@/components/KlassischerLook";
 
 export const metadata: Metadata = {
   title: "Kasse",
@@ -27,7 +28,7 @@ export const metadata: Metadata = {
  * Wer an der Kasse steht, kommt an Geld — deshalb gilt hier wie im
  * Backoffice der zweite Faktor (sobald er scharf geschaltet ist).
  */
-export default async function KassenSeite({
+async function KassenSeiteInhalt({
   params,
 }: {
   params: Promise<{ locale: string }>;
@@ -132,4 +133,16 @@ export default async function KassenSeite({
   }
 
   return <Kasse events={auswahl} qrMoeglich={stripeEingerichtet()} />;
+}
+
+/** Werkzeug fürs Personal: bleibt im klassischen Look. */
+export default async function KassenSeite(
+  props: Parameters<typeof KassenSeiteInhalt>[0],
+) {
+  return (
+    <>
+      <KlassischerLook />
+      <KassenSeiteInhalt {...props} />
+    </>
+  );
 }

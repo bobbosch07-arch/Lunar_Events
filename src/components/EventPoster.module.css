@@ -1,0 +1,70 @@
+.poster {
+  container-type: inline-size;
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--space-5);
+  background: var(--verlauf-poster);
+  color: var(--lila-weiss);
+}
+
+.poster .sichel {
+  position: absolute;
+  z-index: 0;
+  width: 74cqi;
+  right: -16cqi;
+  top: -14cqi;
+  background: var(--mondgelb-500);
+}
+
+.sternGross,
+.sternKlein {
+  position: absolute;
+  z-index: 1;
+}
+
+.sternGross {
+  width: 7cqi;
+  height: 7cqi;
+  top: 30%;
+  left: 46%;
+  color: var(--rosa-400);
+}
+
+.sternKlein {
+  width: 4cqi;
+  height: 4cqi;
+  top: 18%;
+  left: 62%;
+  color: var(--mondgelb-500);
+}
+
+.unten {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 12cqi;
+  line-height: 0.92;
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.zeile {
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}

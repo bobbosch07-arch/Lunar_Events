@@ -5,15 +5,21 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/navigation";
 import { routing } from "@/i18n/routing";
 import { Logo } from "./Logo";
+import { Stern } from "./Deko";
 import { browserClient } from "@/lib/supabase/client";
 import css from "./Kopfzeile.module.css";
 
 type Props = {
   /**
-   * Auf Seiten mit dunklem Hero liegt der Kopf zunaechst durchsichtig darauf
-   * und wird erst beim Scrollen zu einer Flaeche.
+   * Auf Seiten mit Hero schwebt der Kopf durchscheinend darauf und wird
+   * erst beim Scrollen dichter.
    */
   ueberHero?: boolean;
+  /**
+   * Wohin "Tickets" führt. Die Startseite gibt das nächste Event mit,
+   * die Eventseite ihre eigene Ticketauswahl; sonst die Eventliste.
+   */
+  ticketZiel?: string;
 };
 
 const ZIELE = [
@@ -22,7 +28,7 @@ const ZIELE = [
   { href: "/kontakt", schluessel: "kontakt" },
 ] as const;
 
-export function Kopfzeile({ ueberHero = false }: Props) {
+export function Kopfzeile({ ueberHero = false, ticketZiel = "/events" }: Props) {
   const t = useTranslations("nav");
   const pfad = usePathname();
   const locale = useLocale();
@@ -94,28 +100,17 @@ export function Kopfzeile({ ueberHero = false }: Props) {
     };
   }, [offen]);
 
-  // Offen trägt der Kopf immer die helle Fläche, auch über dem Hero: Das
-  // Menü hat keinen eigenen Grund, und helle Schrift läge sonst auf Ivory.
-  const hell = gescrollt || offen;
-  const dunkelOben = ueberHero && !hell;
-  const klassen = [
-    css.kopf,
-    ueberHero ? css.ueberHero : css.fest,
-    hell ? css.gescrollt : null,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // Offen und nach dem Scrollen wird der Kasten dicht: Das Menü hat keinen
+  // eigenen Grund, und darunter läuft der Inhalt durch.
+  const dicht = gescrollt || offen || !ueberHero;
+  const klassen = [css.kopf, dicht ? css.dicht : null].filter(Boolean).join(" ");
 
   return (
-    <header
-      ref={kopfRef}
-      className={klassen}
-      data-grund={dunkelOben ? "tief" : undefined}
-    >
-      <div className="seitenbreite">
+    <header ref={kopfRef} className={klassen}>
+      <div className={css.kasten}>
         <div className={css.reihe}>
           <Link href="/" className={css.markeLink} aria-label="Lunar Events">
-            <Logo ton={dunkelOben ? "ivory" : "navy"} hoehe={50} prioritaet />
+            <Logo ton="ivory" hoehe={56} prioritaet />
           </Link>
 
           <nav className={css.mitte} aria-label={t("events")}>
@@ -131,11 +126,15 @@ export function Kopfzeile({ ueberHero = false }: Props) {
           </nav>
 
           <div className={css.rechts}>
-            <Link
-              href="/konto/tickets"
-              className={`${css.punkt} ${css.ticketPunkt}`}
-            >
-              {t("meineTickets")}
+            {/* Der Weg zu den eigenen Tickets bleibt immer sichtbar
+                (Briefing 20) — auf dem Handy als Symbol, sonst passt
+                der Kasten nicht in 360 px. */}
+            <Link href="/konto/tickets" className={`${css.punkt} ${css.ticketPunkt}`}>
+              <svg className={css.ticketSymbol} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                <path d="M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4Z" />
+                <path d="M14 7v10" strokeDasharray="2 2" />
+              </svg>
+              <span className={css.ticketText}>{t("meineTickets")}</span>
             </Link>
             {team ? (
               <Link href="/backoffice" className={css.punkt}>
@@ -144,6 +143,23 @@ export function Kopfzeile({ ueberHero = false }: Props) {
             ) : null}
             <Link href="/konto" className={css.punkt}>
               {t("konto")}
+            </Link>
+            <span className={css.sprachWahl}>
+              {routing.locales.map((l) => (
+                <Link
+                  key={l}
+                  href={pfad}
+                  locale={l}
+                  className={l === locale ? css.spracheAn : undefined}
+                  aria-current={l === locale ? "true" : undefined}
+                >
+                  {l.toUpperCase()}
+                </Link>
+              ))}
+            </span>
+            <Link href={ticketZiel} className={css.ticketsKnopf}>
+              <Stern className={css.knopfStern} />
+              {t("tickets")}
             </Link>
             <button
               type="button"
@@ -159,7 +175,6 @@ export function Kopfzeile({ ueberHero = false }: Props) {
             </button>
           </div>
         </div>
-
         <nav
           id="hauptmenue"
           className={`${css.schublade} ${offen ? css.schubladeOffen : ""}`}

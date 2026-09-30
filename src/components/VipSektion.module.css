@@ -1,47 +1,42 @@
+/* Trägt data-grund="gelb": alle Farben kommen aus der Fläche */
 .block {
   position: relative;
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: var(--space-16);
   align-items: center;
-  padding: clamp(var(--space-8), 4vw, var(--space-16));
-  border: 1px solid var(--border-gold);
+  padding: clamp(var(--space-8), 5vw, var(--space-16));
   border-radius: var(--radius-lg);
-  background: linear-gradient(140deg, var(--navy-800), var(--navy-950) 70%);
+  background: var(--grund);
+  color: var(--auf-grund);
   overflow: hidden;
 }
 
-/* Ein einzelner, sehr zurueckhaltender Goldschein — das ist der einzige
-   Ort auf der Seite, der sich diesen Effekt leistet. */
-.block::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(70% 90% at 88% 8%, rgba(198, 161, 91, 0.18), transparent 60%);
-  pointer-events: none;
-}
-
 .links {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-4);
+  gap: var(--space-5);
+}
+
+.eyebrowStern {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-2);
+  vertical-align: -1px;
 }
 
 .titel {
-  font-family: var(--font-display);
-  font-weight: var(--fw-display);
-  font-size: var(--fs-h2);
+  font-size: var(--fs-h1);
   line-height: var(--lh-display);
   letter-spacing: var(--ls-display);
-  color: var(--text-on-dark);
 }
 
 .text {
   font-size: var(--fs-body-l);
   line-height: var(--lh-weit);
-  color: var(--text-on-dark-muted);
+  color: var(--auf-grund-2);
   max-width: 42ch;
 }
 
@@ -50,7 +45,6 @@
 }
 
 .liste {
-  position: relative;
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -58,25 +52,23 @@
 
 .punkt {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--space-4);
   padding-block: var(--space-4);
-  border-top: 1px solid var(--border-dark);
-  font-size: var(--fs-body);
-  color: var(--text-on-dark);
+  border-top: 1.5px solid var(--linie);
+  font-size: var(--fs-body-l);
+  font-weight: var(--fw-bold);
 }
 
 .punkt:last-child {
-  border-bottom: 1px solid var(--border-dark);
+  border-bottom: 1.5px solid var(--linie);
 }
 
-.nummer {
-  font-family: var(--font-display);
-  font-size: var(--fs-caption);
-  letter-spacing: var(--ls-label);
-  color: var(--gold-400);
-  font-variant-numeric: tabular-nums;
+.stern {
+  width: 16px;
+  height: 16px;
   flex: none;
+  color: var(--akzent);
 }
 
 @media (max-width: 900px) {

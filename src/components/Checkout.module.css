@@ -5,12 +5,12 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--ivory-50);
+  background: var(--grund);
 }
 
 .kopf {
   border-bottom: 1px solid var(--border-light);
-  background: var(--ivory-50);
+  background: var(--grund);
 }
 
 .kopfReihe {
@@ -54,7 +54,7 @@
 }
 
 .schrittFertig {
-  color: var(--gold-500);
+  color: var(--akzent);
 }
 
 .inhalt {
@@ -112,7 +112,7 @@
   padding: 12px 14px;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  background: var(--ivory-50);
+  background: var(--grund-2);
   color: var(--text-primary);
   font-size: var(--fs-body);
   transition: border-color var(--dur-normal) var(--ease);
@@ -123,8 +123,8 @@
 }
 
 .eingabe:focus {
-  border-color: var(--navy-900);
-  outline: 2px solid var(--gold-400);
+  border-color: var(--auf-grund);
+  outline: 2px solid var(--fokus);
   outline-offset: 1px;
 }
 
@@ -165,7 +165,7 @@
   margin-top: 3px;
   width: 20px;
   height: 20px;
-  accent-color: var(--navy-900);
+  accent-color: var(--signal);
   flex: none;
 }
 
@@ -185,9 +185,9 @@
   margin-top: var(--space-2);
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--border-light);
-  border-left: 2px solid var(--gold-500);
+  border-left: 2px solid var(--akzent);
   border-radius: var(--radius-md);
-  background: var(--ivory-50);
+  background: var(--grund-2);
   font-size: var(--fs-body-s);
   line-height: var(--lh-body);
   color: var(--text-secondary);
@@ -275,7 +275,7 @@
   padding: var(--space-3) var(--space-4);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  background: var(--ivory-100);
+  background: var(--grund-2);
   font-size: var(--fs-body-s);
   color: var(--text-primary);
 }
@@ -309,7 +309,7 @@
   padding: var(--space-6);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  background: var(--ivory-100);
+  background: var(--grund-2);
 }
 
 .zfInhalt {
@@ -482,14 +482,14 @@
   padding: var(--space-5);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  background: var(--ivory-50);
+  background: var(--grund);
   cursor: pointer;
 }
 
 .zahlartGewaehlt {
-  border-color: var(--navy-900);
-  box-shadow: inset 3px 0 0 var(--gold-500);
-  background: var(--ivory-100);
+  border-color: var(--signal);
+  box-shadow: inset 3px 0 0 var(--akzent);
+  background: var(--grund-2);
 }
 
 .zahlartAus {
@@ -500,7 +500,7 @@
 .zahlart input {
   width: 20px;
   height: 20px;
-  accent-color: var(--navy-900);
+  accent-color: var(--signal);
 }
 
 .zahlartName {

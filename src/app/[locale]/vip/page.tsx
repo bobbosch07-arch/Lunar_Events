@@ -5,6 +5,7 @@ import { Fusszeile } from "@/components/Fusszeile";
 import { VipFormular, type EventWahl } from "@/components/VipFormular";
 import { holeKommendeEvents } from "@/lib/events";
 import css from "./vip.module.css";
+import { akzent } from "@/components/Deko";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -51,7 +52,7 @@ export default async function VipSeite({ params, searchParams }: Props) {
           <div className="seitenbreite">
             <div className={css.kopfInhalt}>
               <span className="eyebrow">{t("eyebrow")}</span>
-              <h1 className={css.titel}>{t("titel")}</h1>
+              <h1 className={css.titel}>{t.rich("titel", { akzent })}</h1>
               <p className={css.text}>{t("text")}</p>
               <ul className={css.leistungen}>
                 {LEISTUNGEN.map((schluessel, i) => (

@@ -118,7 +118,12 @@ export default async function EventSeite({ params, searchParams }: Props) {
       <a href="#inhalt" className="sprunglink">
         Zum Inhalt springen
       </a>
-      <Kopfzeile ueberHero />
+      {/* "Tickets" oben springt wie der Knopf im Hero zur Ticketauswahl
+          und nimmt das Promoter-Kürzel mit. */}
+      <Kopfzeile
+        ueberHero
+        ticketZiel={`/events/${event.slug}${promo ? `?promo=${promo}` : ""}#tickets`}
+      />
       <Zaehler art="event_gesehen" eventId={event.id} />
 
       <main id="inhalt">

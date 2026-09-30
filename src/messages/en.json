@@ -15,24 +15,27 @@
     "menuSchliessen": "Close menu",
     "zumInhalt": "Skip to content",
     "sprache": "Language",
-    "backoffice": "Backoffice"
+    "backoffice": "Backoffice",
+    "tickets": "Tickets"
   },
   "start": {
-    "heroTitel": "SEE YOU\nAFTER DARK.",
+    "heroTitel": "See you\nafter <akzent>dark.</akzent>",
     "heroText": "Selected nights in Darmstadt.",
     "heroCta": "Discover events",
     "heroCtaZwei": "Who we are",
     "featuredEyebrow": "Selected",
-    "featuredTitel": "The next nights",
+    "featuredTitel": "The next <akzent>nights</akzent>",
     "kommendEyebrow": "Calendar",
     "kommendTitel": "All upcoming events",
     "kommendLeer": "Nothing announced right now. Join the list and you'll hear first.",
     "markeEyebrow": "Lunar",
-    "markeTitel": "THE NIGHT STARTS HERE.",
+    "markeTitel": "The night <akzent>starts</akzent> here.",
     "markeText": "We don't run events on a conveyor belt. We run a few nights a year, and they land.",
     "alleEvents": "All events",
     "sozialInsta": "Instagram",
-    "sozialWhatsapp": "WhatsApp Insiders"
+    "sozialWhatsapp": "WhatsApp Insiders",
+    "ticketsSichern": "Get tickets",
+    "heroNaechste": "Up next: {titel}, {datum}, {ort}."
   },
   "events": {
     "titel": "Events",
@@ -106,7 +109,7 @@
   },
   "vip": {
     "eyebrow": "VIP Experience",
-    "titel": "PRIVATE. PREMIUM. PERSONAL.",
+    "titel": "Private. Premium. <akzent>personal.</akzent>",
     "text": "With VIP you get your own table and one person who looks after you. What you want to drink and when you arrive, we sort out beforehand.",
     "cta": "Request VIP",
     "leistungen": {
@@ -469,5 +472,19 @@
     "rabattEnthalten": "Included: {betrag} prepay discount.",
     "fristHinweis": "Your spots are reserved until <b>{frist}</b>. If payment doesn’t arrive by then, they’ll be released. ",
     "ticketsHinweis": "Your tickets appear at your ticket link once payment has arrived, usually within one or two business days."
+  },
+  "laufband": {
+    "presale": "Presale is live",
+    "online": "Tickets on sale",
+    "bald": "On sale from {datum}",
+    "ausverkauft": "Sold out",
+    "abPreis": "Tickets from {preis}",
+    "vipFrei": "VIP available",
+    "stickerPresaleOben": "Presale",
+    "stickerPresaleUnten": "live",
+    "stickerOnlineOben": "Tickets",
+    "stickerOnlineUnten": "online",
+    "stickerAusOben": "Sold",
+    "stickerAusUnten": "out"
   }
 }

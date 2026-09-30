@@ -1,5 +1,5 @@
 .fuss {
-  background: var(--navy-950);
+  background: var(--nacht-950);
   color: var(--text-on-dark-muted);
   padding-block: var(--space-20) var(--space-10);
 }
@@ -42,7 +42,7 @@
   font-size: var(--fs-caption);
   letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
-  color: var(--gold-400);
+  color: var(--akzent-text);
   margin-bottom: var(--space-2);
 }
 
@@ -53,7 +53,7 @@
 }
 
 .punkt:hover {
-  color: var(--gold-300);
+  color: var(--akzent-text);
 }
 
 .unten {
@@ -88,7 +88,7 @@
 
 .sozialPunkt:hover {
   border-color: var(--border-gold);
-  color: var(--gold-300);
+  color: var(--akzent-text);
 }
 
 @media (max-width: 860px) {
@@ -126,5 +126,5 @@
 }
 
 .impressum:hover {
-  color: var(--gold-300);
+  color: var(--akzent-text);
 }

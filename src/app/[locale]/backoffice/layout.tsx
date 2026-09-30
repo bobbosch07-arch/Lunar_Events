@@ -13,6 +13,7 @@ import { Link } from "@/i18n/navigation";
 import { holeAngemeldeten } from "@/lib/konto";
 import { serverClient } from "@/lib/supabase/server";
 import css from "./backoffice.module.css";
+import { KlassischerLook } from "@/components/KlassischerLook";
 
 /**
  * Rahmen und Rechteprüfung fürs gesamte Backoffice.
@@ -27,7 +28,7 @@ import css from "./backoffice.module.css";
  * und wird nicht neu gerechnet. Next lädt dann nur noch den Teil, der
  * sich wirklich ändert.
  */
-export default async function BackofficeLayout({
+async function BackofficeLayoutInhalt({
   children,
   params,
 }: {
@@ -124,5 +125,17 @@ export default async function BackofficeLayout({
         <div className="seitenbreite">{children}</div>
       </main>
     </div>
+  );
+}
+
+/** Werkzeug fürs Personal: bleibt im klassischen Look. */
+export default async function BackofficeLayout(
+  props: Parameters<typeof BackofficeLayoutInhalt>[0],
+) {
+  return (
+    <>
+      <KlassischerLook />
+      <BackofficeLayoutInhalt {...props} />
+    </>
   );
 }

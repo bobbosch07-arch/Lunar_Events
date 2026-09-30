@@ -130,6 +130,24 @@ export function verkaufsstartKommt(
   return Boolean(event.verkauf_ab && new Date(event.verkauf_ab).getTime() > jetzt);
 }
 
+/**
+ * Ein Wort dafür, wie der Verkauf gerade steht — für Laufband und Sticker
+ * auf der Startseite. Nur was stimmt: "presale" heißt, das Presale-Fenster
+ * ist offen (presale_ab erreicht, verkauf_ab noch nicht), "bald" heißt,
+ * noch kauft niemand. Keine erfundene Knappheit.
+ */
+export type VerkaufsHinweis = "online" | "presale" | "bald" | "ausverkauft";
+
+export function verkaufsHinweis(
+  event: Pick<Veranstaltung, "ausverkauft" | "presale_ab" | "verkauf_ab">,
+  jetzt: number = Date.now(),
+): VerkaufsHinweis {
+  if (event.ausverkauft) return "ausverkauft";
+  if (!verkaufsstartKommt(event, jetzt)) return "online";
+  const presaleAb = event.presale_ab ? new Date(event.presale_ab).getTime() : null;
+  return presaleAb !== null && presaleAb <= jetzt ? "presale" : "bald";
+}
+
 /** Das Fast-Lane-Upgrade, wie die Kasse es anbietet. */
 export type FastLane = {
   preis_cent: number;

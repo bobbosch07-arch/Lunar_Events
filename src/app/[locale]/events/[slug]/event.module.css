@@ -5,16 +5,14 @@
   min-height: min(64vh, 620px);
   margin-top: -92px;
   padding-top: 92px;
-  background: var(--navy-950);
+  background: var(--nacht-900);
   overflow: hidden;
 }
 
 .heroGrund {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(110% 80% at 78% 12%, rgba(198, 161, 91, 0.24), transparent 56%),
-    linear-gradient(168deg, #142a44 0%, #0b1728 48%, #07111f 100%);
+  background: var(--verlauf-himmel);
 }
 
 .heroBild {
@@ -32,12 +30,12 @@
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(7, 17, 31, 0.6) 0%, transparent 160px),
+    linear-gradient(180deg, rgba(20, 6, 46, 0.6) 0%, transparent 160px),
     linear-gradient(
       0deg,
-      rgba(7, 17, 31, 0.94) 0%,
-      rgba(7, 17, 31, 0.62) 40%,
-      rgba(7, 17, 31, 0.2) 100%
+      rgba(20, 6, 46, 0.94) 0%,
+      rgba(20, 6, 46, 0.62) 40%,
+      rgba(20, 6, 46, 0.2) 100%
     );
 }
 
@@ -88,7 +86,7 @@
   width: 3px;
   height: 3px;
   border-radius: 50%;
-  background: var(--gold-400);
+  background: var(--akzent);
 }
 
 .heroKnopf {

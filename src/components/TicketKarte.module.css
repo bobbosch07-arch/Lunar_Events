@@ -1,7 +1,7 @@
 .ticket {
   display: flex;
   flex-direction: column;
-  background: var(--navy-900);
+  background: var(--grund-2);
   color: var(--text-on-dark);
   border: 1px solid var(--border-dark);
   border-radius: var(--radius-lg);
@@ -33,7 +33,7 @@
 }
 
 .typVip {
-  color: var(--gold-300);
+  color: var(--hl);
   border-color: var(--border-gold);
 }
 
@@ -91,7 +91,7 @@
 
 .code {
   flex: none;
-  background: var(--ivory-50);
+  background: var(--qr-grund);
   border-radius: var(--radius-sm);
   padding: 8px;
   line-height: 0;
@@ -133,6 +133,6 @@
 
 .entwertetMarke {
   background: var(--error);
-  color: var(--ivory-50);
+  color: var(--nacht-950);
   border-color: transparent;
 }

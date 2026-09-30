@@ -27,16 +27,16 @@
   color: var(--akzent-text);
 }
 
-/* Ausgewählt trägt Fläche und Gewicht, nicht nur Goldton. */
+/* Ausgewählt trägt Fläche und Gewicht, nicht nur die Farbe. */
 .aktiv {
-  background: var(--navy-900);
-  border-color: var(--navy-900);
-  color: var(--ivory-50);
+  background: var(--signal);
+  border-color: var(--signal);
+  color: var(--auf-signal);
   font-weight: var(--fw-bold);
 }
 
 .aktiv:hover {
-  background: var(--navy-700);
-  border-color: var(--navy-700);
-  color: var(--ivory-50);
+  background: var(--signal-hover);
+  border-color: var(--signal-hover);
+  color: var(--auf-signal);
 }

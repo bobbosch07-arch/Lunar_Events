@@ -18,8 +18,8 @@ html {
 
 body {
   margin: 0;
-  background: var(--ivory-50);
-  color: var(--text-primary);
+  background: var(--grund);
+  color: var(--auf-grund);
   font-family: var(--font-body);
   font-size: var(--fs-body);
   font-weight: var(--fw-body);
@@ -42,6 +42,7 @@ h6 {
   font-weight: var(--fw-display);
   line-height: var(--lh-heading);
   letter-spacing: var(--ls-heading);
+  text-transform: var(--tt-display);
   text-wrap: balance;
   color: var(--auf-grund);
 }
@@ -99,7 +100,7 @@ select,
 summary,
 [role="button"] {
   touch-action: manipulation;
-  -webkit-tap-highlight-color: rgba(198, 161, 91, 0.18);
+  -webkit-tap-highlight-color: var(--antipp);
 }
 
 ul,
@@ -114,17 +115,17 @@ hr {
   margin: 0;
 }
 
-/* Tastaturbedienung muss sichtbar sein — Gold ist hier Zusatz, nicht
+/* Tastaturbedienung muss sichtbar sein — die Farbe ist hier Zusatz, nicht
    alleiniger Traeger: der Ring hat auch Dicke und Abstand. */
 :focus-visible {
-  outline: 2px solid var(--gold-500);
+  outline: 2px solid var(--fokus);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
 
 ::selection {
-  background: var(--gold-200);
-  color: var(--navy-950);
+  background: var(--auswahl);
+  color: var(--auf-auswahl);
 }
 
 /* ---------- Wiederkehrende Textrollen ---------- */
@@ -135,6 +136,7 @@ hr {
   font-size: var(--fs-display);
   line-height: var(--lh-display);
   letter-spacing: var(--ls-display);
+  text-transform: var(--tt-display);
 }
 
 .hero-titel {
@@ -143,6 +145,24 @@ hr {
   font-size: var(--fs-hero);
   line-height: var(--lh-display);
   letter-spacing: var(--ls-display);
+  text-transform: var(--tt-display);
+}
+
+/* Das eine kursive Wort im rosa Balken ("after <em class=akzentwort>dark.</em>").
+   Nur für Kundenseiten gedacht; der klassische Look kennt es nicht. */
+.akzentwort {
+  display: inline-block;
+  font-family: var(--font-akzent), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 1.22em;
+  line-height: 1;
+  padding: 0.02em 0.16em 0.08em 0.1em;
+  background: var(--hl);
+  color: var(--auf-hl);
+  transform: rotate(-2.5deg);
 }
 
 .eyebrow {
@@ -199,8 +219,8 @@ hr {
   top: var(--space-4);
   z-index: var(--z-meldung);
   transform: translateY(-200%);
-  background: var(--navy-900);
-  color: var(--text-on-dark);
+  background: var(--signal);
+  color: var(--auf-signal);
   padding: var(--space-3) var(--space-5);
   border-radius: var(--radius-md);
   font-size: var(--fs-body-s);
@@ -208,6 +228,40 @@ hr {
 
 .sprunglink:focus {
   transform: translateY(0);
+}
+
+/* Die Sichel aus dem Logo als Fläche. Größe und Lage bestimmt, wer sie
+   benutzt; die Farbe folgt dem Akzent der Fläche. */
+.sichel {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--akzent);
+  -webkit-mask: radial-gradient(circle at 64% 38%, transparent 0 34%, #000 34.6%);
+  mask: radial-gradient(circle at 64% 38%, transparent 0 34%, #000 34.6%);
+  pointer-events: none;
+}
+
+/* Aufkleber mit Zackenrand, leicht gedreht: "Presale läuft", "Sold out" */
+.sticker {
+  display: grid;
+  place-content: center;
+  aspect-ratio: 1;
+  clip-path: polygon(100.0% 50.0%, 90.0% 59.1%, 95.0% 71.7%, 82.1% 75.6%, 81.2% 89.1%, 67.8% 86.9%, 61.1% 98.7%, 50.0% 91.0%, 38.9% 98.7%, 32.2% 86.9%, 18.8% 89.1%, 17.9% 75.6%, 5.0% 71.7%, 10.0% 59.1%, 0.0% 50.0%, 10.0% 40.9%, 5.0% 28.3%, 17.9% 24.4%, 18.8% 10.9%, 32.2% 13.1%, 38.9% 1.3%, 50.0% 9.0%, 61.1% 1.3%, 67.8% 13.1%, 81.2% 10.9%, 82.1% 24.4%, 95.0% 28.3%, 90.0% 40.9%);
+  background: var(--hl);
+  color: var(--auf-hl);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-caption);
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-transform: uppercase;
+  transform: rotate(-11deg);
+}
+
+.sticker b {
+  font-size: 1.45em;
 }
 
 /* ---------- Layout-Huellen ---------- */

@@ -5,15 +5,19 @@ import { streichpreisZu, type Veranstaltung } from "@/lib/typen";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
 import { Streichpreis } from "./Streichpreis";
+import { EventPoster } from "./EventPoster";
+import { Stern } from "./Deko";
 import css from "./EventKarte.module.css";
 
 type Props = {
   event: Veranstaltung;
   /** Die ersten sichtbaren Karten laden ihr Bild bevorzugt. */
   prioritaet?: boolean;
+  /** Allein in der Reihe: Bild und Text nebeneinander statt untereinander. */
+  breit?: boolean;
 };
 
-export function EventKarte({ event, prioritaet = false }: Props) {
+export function EventKarte({ event, prioritaet = false, breit = false }: Props) {
   const t = useTranslations("events");
   const f = useFormatter();
   const locale = useLocale();
@@ -23,7 +27,7 @@ export function EventKarte({ event, prioritaet = false }: Props) {
   const monat = f.dateTime(beginn, { month: "short" }).replace(".", "");
 
   return (
-    <Link href={`/events/${event.slug}`} className={css.karte}>
+    <Link href={`/events/${event.slug}`} className={`${css.karte} ${breit ? css.breit : ""}`}>
       <div className={css.bildfeld}>
         {event.bild ? (
           <Image
@@ -35,10 +39,12 @@ export function EventKarte({ event, prioritaet = false }: Props) {
             style={{ objectPosition: event.bild.fokus ?? "center" }}
             priority={prioritaet}
           />
-        ) : null}
+        ) : (
+          <EventPoster titel={event.titel} zeile={`${event.ort.name} · ${event.ort.stadt}`} />
+        )}
 
         <span className={css.datum}>
-          <span>{tag}</span>
+          <b>{tag}</b>
           <span>{monat}</span>
         </span>
 
@@ -49,7 +55,7 @@ export function EventKarte({ event, prioritaet = false }: Props) {
         ) : null}
       </div>
 
-      <div className={css.text}>
+      <div className={css.text} data-grund="gelb">
         <span className={css.kategorie}>{event.kategorie}</span>
         <h3 className={css.titel}>{event.titel}</h3>
         <p className={css.ort}>
@@ -76,7 +82,10 @@ export function EventKarte({ event, prioritaet = false }: Props) {
               })()}
             </span>
           )}
-          <span className={css.cta}>{t("ansehen")}</span>
+          <span className={css.cta}>
+            <Stern className={css.ctaStern} />
+            {t("ansehen")}
+          </span>
         </div>
       </div>
     </Link>

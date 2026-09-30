@@ -15,24 +15,27 @@
     "menuSchliessen": "Menü schließen",
     "zumInhalt": "Zum Inhalt springen",
     "sprache": "Sprache",
-    "backoffice": "Backoffice"
+    "backoffice": "Backoffice",
+    "tickets": "Tickets"
   },
   "start": {
-    "heroTitel": "SEE YOU\nAFTER DARK.",
+    "heroTitel": "See you\nafter <akzent>dark.</akzent>",
     "heroText": "Ausgewählte Nächte in Darmstadt.",
     "heroCta": "Events entdecken",
     "heroCtaZwei": "Wer wir sind",
     "featuredEyebrow": "Ausgewählt",
-    "featuredTitel": "Die nächsten Nächte",
+    "featuredTitel": "Die nächsten <akzent>Nächte</akzent>",
     "kommendEyebrow": "Kalender",
     "kommendTitel": "Alle kommenden Events",
     "kommendLeer": "Zurzeit sind keine Events angekündigt. Trag dich in den Verteiler ein, dann erfährst du es zuerst.",
     "markeEyebrow": "Lunar",
-    "markeTitel": "THE NIGHT STARTS HERE.",
+    "markeTitel": "The night <akzent>starts</akzent> here.",
     "markeText": "Wir machen keine Veranstaltungen am laufenden Band. Wir machen ein paar Nächte im Jahr, und die sitzen.",
     "alleEvents": "Alle Events",
     "sozialInsta": "Instagram",
-    "sozialWhatsapp": "WhatsApp-Insiders"
+    "sozialWhatsapp": "WhatsApp-Insiders",
+    "ticketsSichern": "Tickets sichern",
+    "heroNaechste": "Als Nächstes: {titel}, {datum}, {ort}."
   },
   "events": {
     "titel": "Events",
@@ -106,7 +109,7 @@
   },
   "vip": {
     "eyebrow": "VIP Experience",
-    "titel": "PRIVATE. PREMIUM. PERSONAL.",
+    "titel": "Private. Premium. <akzent>personal.</akzent>",
     "text": "Bei VIP habt ihr euren eigenen Tisch und einen Ansprechpartner, der sich um euch kümmert. Was ihr trinken wollt und wann ihr kommt, sprechen wir vorher ab.",
     "cta": "VIP anfragen",
     "leistungen": {
@@ -469,5 +472,19 @@
     "rabattEnthalten": "Darin enthalten: {betrag} Vorkasse-Rabatt.",
     "fristHinweis": "Deine Plätze sind bis <b>{frist} Uhr</b> reserviert. Kommt die Zahlung bis dahin nicht an, werden sie wieder freigegeben. ",
     "ticketsHinweis": "Deine Tickets erscheinen unter deinem Ticketlink, sobald die Zahlung eingegangen ist, meist nach ein bis zwei Werktagen."
+  },
+  "laufband": {
+    "presale": "Presale läuft",
+    "online": "Tickets online",
+    "bald": "Vorverkauf ab {datum}",
+    "ausverkauft": "Ausverkauft",
+    "abPreis": "Tickets ab {preis}",
+    "vipFrei": "VIP frei",
+    "stickerPresaleOben": "Presale",
+    "stickerPresaleUnten": "läuft",
+    "stickerOnlineOben": "Tickets",
+    "stickerOnlineUnten": "online",
+    "stickerAusOben": "Sold",
+    "stickerAusUnten": "out"
   }
 }

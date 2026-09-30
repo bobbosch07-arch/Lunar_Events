@@ -6,7 +6,7 @@
   align-items: center;
   gap: var(--space-5);
   padding: var(--space-5);
-  background: var(--navy-900);
+  background: var(--grund-2);
   color: var(--text-on-dark);
   border: 1px dashed var(--border-dark);
   border-radius: var(--radius-lg);
@@ -14,7 +14,7 @@
 
 .code {
   flex: none;
-  background: var(--ivory-50);
+  background: var(--qr-grund);
   border-radius: var(--radius-sm);
   padding: 8px;
   line-height: 0;

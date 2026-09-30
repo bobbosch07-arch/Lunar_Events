@@ -4,7 +4,7 @@
 
 .rahmen {
   min-height: 100vh;
-  background: var(--ivory-50);
+  background: var(--grund);
   color: var(--text-primary);
 }
 
@@ -66,7 +66,7 @@
   padding: var(--space-5);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  background: var(--ivory-100);
+  background: var(--grund-2);
 }
 
 .summeName {
@@ -148,7 +148,7 @@
   padding: 10px 12px;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  background: var(--ivory-100);
+  background: var(--grund-2);
   font-size: var(--fs-body-s);
 }
 

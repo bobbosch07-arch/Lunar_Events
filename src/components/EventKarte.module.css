@@ -1,39 +1,30 @@
+/* Poster oben, Mondgelb darunter. Beim Drüberfahren hebt sich die Karte
+   wie ein Knopf und bekommt den harten rosa Schatten. */
 .karte {
   display: flex;
   flex-direction: column;
-  background: var(--grund);
-  border: 1px solid var(--linie);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: var(--schatten-karte);
   transition:
-    transform var(--dur-langsam) var(--ease-aus),
-    box-shadow var(--dur-langsam) var(--ease);
+    transform var(--dur-schnell) var(--ease-aus),
+    box-shadow var(--dur-schnell) var(--ease-aus);
 }
 
 .karte:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--schatten-hoch);
+  transform: translate(-3px, -3px);
+  box-shadow: 8px 8px 0 var(--hl);
+}
+
+.karte:active {
+  transform: translate(1px, 1px);
+  box-shadow: 2px 2px 0 var(--hl);
 }
 
 .bildfeld {
   position: relative;
   aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: linear-gradient(158deg, #16304c, #0b1728 62%, #07111f);
-}
-
-/* Leichter Goldschimmer ueber dem Motiv haelt Karten mit und ohne Foto
-   in derselben Welt. Der Schatten am Fuss traegt das Datum: Auf einem
-   hellen Foto verschwand es sonst, der Textschatten allein reichte nicht. */
-.bildfeld::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(0deg, rgba(7, 17, 31, 0.55) 0%, transparent 38%),
-    radial-gradient(80% 60% at 70% 22%, rgba(198, 161, 91, 0.2), transparent 62%);
-  pointer-events: none;
+  background: var(--verlauf-poster);
 }
 
 .bild {
@@ -47,62 +38,77 @@
   transform: scale(1.03);
 }
 
+/* Das Datum als rosa Kasten, wie auf dem Poster */
 .datum {
   position: absolute;
   left: var(--space-4);
-  bottom: var(--space-4);
-  z-index: 1;
-  display: flex;
-  align-items: baseline;
-  gap: var(--space-2);
+  top: var(--space-4);
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  padding: 8px 10px 7px;
+  background: var(--hl);
+  color: var(--auf-hl);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: var(--fs-body-s);
-  letter-spacing: var(--ls-datum);
+  line-height: 1;
   text-transform: uppercase;
-  color: var(--text-on-dark);
-  text-shadow: 0 1px 12px rgba(7, 17, 31, 0.7);
+}
+
+.datum b {
+  font-size: 1.6rem;
+}
+
+.datum span {
+  margin-top: 4px;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.12em;
 }
 
 .marke {
   position: absolute;
   right: var(--space-4);
   top: var(--space-4);
-  z-index: 1;
+  z-index: 3;
+  padding: 6px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--signal);
+  color: var(--auf-signal);
   font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  padding: 5px 9px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-gold);
-  color: var(--gold-300);
-  background: rgba(7, 17, 31, 0.5);
-  backdrop-filter: blur(4px);
 }
 
 .markeAus {
-  border-color: rgba(255, 255, 255, 0.3);
-  color: var(--text-on-dark-muted);
+  background: var(--nacht-950);
+  color: var(--lila-weiss);
 }
 
+/* Der Textteil trägt data-grund="gelb" */
 .text {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-5) var(--space-5) var(--space-6);
+  align-items: flex-start;
+  gap: var(--space-3);
   flex: 1;
+  padding: var(--space-5) var(--space-5) var(--space-6);
+  background: var(--grund);
+  color: var(--auf-grund);
 }
 
 .kategorie {
+  padding: 5px 8px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sm);
   font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--auf-grund-3);
 }
 
 .titel {
   font-size: var(--fs-h3);
-  text-transform: uppercase;
   color: var(--auf-grund);
 }
 
@@ -113,12 +119,13 @@
 
 .fuss {
   display: flex;
-  align-items: baseline;
+  flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
+  width: 100%;
   margin-top: auto;
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--linie);
+  padding-top: var(--space-4);
 }
 
 .preis {
@@ -130,30 +137,66 @@
 }
 
 .preisAus {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   font-size: var(--fs-label);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--auf-grund-3);
-}
-
-.cta {
-  font-size: var(--fs-caption);
+  font-weight: var(--fw-display);
   letter-spacing: var(--ls-nav);
   text-transform: uppercase;
   color: var(--auf-grund-2);
-  border-bottom: 1px solid var(--border-gold);
-  padding-bottom: 2px;
-  transition: color var(--dur-normal) var(--ease);
 }
 
-.karte:hover .cta {
-  color: var(--akzent-text);
+/* Sieht aus wie ein Knopf, ist aber nur Teil der Karte — die ganze Karte
+   ist der Link. */
+.cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 18px;
+  border-radius: var(--radius-md);
+  background: var(--signal);
+  color: var(--auf-signal);
+  box-shadow: var(--knopf-versatz) var(--knopf-versatz) 0 var(--schatten-hart);
+  font-family: var(--knopf-font);
+  font-weight: var(--knopf-gewicht);
+  font-size: var(--knopf-fs);
+  letter-spacing: var(--knopf-ls);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ctaStern {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+
+/* ---------- Allein in der Reihe: nebeneinander ---------- */
+@media (min-width: 860px) {
+  .breit {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+  }
+  .breit .bildfeld {
+    aspect-ratio: auto;
+    min-height: 420px;
+  }
+  .breit .text {
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-12);
+  }
+  .breit .titel {
+    font-size: var(--fs-h1);
+  }
+  .breit .fuss {
+    margin-top: var(--space-2);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .karte:hover {
+  .karte:hover,
+  .karte:active {
     transform: none;
   }
   .karte:hover .bild {

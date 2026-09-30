@@ -1,81 +1,178 @@
-/* ---------- Hero ---------- */
+/* ---------- Hero ----------
+   Violett-Nacht nach docs/redesign-final.html: Himmel mit rosa Leuchten,
+   die Sichel aus dem Logo, eine blasse Riesenschrift im Hintergrund. */
 
 .hero {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  /* Bewusst nicht 100vh: der erste Blick soll schon zeigen, dass es
-     darunter weitergeht. */
-  min-height: min(76vh, 720px);
+  isolation: isolate;
   margin-top: -92px;
   padding-top: 92px;
-  background: var(--navy-950);
+  padding-bottom: var(--space-16);
+  background: var(--verlauf-himmel);
   overflow: hidden;
 }
 
-.heroGrund {
+.geist {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(120% 90% at 72% 14%, rgba(198, 161, 91, 0.26), transparent 58%),
-    radial-gradient(90% 70% at 14% 86%, rgba(23, 46, 72, 0.95), transparent 62%),
-    linear-gradient(168deg, #12263e 0%, #0b1728 46%, #07111f 100%);
+  z-index: -1;
+  left: -3vw;
+  bottom: -3vw;
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 26vw;
+  line-height: 0.8;
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(247, 240, 255, 0.06);
+  pointer-events: none;
+  user-select: none;
 }
 
-.heroBild {
+.heroSichel {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  z-index: -1;
+  width: 66vw;
+  right: -20vw;
+  bottom: -12vw;
 }
 
-/* Der Verlauf traegt die Lesbarkeit der Schrift — ohne ihn steht Weiss
-   irgendwann auf einer hellen Stelle im Foto. */
-.heroSchleier {
+.stern {
   position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    0deg,
-    rgba(7, 17, 31, 0.92) 0%,
-    rgba(7, 17, 31, 0.6) 38%,
-    rgba(7, 17, 31, 0.15) 100%
-  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+.stern1 {
+  width: 26px;
+  height: 26px;
+  top: 150px;
+  left: 70%;
+  color: var(--rosa-400);
+}
+
+.stern2 {
+  width: 14px;
+  height: 14px;
+  top: 42%;
+  right: 8%;
+  color: var(--mondgelb-500);
+}
+
+.stern3 {
+  width: 20px;
+  height: 20px;
+  bottom: 70px;
+  left: 56%;
+  color: var(--mondgelb-500);
 }
 
 .heroInhalt {
   position: relative;
-  width: 100%;
-  padding-block: var(--space-20) var(--space-16);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-5);
+  padding-top: var(--space-12);
+}
+
+.heroEyebrow {
+  display: flex;
+  align-items: center;
+}
+
+.eyebrowStern {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-2);
+  vertical-align: -1px;
+  flex: none;
+}
+
+/* Der Sticker hängt am Ende der Überschrift, neben dem kurzen "dark." —
+   dort ist auf jeder Breite Platz. */
+.titelZeile {
+  position: relative;
+  align-self: stretch;
 }
 
 .heroTitel {
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: var(--fs-hero);
+  font-size: clamp(2.6rem, 11.5vw, 8.6rem);
   line-height: var(--lh-display);
   letter-spacing: var(--ls-display);
-  color: var(--text-on-dark);
+  color: var(--auf-grund);
   white-space: pre-line;
-  max-width: 16ch;
+}
+
+.heroSticker {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 86px;
 }
 
 .heroText {
   font-size: var(--fs-body-l);
   line-height: var(--lh-body);
-  color: var(--text-on-dark-muted);
-  max-width: 44ch;
+  color: var(--auf-grund-2);
+  max-width: 40ch;
 }
 
 .heroKnoepfe {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-3);
+  gap: var(--space-4) var(--space-3);
   margin-top: var(--space-2);
+}
+
+.knopfStern {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+/* Social-Reihe im Hero (Instagram + WhatsApp), unter den Haupt-Knoepfen. */
+.heroSozial {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.sozialKnopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 8px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--linie-stark);
+  background: rgba(20, 6, 46, 0.3);
+  color: var(--auf-grund);
+  text-decoration: none;
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-nav);
+  text-transform: uppercase;
+  transition:
+    border-color var(--dur-normal) var(--ease),
+    color var(--dur-normal) var(--ease),
+    transform var(--dur-schnell) var(--ease);
+}
+
+.sozialKnopf:hover {
+  border-color: var(--akzent);
+  color: var(--akzent);
+}
+
+.sozialKnopf:active {
+  transform: translateY(1px);
+}
+
+.sozialKnopf svg {
+  flex: none;
 }
 
 /* ---------- Abschnitte ---------- */
@@ -91,13 +188,19 @@
 .kopfLinks {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
+}
+
+.abschnittTitel {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
 }
 
 .raster {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-6);
+  gap: var(--space-8);
 }
 
 .leer {
@@ -106,7 +209,35 @@
   max-width: 44ch;
 }
 
-/* ---------- Marke ---------- */
+/* Der VIP-Block ist selbst eine Fläche — der Abstand darüber kommt schon
+   vom Abschnitt davor. */
+.vipAbschnitt {
+  padding-top: 0;
+}
+
+/* ---------- Wer wir sind (rosa Fläche) ---------- */
+
+.about {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.aboutGeist {
+  position: absolute;
+  z-index: -1;
+  right: -6vw;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 34vw;
+  line-height: 0.8;
+  text-transform: uppercase;
+  color: rgba(42, 11, 94, 0.08);
+  pointer-events: none;
+  user-select: none;
+}
 
 .marke {
   display: grid;
@@ -116,9 +247,7 @@
 }
 
 .markeTitel {
-  font-family: var(--font-display);
-  font-weight: var(--fw-display);
-  font-size: var(--fs-h1);
+  font-size: var(--fs-display);
   line-height: var(--lh-display);
   letter-spacing: var(--ls-display);
   color: var(--auf-grund);
@@ -138,17 +267,39 @@
   align-items: flex-start;
 }
 
+@media (min-width: 861px) {
+  .heroInhalt {
+    gap: var(--space-6);
+    padding-top: var(--space-20);
+  }
+  .hero {
+    padding-bottom: var(--space-24);
+  }
+  .heroSichel {
+    width: min(38vw, 470px);
+    right: 4vw;
+    bottom: auto;
+    top: 150px;
+  }
+  /* Breit sitzt er oben rechts auf der Sichel, neben "SEE YOU" */
+  .heroSticker {
+    right: 4%;
+    bottom: auto;
+    top: -6%;
+    width: 132px;
+    font-size: 0.95rem;
+  }
+}
+
 @media (max-width: 860px) {
   .hero {
-    min-height: min(70vh, 560px);
     margin-top: -72px;
     padding-top: 72px;
   }
-  /* Die Kopfzeile trägt das Logo schon, eine Handbreit darüber. Doppelt
-     hätte es auf dem Handy den ersten Bildschirm gefüllt, und vom
-     Weiter-unten wäre nichts mehr zu sehen gewesen. */
-  .heroLogo {
-    display: none;
+  /* Das Akzentwort bekommt eine eigene Zeile, daneben sitzt der Sticker */
+  .heroTitel :global(.akzentwort) {
+    display: table;
+    margin-top: 0.08em;
   }
   .kopfzeile {
     flex-direction: column;
@@ -158,65 +309,5 @@
   .marke {
     grid-template-columns: 1fr;
     gap: var(--space-8);
-  }
-}
-
-/* Untereinander gleich breit: Zwei Knöpfe, die je nach Beschriftung
-   verschieden weit reichen, sehen nach Zufall aus. */
-@media (max-width: 520px) {
-  .heroKnoepfe {
-    flex-direction: column;
-    align-self: stretch;
-  }
-}
-
-/* Social-Reihe im Hero (Instagram + WhatsApp), unter den Haupt-Knoepfen. */
-.heroSozial {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-3);
-  margin-top: var(--space-1);
-}
-
-.sozialKnopf {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: 40px;
-  padding: 8px 16px;
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(252, 251, 248, 0.28);
-  color: var(--text-on-dark);
-  text-decoration: none;
-  font-size: var(--fs-caption);
-  font-weight: var(--fw-bold);
-  letter-spacing: var(--ls-nav);
-  text-transform: uppercase;
-  transition:
-    border-color var(--dur-normal) var(--ease),
-    color var(--dur-normal) var(--ease),
-    transform var(--dur-schnell) var(--ease);
-}
-
-.sozialKnopf:hover {
-  border-color: var(--gold-500);
-  color: var(--gold-500);
-}
-
-.sozialKnopf:active {
-  transform: translateY(1px);
-}
-
-.sozialKnopf svg {
-  flex: none;
-}
-
-@media (max-width: 520px) {
-  .heroSozial {
-    align-self: stretch;
-  }
-  .sozialKnopf {
-    flex: 1 1 0;
-    justify-content: center;
   }
 }

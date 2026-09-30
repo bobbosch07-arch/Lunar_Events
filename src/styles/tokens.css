@@ -1,16 +1,53 @@
 /* ============================================================
    LUNAR EVENTS — Design-Tokens
-   Richtung 03 "Contemporary Nightlife": Syne + DM Sans.
+
+   Zwei Looks, eine Datei:
+
+   - "Violett-Nacht" (seit 30.09.2026) ist der Normalfall und gilt für
+     alles, was Gäste sehen. Vorlage: docs/redesign-final.html.
+   - "Klassisch" (Navy, Ivory, Gold, Syne) bleibt für die Werkzeuge des
+     Personals: Backoffice, Einlass, Abendkasse, Garderobe, Schichtplan.
+     Eingeschaltet wird er durch ein Element mit data-thema="klassisch"
+     irgendwo auf der Seite (<KlassischerLook />). :has() hebt ihn dann
+     auf die ganze Seite, samt body, Dialogen und Portalen.
 
    Jede sichtbare Entscheidung steht hier. Komponenten greifen
    ausschliesslich auf diese Variablen zu — keine eigenen Farben,
    keine eigenen Schriftgrade, keine eigenen Radien.
+
+   Achtung beim Erweitern: Eine Variable, die auf :root eine andere
+   referenziert (--x: var(--signal)), wird dort aufgelöst und wandert
+   mit dem festen Wert nach unten. Was sich je Fläche ändern soll,
+   muss in der Komponente direkt var(--signal) benutzen.
    ============================================================ */
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 
-  /* ---------- Markenfarben (Briefing, unveraenderlich) ---------- */
+  /* ---------- Violett-Nacht: Grundfarben ---------- */
+  --nacht-950: #14062e;
+  --nacht-900: #1a0840;
+  --nacht-800: #220a4f;
+  --nacht-700: #2d1260;
+  --nacht-600: #3a1a73;
+  --violett-500: #5b21c9;
+  --violett-400: #8a4dff;
+  --mondgelb-500: #ffe14a;
+  --mondgelb-300: #fff09a;
+  --rosa-400: #ff8fd6;
+  --rosa-300: #ffb8e6;
+  --lila-weiss: #f7f0ff;
+  --tinte: #2a0b5e;
+  --tinte-akzent: #6a1fd0;
+
+  /* Verläufe für Hero und Poster. Rosa leuchtet oben links, das Violett
+     sammelt sich oben rechts, nach unten wird es Nacht. */
+  --verlauf-himmel:
+    radial-gradient(70% 55% at 8% 0%, rgba(255, 143, 214, 0.55) 0%, rgba(255, 143, 214, 0) 70%),
+    radial-gradient(110% 90% at 92% 12%, #8a4dff 0%, #5b21c9 38%, #2e0e6b 72%, #1a0840 100%);
+  --verlauf-poster: linear-gradient(160deg, #8a4dff 0%, #5b21c9 45%, #220a4f 100%);
+
+  /* ---------- Klassisch: Grundfarben (Werkzeuge des Personals) ---------- */
   --ivory-50: #fcfbf8;
   --ivory-100: #f7f5f0;
   --ivory-200: #eeeae1;
@@ -26,80 +63,110 @@
   --gold-200: #efe0b8;
 
   /* ---------- Text ---------- */
-  --text-primary: #101418;
-  --text-secondary: #5e6268;
-  --text-muted: #858990;
-  --text-on-dark: #f8f7f3;
-  --text-on-dark-muted: #b9bec6;
+  --text-primary: var(--lila-weiss);
+  --text-secondary: #c4b9d5;
+  --text-muted: #9788b0;
+  --text-on-dark: var(--lila-weiss);
+  --text-on-dark-muted: #c4b9d5;
 
   /* ---------- Linien ---------- */
-  --border-light: #e4e0d7;
-  --border-dark: rgba(255, 255, 255, 0.14);
-  --border-gold: rgba(198, 161, 91, 0.55);
+  --border-light: rgba(247, 240, 255, 0.16);
+  --border-dark: rgba(247, 240, 255, 0.16);
+  --border-gold: rgba(255, 143, 214, 0.55);
 
-  /* ---------- Status (sparsam, gedeckt) ---------- */
-  --success: #2f6b4f;
-  --warning: #9a741f;
-  --error: #a64040;
-  --info: #365d80;
-  --success-weich: #eaf1ec;
-  --warning-weich: #f6efdc;
-  --error-weich: #f6eaea;
-  --info-weich: #e9eff5;
+  /* ---------- Status (hell genug für den dunklen Grund) ---------- */
+  --success: #7ee2b0;
+  --warning: #ffd36a;
+  --error: #ff9a9a;
+  --info: #a9c4ff;
+  --success-weich: rgba(126, 226, 176, 0.14);
+  --warning-weich: rgba(255, 211, 106, 0.14);
+  --error-weich: rgba(255, 154, 154, 0.14);
+  --info-weich: rgba(169, 196, 255, 0.14);
 
   /* ============================================================
      Semantische Ebene — hierauf bauen die Komponenten.
-     [data-grund="dunkel"] schreibt dieselben Namen um, damit jede
-     Komponente ohne eigene Dunkel-Variante auf Navy funktioniert.
+     [data-grund] schreibt dieselben Namen für einen Abschnitt um.
      ============================================================ */
-  --grund: var(--ivory-50);
-  --grund-2: var(--ivory-100);
-  --grund-3: var(--ivory-200);
-  --auf-grund: var(--text-primary);
-  --auf-grund-2: var(--text-secondary);
-  --auf-grund-3: var(--text-muted);
-  --linie: var(--border-light);
-  --linie-stark: #d6d1c5;
-  --akzent: var(--gold-500);
-  --akzent-text: var(--gold-500);
-  --schatten-karte: 0 8px 30px rgba(7, 17, 31, 0.08);
-  --schatten-hoch: 0 18px 50px rgba(7, 17, 31, 0.14);
+  --grund: var(--nacht-800);
+  --grund-2: var(--nacht-700);
+  --grund-3: var(--nacht-600);
+  --auf-grund: var(--lila-weiss);
+  --auf-grund-2: #c4b9d5;
+  --auf-grund-3: #9788b0;
+  --linie: rgba(247, 240, 255, 0.16);
+  --linie-stark: rgba(247, 240, 255, 0.3);
+  --akzent: var(--mondgelb-500);
+  --akzent-text: var(--mondgelb-500);
+  --schatten-karte: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --schatten-hoch: 0 18px 50px rgba(0, 0, 0, 0.45);
+
+  /* Alles, was man anklicken kann: Mondgelb mit hartem rosa Schatten */
+  --signal: var(--mondgelb-500);
+  --signal-hover: var(--mondgelb-300);
+  --auf-signal: var(--tinte);
+  --schatten-hart: var(--rosa-400);
+  /* Der rosa Balken hinter dem einen kursiven Akzentwort */
+  --hl: var(--rosa-400);
+  --auf-hl: var(--tinte);
+  --fokus: var(--mondgelb-500);
+  --auswahl: var(--rosa-400);
+  --auf-auswahl: var(--tinte);
+  --antipp: rgba(255, 143, 214, 0.2);
+  /* QR-Codes brauchen hellen Grund, egal in welchem Look */
+  --qr-grund: #ffffff;
 
   /* ---------- Typografie ---------- */
-  /* --font-display / --font-body setzt next/font in layout.tsx */
-  --fw-display: 700;
-  --fw-display-leicht: 600;
+  /* --font-unbounded, --font-akzent, --font-syne, --font-body setzt
+     next/font in layout.tsx */
+  --font-display: var(--font-unbounded);
+  --fw-display: 900;
+  --fw-display-leicht: 700;
   --fw-body: 400;
   --fw-medium: 500;
   --fw-bold: 700;
+  --tt-display: uppercase;
 
-  --fs-display: clamp(2.75rem, 7vw, 5.25rem);
-  --fs-hero: clamp(2.25rem, 5.6vw, 4.25rem);
-  --fs-h1: clamp(1.875rem, 4vw, 3rem);
-  --fs-h2: clamp(1.5rem, 3vw, 2.25rem);
-  --fs-h3: clamp(1.25rem, 2.2vw, 1.625rem);
-  --fs-h4: 1.125rem;
+  /* Unbounded ist sehr breit — dieselben Stufen wie früher wären
+     um ein Viertel breiter geworden. */
+  --fs-display: clamp(2.25rem, 6.4vw, 4.5rem);
+  --fs-hero: clamp(2.5rem, 9vw, 7.5rem);
+  --fs-h1: clamp(1.6rem, 3.6vw, 2.6rem);
+  --fs-h2: clamp(1.35rem, 2.7vw, 2rem);
+  --fs-h3: clamp(1.1rem, 1.9vw, 1.4rem);
+  --fs-h4: 1rem;
   --fs-body-l: 1.125rem;
   --fs-body: 1rem;
   --fs-body-s: 0.875rem;
   --fs-label: 0.75rem;
   --fs-caption: 0.6875rem;
 
-  --lh-display: 1.02;
-  --lh-heading: 1.14;
-  --lh-body: 1.7;
-  --lh-weit: 1.8;
+  --lh-display: 0.95;
+  --lh-heading: 1.08;
+  --lh-body: 1.65;
+  --lh-weit: 1.75;
   --lh-eng: 1.35;
 
-  /* Syne ist von Haus aus breit — grosse Grade vertragen etwas Zug nach innen,
-     Versal-Labels brauchen dagegen Luft. */
-  --ls-display: -0.015em;
-  --ls-heading: 0.005em;
+  --ls-display: -0.025em;
+  --ls-heading: -0.01em;
   --ls-body: 0;
-  --ls-nav: 0.16em;
-  --ls-label: 0.2em;
-  --ls-eyebrow: 0.28em;
-  --ls-datum: 0.22em;
+  --ls-nav: 0.08em;
+  --ls-label: 0.18em;
+  --ls-eyebrow: 0.24em;
+  --ls-datum: 0.2em;
+
+  /* ---------- Knöpfe ---------- */
+  --knopf-font: var(--font-unbounded);
+  --knopf-gewicht: 800;
+  --knopf-ls: 0.04em;
+  --knopf-fs: 0.75rem;
+  --knopf-fs-klein: 0.6875rem;
+  --knopf-fs-gross: 0.8125rem;
+  --knopf-lh: 1.1;
+  --knopf-rand: 2px;
+  /* Harter Schatten nach rechts unten, beim Drüberfahren hebt sich der Knopf */
+  --knopf-versatz: 4px;
+  --knopf-hub: translate(-2px, -2px);
 
   /* ---------- Abstaende ---------- */
   --space-1: 4px;
@@ -153,11 +220,197 @@
 }
 
 /* ============================================================
-   Dunkler Grund. Auf jeden Abschnitt setzbar:
-       <section data-grund="dunkel"> … </section>
+   Flächen für Violett-Nacht. Auf jeden Abschnitt setzbar:
+       <section data-grund="gelb"> … </section>
    Alle Komponenten darin wechseln mit, ohne eigene Regeln.
    ============================================================ */
+
+/* Die Nacht selbst. Heißt noch "dunkel", weil die Seiten aus der Zeit
+   stammen, als der Normalfall hell war. */
 [data-grund="dunkel"] {
+  --grund: var(--nacht-800);
+  --grund-2: var(--nacht-700);
+  --grund-3: var(--nacht-600);
+  --auf-grund: var(--lila-weiss);
+  --auf-grund-2: #c4b9d5;
+  --auf-grund-3: #9788b0;
+  --linie: rgba(247, 240, 255, 0.16);
+  --linie-stark: rgba(247, 240, 255, 0.3);
+  --akzent-text: var(--mondgelb-500);
+  color-scheme: dark;
+}
+
+/* Tiefer als die Nacht: Fußzeile, Hero-Rahmen */
+[data-grund="tief"] {
+  --grund: var(--nacht-950);
+  --grund-2: var(--nacht-900);
+  --grund-3: var(--nacht-800);
+  --auf-grund: var(--lila-weiss);
+  --auf-grund-2: #c4b9d5;
+  --auf-grund-3: #9788b0;
+  --linie: rgba(247, 240, 255, 0.14);
+  --linie-stark: rgba(247, 240, 255, 0.28);
+  --akzent-text: var(--mondgelb-500);
+  --schatten-karte: 0 8px 30px rgba(0, 0, 0, 0.45);
+  --schatten-hoch: 0 18px 50px rgba(0, 0, 0, 0.55);
+  color-scheme: dark;
+}
+
+/* Eine Spur dunkler als die Nacht, damit Abschnitte sich absetzen */
+[data-grund="gedaempft"] {
+  --grund: var(--nacht-900);
+  --grund-2: var(--nacht-800);
+  --grund-3: var(--nacht-700);
+}
+
+/* Mondgelbe Fläche: Tinte als Text, Knöpfe werden dunkel */
+[data-grund="gelb"] {
+  --grund: var(--mondgelb-500);
+  --grund-2: #ffe86f;
+  --grund-3: #fff09a;
+  --auf-grund: var(--tinte);
+  --auf-grund-2: #55365a;
+  --auf-grund-3: #6b4d70;
+  --linie: rgba(42, 11, 94, 0.2);
+  --linie-stark: rgba(42, 11, 94, 0.36);
+  --akzent: var(--tinte-akzent);
+  --akzent-text: var(--tinte-akzent);
+  --signal: var(--tinte);
+  --signal-hover: #3d1580;
+  --auf-signal: var(--mondgelb-500);
+  --schatten-hart: var(--rosa-400);
+  --hl: var(--rosa-400);
+  --auf-hl: var(--tinte);
+  --fokus: var(--tinte);
+  --schatten-karte: 0 8px 30px rgba(42, 11, 94, 0.18);
+  --schatten-hoch: 0 18px 50px rgba(42, 11, 94, 0.25);
+  color-scheme: light;
+}
+
+/* Rosa Fläche: wie Gelb, nur liegt jetzt Gelb im Akzentbalken */
+[data-grund="rosa"] {
+  --grund: var(--rosa-400);
+  --grund-2: #ffa3de;
+  --grund-3: var(--rosa-300);
+  --auf-grund: var(--tinte);
+  --auf-grund-2: #50236f;
+  --auf-grund-3: #5f2f7c;
+  --linie: rgba(42, 11, 94, 0.24);
+  --linie-stark: rgba(42, 11, 94, 0.4);
+  --akzent: var(--tinte);
+  --akzent-text: var(--tinte);
+  --signal: var(--tinte);
+  --signal-hover: #3d1580;
+  --auf-signal: var(--mondgelb-500);
+  --schatten-hart: var(--mondgelb-500);
+  --hl: var(--mondgelb-500);
+  --auf-hl: var(--tinte);
+  --fokus: var(--tinte);
+  --schatten-karte: 0 8px 30px rgba(42, 11, 94, 0.2);
+  --schatten-hoch: 0 18px 50px rgba(42, 11, 94, 0.28);
+  color-scheme: light;
+}
+
+/* ============================================================
+   Klassisch — der Look vor dem 30.09.2026, für die Werkzeuge des
+   Personals. Die Werte sind die alten, Zeile für Zeile.
+   ============================================================ */
+:root:has([data-thema="klassisch"]) {
+  color-scheme: light;
+
+  --text-primary: #101418;
+  --text-secondary: #5e6268;
+  --text-muted: #858990;
+  --text-on-dark: #f8f7f3;
+  --text-on-dark-muted: #b9bec6;
+
+  --border-light: #e4e0d7;
+  --border-dark: rgba(255, 255, 255, 0.14);
+  --border-gold: rgba(198, 161, 91, 0.55);
+
+  --success: #2f6b4f;
+  --warning: #9a741f;
+  --error: #a64040;
+  --info: #365d80;
+  --success-weich: #eaf1ec;
+  --warning-weich: #f6efdc;
+  --error-weich: #f6eaea;
+  --info-weich: #e9eff5;
+
+  --grund: var(--ivory-50);
+  --grund-2: var(--ivory-100);
+  --grund-3: var(--ivory-200);
+  --auf-grund: var(--text-primary);
+  --auf-grund-2: var(--text-secondary);
+  --auf-grund-3: var(--text-muted);
+  --linie: var(--border-light);
+  --linie-stark: #d6d1c5;
+  --akzent: var(--gold-500);
+  --akzent-text: var(--gold-500);
+  --schatten-karte: 0 8px 30px rgba(7, 17, 31, 0.08);
+  --schatten-hoch: 0 18px 50px rgba(7, 17, 31, 0.14);
+
+  --signal: var(--navy-900);
+  --signal-hover: var(--navy-700);
+  --auf-signal: var(--ivory-50);
+  --schatten-hart: transparent;
+  --hl: var(--gold-500);
+  --auf-hl: var(--navy-950);
+  --fokus: var(--gold-500);
+  --auswahl: var(--gold-200);
+  --auf-auswahl: var(--navy-950);
+  --antipp: rgba(198, 161, 91, 0.18);
+
+  /* Nur der alte Look kennt eigene Farben für die hellen Knöpfe auf
+     dunklem Grund und die Goldkante; Violett-Nacht fällt auf die
+     allgemeinen zurück. */
+  --knopf-hell-grund: var(--ivory-50);
+  --knopf-hell-text: var(--navy-950);
+  --knopf-hell-hover: var(--gold-300);
+  --knopf-linie-hell-text: var(--text-on-dark);
+  --knopf-linie-hell-rand: rgba(255, 255, 255, 0.4);
+  --knopf-linie-hell-hover: var(--gold-300);
+  --knopf-linie-hell-hover-rand: var(--gold-400);
+  --knopf-linie-hell-fuellung: transparent;
+  --knopf-hl-rand: var(--border-gold);
+
+  --font-display: var(--font-syne);
+  --fw-display: 700;
+  --fw-display-leicht: 600;
+  --tt-display: none;
+
+  --fs-display: clamp(2.75rem, 7vw, 5.25rem);
+  --fs-hero: clamp(2.25rem, 5.6vw, 4.25rem);
+  --fs-h1: clamp(1.875rem, 4vw, 3rem);
+  --fs-h2: clamp(1.5rem, 3vw, 2.25rem);
+  --fs-h3: clamp(1.25rem, 2.2vw, 1.625rem);
+  --fs-h4: 1.125rem;
+
+  --lh-display: 1.02;
+  --lh-heading: 1.14;
+  --lh-body: 1.7;
+  --lh-weit: 1.8;
+
+  --ls-display: -0.015em;
+  --ls-heading: 0.005em;
+  --ls-nav: 0.16em;
+  --ls-label: 0.2em;
+  --ls-eyebrow: 0.28em;
+  --ls-datum: 0.22em;
+
+  --knopf-font: var(--font-body);
+  --knopf-gewicht: 500;
+  --knopf-ls: 0.16em;
+  --knopf-fs: 0.75rem;
+  --knopf-fs-klein: 0.6875rem;
+  --knopf-fs-gross: 0.875rem;
+  --knopf-lh: 1.7;
+  --knopf-rand: 1px;
+  --knopf-versatz: 0px;
+  --knopf-hub: none;
+}
+
+:root:has([data-thema="klassisch"]) [data-grund="dunkel"] {
   --grund: var(--navy-900);
   --grund-2: var(--navy-800);
   --grund-3: var(--navy-700);
@@ -172,7 +425,7 @@
   color-scheme: dark;
 }
 
-[data-grund="tief"] {
+:root:has([data-thema="klassisch"]) [data-grund="tief"] {
   --grund: var(--navy-950);
   --grund-2: var(--navy-900);
   --grund-3: var(--navy-800);
@@ -187,7 +440,8 @@
   color-scheme: dark;
 }
 
-[data-grund="gedaempft"] {
+:root:has([data-thema="klassisch"]) [data-grund="gedaempft"] {
   --grund: var(--ivory-100);
   --grund-2: var(--ivory-200);
+  --grund-3: var(--ivory-200);
 }

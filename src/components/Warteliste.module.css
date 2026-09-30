@@ -64,7 +64,7 @@
 
 .eingabe:focus {
   border-color: var(--auf-grund);
-  outline: 2px solid var(--gold-400);
+  outline: 2px solid var(--fokus);
   outline-offset: 1px;
 }
 

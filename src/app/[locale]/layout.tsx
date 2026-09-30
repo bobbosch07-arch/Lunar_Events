@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans } from "next/font/google";
+import { Syne, DM_Sans, Unbounded, Instrument_Serif } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -9,15 +9,36 @@ import { CodeMerker } from "@/components/CodeMerker";
 import "../globals.css";
 
 /**
- * Richtung 03 "Contemporary Nightlife". Beide Schriften werden von
- * next/font selbst ausgeliefert — kein Aufruf bei Google beim Seitenaufruf,
- * kein Nachladeruckeln, und der Consent-Banner muss nichts dazu sagen.
+ * Violett-Nacht (30.09.2026): Unbounded für Überschriften und Knöpfe,
+ * Instrument Serif kursiv für das eine Akzentwort, DM Sans für alles
+ * andere. Syne bleibt für den klassischen Look der Personal-Werkzeuge
+ * und wird deshalb nicht vorgeladen — Gäste brauchen sie nie.
+ *
+ * Alle Schriften liefert next/font selbst aus — kein Aufruf bei Google
+ * beim Seitenaufruf, kein Nachladeruckeln, und der Consent-Banner muss
+ * nichts dazu sagen.
  */
+const unbounded = Unbounded({
+  subsets: ["latin"],
+  weight: ["700", "800", "900"],
+  variable: "--font-unbounded",
+  display: "swap",
+});
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: "italic",
+  variable: "--font-akzent",
+  display: "swap",
+});
+
 const syne = Syne({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
-  variable: "--font-display",
+  variable: "--font-syne",
   display: "swap",
+  preload: false,
 });
 
 const dmSans = DM_Sans({
@@ -58,13 +79,13 @@ export async function generateMetadata({
 }
 
 /**
- * Die Farbe der Browserleiste auf dem Handy. Ivory, weil die Seite hell
- * beginnt — eine dunkle Leiste über hellem Inhalt sieht aus wie ein
- * Ladefehler.
+ * Die Farbe der Browserleiste auf dem Handy: die Nacht, auf der jede
+ * Kundenseite beginnt. Eine helle Leiste über dunklem Inhalt sähe aus
+ * wie ein Ladefehler.
  */
 export const viewport = {
-  themeColor: "#fcfbf8",
-  colorScheme: "light",
+  themeColor: "#1a0840",
+  colorScheme: "dark",
 };
 
 export default async function RootLayout({
@@ -81,7 +102,10 @@ export default async function RootLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale} className={`${syne.variable} ${dmSans.variable}`}>
+    <html
+      lang={locale}
+      className={`${unbounded.variable} ${instrumentSerif.variable} ${syne.variable} ${dmSans.variable}`}
+    >
       <body>
         <NextIntlClientProvider>
           <Betriebshinweis />

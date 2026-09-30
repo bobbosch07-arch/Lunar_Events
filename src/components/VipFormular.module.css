@@ -61,7 +61,7 @@
 .eingabe:focus,
 .auswahl:focus,
 .textfeld:focus {
-  border-color: var(--navy-900);
+  border-color: var(--auf-grund);
 }
 
 .fehlerhaft {

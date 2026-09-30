@@ -60,6 +60,52 @@ Seite über `preview_start` mit `url` öffnen.
 
 ## Gestaltung — bitte nicht neu erfinden
 
+### Violett-Nacht (seit 30.09.2026) — alles, was Gäste sehen
+
+Lunar Events ist Bobbos eigenes Unternehmen; „der Kunde“ weiter unten meint
+ihn. Am 30.09.2026 hat er den Look getauscht: mehr Farbe, mehr Spaß,
+Referenz splash-festival.de (nur Stil und Schrift, nicht kopiert). Gewählt
+aus zwei Runden Lookboards: **B „Violett-Nacht“ mit der Sichel aus B2**.
+Vorlage: [`docs/redesign-final.html`](docs/redesign-final.html), die
+Runden davor in `docs/redesign-boards*.html`.
+
+- **Schrift:** Unbounded (900) für Überschriften und Knöpfe, immer
+  Versalien (`--tt-display`). Instrument Serif kursiv für **ein**
+  Akzentwort im rosa Balken — im Text markiert als `<akzent>…</akzent>`,
+  gerendert mit `t.rich(…, { akzent })` aus `components/Deko.tsx`
+  (Klasse `.akzentwort`). DM Sans für alles andere.
+- **Farben:** Nacht-Violett als Grund, **Mondgelb = alles Anklickbare**
+  (`--signal`) mit hartem rosa Schatten, Rosa = Akzentbalken und Sticker
+  (`--hl`), Lila-Weiß als Text. Rosa und Gelb tragen keinen kleinen Text
+  auf hellem Grund.
+- **Flächen über `data-grund`** wie bisher: ohne = Nacht, `tief`,
+  `gedaempft`, `gelb`, `rosa`. Auf Gelb und Rosa werden Knöpfe von selbst
+  dunkel, weil `--signal` dort Tinte ist.
+- **Die Sichel** (`.sichel` in globals.css) ist das wiederkehrende Motiv:
+  Hero, Eventposter, später Ticket und Story. Das Logo selbst wird nur
+  umgefärbt, nie nachgebaut.
+- **Events ohne Foto** zeigen ein erzeugtes Poster (`EventPoster`):
+  Verlauf, Sichel, Titel. Ein hochgeladenes Bild geht immer vor.
+- **Laufband und Sticker** (`Laufband`, `verkaufsHinweis` in typen.ts)
+  kommen nur aus echten Daten: „Presale läuft“ steht nur im Presale-Fenster.
+- **„Tickets sichern“** oben auf der Startseite und „Tickets“ in der
+  Kopfzeile führen zur Ticketauswahl des nächsten Events mit freien Tickets
+  (Wunsch 30.09.2026). Auf der Eventseite zur eigenen, mit Promoter-Kürzel.
+- **Achtung bei Tokens, die andere Tokens benutzen:** `--x: var(--signal)`
+  auf `:root` wird dort aufgelöst und wechselt auf Gelb nicht mit.
+  Komponenten benutzen deshalb `var(--signal)` direkt.
+
+### Klassisch — nur noch für die Werkzeuge des Personals
+
+Backoffice, Einlass, Abendkasse, Garderobe und Schichtplan behalten den
+alten Look (Navy, Ivory, Gold, Syne). Eingeschaltet wird er durch
+`<KlassischerLook />` irgendwo auf der Seite; tokens.css hebt ihn per
+`:root:has([data-thema="klassisch"])` auf die ganze Seite. Wer ein neues
+Personal-Werkzeug baut, setzt ihn dort ein. Alles Folgende beschreibt den
+klassischen Look und gilt für Gästeseiten nur noch, wo es nicht Farbe oder
+Schrift betrifft (Ton der Texte, Preise, keine erfundene Knappheit, Handy).
+
+
 - **Gewählte Richtung: 03 „Contemporary Nightlife"** (Syne + DM Sans),
   vom Kunden aus drei Lookboards ausgewählt. Die Lookboards stehen in
   [`docs/lookboards.html`](docs/lookboards.html), der Generator daneben in

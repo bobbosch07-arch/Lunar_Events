@@ -3,7 +3,7 @@
   align-items: center;
   min-height: 62vh;
   padding-block: var(--abschnitt);
-  background: var(--ivory-50);
+  background: var(--grund);
 }
 
 .mitte {
@@ -22,7 +22,7 @@
   font-size: clamp(4rem, 14vw, 9rem);
   line-height: 0.9;
   letter-spacing: var(--ls-display);
-  color: var(--ivory-200);
+  color: var(--grund-3);
   font-variant-numeric: tabular-nums;
   margin-bottom: var(--space-2);
 }

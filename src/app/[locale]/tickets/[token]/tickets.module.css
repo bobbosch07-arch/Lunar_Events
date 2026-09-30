@@ -2,7 +2,7 @@
    im Halbdunkel, mit hochgedrehter Helligkeit. */
 .rahmen {
   min-height: 100vh;
-  background: var(--navy-950);
+  background: var(--nacht-950);
   color: var(--text-on-dark);
 }
 
@@ -105,8 +105,8 @@
 
 .abgesagt {
   border: 1px solid var(--error);
-  background: rgba(166, 64, 64, 0.18);
-  color: #f3c9c9;
+  background: var(--error-weich);
+  color: var(--error);
 }
 
 .hinweisBand {
@@ -132,7 +132,7 @@
 }
 
 .warnung strong {
-  color: var(--gold-300);
+  color: var(--akzent-text);
 }
 
 .nummer {

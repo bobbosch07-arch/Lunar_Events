@@ -20,11 +20,11 @@
     background-color var(--dur-normal) var(--ease);
 }
 
-/* Gewählt trägt Rahmen UND Goldkante UND Häkchen — Gold allein wäre
-   für Farbenblinde kein Merkmal. */
+/* Gewählt trägt Rahmen UND Akzentkante UND Häkchen — die Farbe allein
+   wäre für Farbenblinde kein Merkmal. */
 .gewaehlt {
-  border-color: var(--navy-900);
-  box-shadow: inset 3px 0 0 var(--gold-500);
+  border-color: var(--signal);
+  box-shadow: inset 3px 0 0 var(--akzent);
   background: var(--grund-2);
 }
 
@@ -461,7 +461,7 @@
 
 .presaleEingabe:focus {
   border-color: var(--auf-grund);
-  outline: 2px solid var(--gold-400);
+  outline: 2px solid var(--fokus);
   outline-offset: 1px;
 }
 

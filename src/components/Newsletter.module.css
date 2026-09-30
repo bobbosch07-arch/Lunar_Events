@@ -9,7 +9,7 @@
   font-size: var(--fs-caption);
   letter-spacing: var(--ls-eyebrow);
   text-transform: uppercase;
-  color: var(--gold-400);
+  color: var(--akzent-text);
   margin-bottom: var(--space-2);
 }
 
@@ -57,7 +57,7 @@
   border: 1px solid var(--border-gold);
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--gold-300);
+  color: var(--akzent-text);
   font-family: var(--font-body);
   font-size: var(--fs-caption);
   letter-spacing: var(--ls-nav);
@@ -70,8 +70,8 @@
 }
 
 .knopf:hover:not(:disabled) {
-  background: var(--gold-500);
-  color: var(--navy-950);
+  background: var(--signal);
+  color: var(--auf-signal);
 }
 
 .knopf:disabled {
@@ -82,10 +82,10 @@
 .danke {
   font-size: var(--fs-body-s);
   line-height: var(--lh-body);
-  color: var(--gold-300);
+  color: var(--akzent-text);
 }
 
 .fehler {
   font-size: var(--fs-body-s);
-  color: #e59a9a;
+  color: var(--error);
 }

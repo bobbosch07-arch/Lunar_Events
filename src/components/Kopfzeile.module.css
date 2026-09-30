@@ -1,38 +1,38 @@
+/* Der Kopf schwebt als Kasten über der Seite. Außen herum bleibt er
+   durchlässig: Klicks neben dem Kasten landen auf dem Inhalt darunter.
+   Die Höhe (12 + 68 + 12 = 92 px, auf dem Handy 72) ist dieselbe wie
+   früher — die Heros ziehen sich um genau so viel darunter. */
 .kopf {
   position: sticky;
   top: 0;
   z-index: var(--z-kopf);
-  transition:
-    background-color var(--dur-langsam) var(--ease),
-    border-color var(--dur-langsam) var(--ease);
-  border-bottom: 1px solid transparent;
+  padding: 12px var(--rand-seite);
+  pointer-events: none;
 }
 
-/* Ruht ueber einem dunklen Hero, bis gescrollt wird. */
-.ueberHero {
-  background: transparent;
-  border-bottom-color: transparent;
+.kasten {
+  pointer-events: auto;
+  max-width: calc(var(--breite-seite) - 2 * var(--rand-seite));
+  margin-inline: auto;
+  padding: 0 8px 0 14px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-lg);
+  background: rgba(20, 6, 46, 0.42);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  transition: background-color var(--dur-langsam) var(--ease);
 }
 
-.fest,
-.ueberHero.gescrollt {
-  background: var(--ivory-50);
-  border-bottom-color: var(--border-light);
-}
-
-.ueberHero.gescrollt {
-  /* Nach dem Scrollen liegt der Kopf auf Ivory — die Farben kippen mit. */
-  --auf-grund: var(--text-primary);
-  --auf-grund-2: var(--text-secondary);
-  --linie: var(--border-light);
-  --akzent-text: var(--gold-500);
+/* Nach dem Scrollen und mit offenem Menü: dicht, damit nichts durchscheint */
+.dicht .kasten {
+  background: rgba(20, 6, 46, 0.9);
 }
 
 .reihe {
   display: flex;
   align-items: center;
-  gap: var(--space-8);
-  min-height: 92px;
+  gap: var(--space-6);
+  min-height: 66px;
 }
 
 .markeLink {
@@ -44,23 +44,32 @@
 .mitte {
   display: flex;
   gap: var(--space-6);
+  margin-inline: auto;
 }
 
 .rechts {
   display: flex;
   align-items: center;
-  gap: var(--space-6);
+  gap: var(--space-5);
   margin-left: auto;
+}
+
+.mitte + .rechts {
+  margin-left: 0;
 }
 
 .punkt {
   position: relative;
-  font-size: var(--fs-label);
-  font-weight: var(--fw-medium);
-  letter-spacing: var(--ls-nav);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--auf-grund-2);
-  padding-block: var(--space-3);
   transition: color var(--dur-normal) var(--ease);
 }
 
@@ -69,31 +78,91 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 6px;
-  height: 1px;
-  background: var(--gold-500);
+  bottom: 8px;
+  height: 2px;
+  background: var(--akzent);
   transform: scaleX(0);
   transform-origin: left;
   transition: transform var(--dur-normal) var(--ease-aus);
 }
 
 .punkt:hover {
-  color: var(--akzent-text);
+  color: var(--auf-grund);
 }
 
 .punkt:hover::after {
   transform: scaleX(1);
 }
 
-/* Die aktive Seite traegt Linie UND kraeftigere Farbe — Gold allein waere
-   fuer Farbenblinde kein Merkmal (Briefing 26). */
+/* Die aktive Seite trägt Linie UND hellere Farbe — die Farbe allein wäre
+   für Farbenblinde kein Merkmal (Briefing 26). */
 .aktiv {
   color: var(--auf-grund);
-  font-weight: var(--fw-bold);
 }
 
 .aktiv::after {
   transform: scaleX(1);
+}
+
+.ticketSymbol {
+  display: none;
+  width: 22px;
+  height: 22px;
+}
+
+.sprachWahl {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: var(--fs-caption);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.sprachWahl a {
+  padding: 8px 9px;
+  border-radius: var(--radius-sm);
+  color: var(--auf-grund-2);
+}
+
+.sprachWahl a:hover {
+  color: var(--auf-grund);
+}
+
+.sprachWahl .spracheAn {
+  background: var(--auf-grund);
+  color: var(--grund);
+}
+
+.ticketsKnopf {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  background: var(--signal);
+  color: var(--auf-signal);
+  font-family: var(--font-display);
+  font-size: var(--fs-label);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background-color var(--dur-normal) var(--ease);
+}
+
+.ticketsKnopf:hover {
+  background: var(--signal-hover);
+}
+
+.knopfStern {
+  width: 14px;
+  height: 14px;
+  flex: none;
 }
 
 /* ---------- Mobil ---------- */
@@ -106,36 +175,37 @@
   align-items: center;
   width: var(--tap);
   height: var(--tap);
-  margin-right: calc(var(--space-3) * -1);
+  flex: none;
   background: transparent;
-  border: 0;
+  border: 1px solid var(--linie);
+  border-radius: var(--radius-md);
 }
 
 .menuKnopf span {
   display: block;
-  width: 22px;
-  height: 1px;
+  width: 18px;
+  height: 2px;
   background: var(--auf-grund);
   transition: transform var(--dur-normal) var(--ease-aus), opacity var(--dur-schnell) var(--ease);
 }
 
-/* Die Balken liegen 6 px auseinander (5 px Abstand + 1 px Balken). Nur so
+/* Die Balken liegen 7 px auseinander (5 px Abstand + 2 px Balken). Nur so
    kreuzen sie sich in der Mitte, sonst wirkt das X abgeschnitten. */
 .offen .balken1 {
-  transform: translateY(6px) rotate(45deg);
+  transform: translateY(7px) rotate(45deg);
 }
 .offen .balken2 {
   opacity: 0;
 }
 .offen .balken3 {
-  transform: translateY(-6px) rotate(-45deg);
+  transform: translateY(-7px) rotate(-45deg);
 }
 
 .schublade {
   display: none;
   flex-direction: column;
   gap: var(--space-1);
-  padding: var(--space-4) 0 var(--space-8);
+  padding: var(--space-3) var(--space-1) var(--space-6);
   border-top: 1px solid var(--linie);
 }
 
@@ -144,6 +214,7 @@
   font-size: var(--fs-h3);
   font-weight: var(--fw-display);
   letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
   color: var(--auf-grund);
   padding-block: var(--space-3);
 }
@@ -151,17 +222,22 @@
 .schubladeTrenner {
   height: 1px;
   background: var(--linie);
-  margin-block: var(--space-4);
+  margin-block: var(--space-3);
 }
 
 .sprachen {
   display: flex;
   gap: var(--space-3);
   align-items: center;
+  min-height: var(--tap);
   font-size: var(--fs-caption);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
   color: var(--auf-grund-3);
+}
+
+.sprachen a {
+  padding: var(--space-2);
 }
 
 .spracheAktiv {
@@ -170,23 +246,43 @@
 }
 
 @media (max-width: 900px) {
+  .kopf {
+    padding: 8px var(--rand-seite);
+  }
+  .kasten {
+    padding: 0 6px 0 10px;
+  }
   .reihe {
-    min-height: 72px;
-    gap: var(--space-4);
+    min-height: 56px;
+    gap: var(--space-2);
   }
-  .mitte {
+  .mitte,
+  .sprachWahl,
+  .rechts .punkt:not(.ticketPunkt) {
     display: none;
   }
-  .rechts .punkt {
+  .rechts {
+    gap: var(--space-2);
+  }
+  /* Auf dem Handy als Symbol: gleiche Stelle, gleiches Ziel */
+  .ticketPunkt {
+    justify-content: center;
+    width: var(--tap);
+    color: var(--auf-grund);
+  }
+  .ticketPunkt::after {
     display: none;
   }
-  /* Der Weg zu den eigenen Tickets bleibt sichtbar — er darf nie hinter
-     das Menue rutschen (Briefing 20). */
-  .rechts .ticketPunkt {
-    display: flex;
-    align-items: center;
-    min-height: var(--tap);
-    font-size: var(--fs-caption);
+  .ticketSymbol {
+    display: block;
+  }
+  .ticketText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
   }
   .menuKnopf {
     display: flex;
