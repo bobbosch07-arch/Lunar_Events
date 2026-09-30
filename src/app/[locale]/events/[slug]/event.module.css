@@ -1,103 +1,189 @@
+/* ---------- Hero: Eckdaten links, Poster oder Foto rechts ----------
+   Auf dem Handy steht das Poster oben, darunter die Eckdaten
+   (docs/redesign-final.html, "Eventseite mit Tickets"). */
+
 .hero {
   position: relative;
-  display: flex;
-  align-items: flex-end;
-  min-height: min(64vh, 620px);
+  isolation: isolate;
   margin-top: -92px;
   padding-top: 92px;
-  background: var(--nacht-900);
+  background: var(--verlauf-himmel);
   overflow: hidden;
 }
 
-.heroGrund {
+.stern {
   position: absolute;
-  inset: 0;
-  background: var(--verlauf-himmel);
+  z-index: -1;
+  pointer-events: none;
 }
 
-.heroBild {
-  position: absolute;
-  inset: 0;
+.stern1 {
+  width: 24px;
+  height: 24px;
+  top: 150px;
+  left: 44%;
+  color: var(--rosa-400);
+}
+
+.stern2 {
+  width: 14px;
+  height: 14px;
+  bottom: 64px;
+  left: 8%;
+  color: var(--mondgelb-500);
+}
+
+.heroRaster {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 440px);
+  gap: var(--space-16);
+  align-items: center;
+  padding-block: var(--space-12) var(--space-20);
+}
+
+.heroInhalt {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.tag {
+  padding: 6px 9px;
+  border: 1.5px solid currentColor;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--auf-grund);
+}
+
+.titel {
+  font-size: var(--fs-display);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  color: var(--auf-grund);
+}
+
+.untertitel {
+  font-size: var(--fs-body-l);
+  color: var(--auf-grund-2);
+  max-width: 48ch;
+}
+
+.eckdaten {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-body);
+  color: var(--auf-grund-2);
+}
+
+.eckdaten li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.eckzeichen {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  color: var(--akzent);
+}
+
+.preis {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  font-variant-numeric: tabular-nums;
+  color: var(--auf-grund);
+}
+
+.preisAb {
+  font-family: var(--font-body);
+  font-weight: var(--fw-body);
+  font-size: var(--fs-body);
+  color: var(--auf-grund-2);
+}
+
+.heroKnopf {
+  margin-top: var(--space-2);
+}
+
+.knopfStern {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.posterRahmen {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--verlauf-poster);
+  box-shadow: 10px 10px 0 var(--hl);
+}
+
+.posterBild {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* Unten traegt der Verlauf die Schrift des Heros, oben die Kopfzeile:
-   Sie liegt durchsichtig auf dem Foto, und auf einem hellen Motiv war
-   "Meine Tickets" weiss auf hellgrau kaum zu lesen. */
-.heroSchleier {
+/* Das Datum als rosa Kasten oben links, wie auf der Karte */
+.datum {
   position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(180deg, rgba(20, 6, 46, 0.6) 0%, transparent 160px),
-    linear-gradient(
-      0deg,
-      rgba(20, 6, 46, 0.94) 0%,
-      rgba(20, 6, 46, 0.62) 40%,
-      rgba(20, 6, 46, 0.2) 100%
-    );
-}
-
-.heroInhalt {
-  position: relative;
-  width: 100%;
-  padding-block: var(--space-16) var(--space-12);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
-}
-
-.titel {
+  left: var(--space-4);
+  top: var(--space-4);
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  padding: 8px 10px 7px;
+  background: var(--hl);
+  color: var(--auf-hl);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: var(--fs-hero);
-  line-height: var(--lh-display);
-  letter-spacing: var(--ls-display);
+  line-height: 1;
   text-transform: uppercase;
-  color: var(--text-on-dark);
-  max-width: 18ch;
 }
 
-.untertitel {
-  font-size: var(--fs-body-l);
-  color: var(--text-on-dark-muted);
-  max-width: 48ch;
+.datum b {
+  font-size: 1.8rem;
 }
 
-.eckdaten {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2) var(--space-5);
-  align-items: center;
-  font-size: var(--fs-body-s);
-  color: var(--text-on-dark);
-  margin-top: var(--space-2);
+.datum span {
+  margin-top: 4px;
+  font-size: var(--fs-caption);
+  letter-spacing: 0.12em;
 }
 
-.eckpunkt {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+.heroSticker {
+  position: absolute;
+  z-index: 3;
+  right: var(--space-4);
+  top: var(--space-4);
+  width: 96px;
 }
 
-.eckTrenner {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: var(--akzent);
-}
-
-.heroKnopf {
-  margin-top: var(--space-4);
-}
-
-/* ---------- Informationen ---------- */
+/* ---------- Beschreibung und "Gut zu wissen" ---------- */
 
 .spalten {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 400px);
   gap: var(--space-16);
   align-items: start;
 }
@@ -119,31 +205,79 @@
   white-space: pre-line;
 }
 
-.infoliste {
+.eyebrowStern {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: var(--space-2);
+  vertical-align: -1px;
+}
+
+/* Die Kachel mit den Eckdaten trägt data-grund="tief" */
+.fakten {
   display: flex;
   flex-direction: column;
-  border-top: 1px solid var(--linie);
+  gap: var(--space-5);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  background: var(--grund);
+  color: var(--auf-grund);
+}
+
+.faktenTitel {
+  font-size: var(--fs-h2);
+  line-height: var(--lh-display);
+}
+
+.infoliste {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5px;
+  border: 1.5px solid var(--linie);
+  border-radius: var(--radius-md);
+  background: var(--linie);
+  overflow: hidden;
 }
 
 .infozeile {
-  display: grid;
-  grid-template-columns: 96px 1fr;
-  gap: var(--space-4);
-  padding-block: var(--space-4);
-  border-bottom: 1px solid var(--linie);
-  font-size: var(--fs-body-s);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  background: var(--grund);
+}
+
+.infoBreit {
+  grid-column: 1 / -1;
 }
 
 .infoName {
-  color: var(--auf-grund-3);
   font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  padding-top: 2px;
+  color: var(--akzent-text);
 }
 
 .infoWert {
+  margin: 0;
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-eng);
   color: var(--auf-grund);
+}
+
+/* ---------- Tickets ---------- */
+
+.abschnittKopf {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-8);
+}
+
+.ticketsTitel {
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
 }
 
 /* ---------- Abendkasse ---------- */
@@ -202,8 +336,8 @@
 }
 
 /* Flaggen (18.09.2026): woran der Einlass scheitern kann. Sichtbar, aber
-   ruhig — eine feine Goldlinie links, keine Warnfarbe. Gold ist dabei nicht
-   das einzige Merkmal: Die Marke „Ü18“ trägt Schrift und Rahmen. */
+   ruhig — eine Akzentlinie links, keine Warnfarbe. Die Farbe ist dabei
+   nicht das einzige Merkmal: Die Marke „Ü18“ trägt Schrift und Rahmen. */
 .flaggen {
   list-style: none;
   margin: 0 0 var(--space-6);
@@ -219,9 +353,9 @@
   gap: var(--space-4);
   padding: var(--space-3) var(--space-5);
   border: 1px solid var(--linie);
-  border-left: 2px solid var(--akzent);
+  border-left: 3px solid var(--akzent);
   border-radius: var(--radius-md);
-  background: var(--grund);
+  background: var(--grund-2);
   font-size: var(--fs-body-s);
   line-height: var(--lh-body);
   color: var(--auf-grund-2);
@@ -230,20 +364,12 @@
 .flaggeKurz {
   flex: none;
   padding: 2px 8px;
-  border: 1px solid var(--border-gold);
+  border: 1.5px solid var(--hl);
   border-radius: var(--radius-sm);
   font-family: var(--font-display);
   font-weight: var(--fw-display);
-  font-size: var(--fs-body);
-  letter-spacing: var(--ls-label);
+  font-size: var(--fs-body-s);
   color: var(--auf-grund);
-}
-
-.abschnittKopf {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-8);
 }
 
 .vergangen {
@@ -252,32 +378,6 @@
   border-radius: var(--radius-lg);
   background: var(--grund-2);
   color: var(--auf-grund-2);
-}
-
-/* Auf schmalen Schirmen stehen die Eckdaten untereinander. Mit Trennern
-   im Fluss bliebe sonst bei jedem Umbruch ein Punkt am Zeilenende
-   hängen. */
-@media (max-width: 620px) {
-  .eckdaten {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-1);
-  }
-  .eckTrenner {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .spalten {
-    grid-template-columns: 1fr;
-    gap: var(--space-10);
-  }
-  .hero {
-    margin-top: -72px;
-    padding-top: 72px;
-    min-height: min(60vh, 480px);
-  }
 }
 
 /* Line-up (0036): schlichte Namensliste unter der Beschreibung. */
@@ -296,9 +396,30 @@
 
 .lineupName {
   font-family: var(--font-display);
-  font-size: var(--fs-h4);
+  font-size: var(--fs-h3);
   font-weight: var(--fw-display);
-  letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
   padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--linie);
+  border-bottom: 1.5px solid var(--linie);
+}
+
+@media (max-width: 900px) {
+  .hero {
+    margin-top: -72px;
+    padding-top: 72px;
+  }
+  .heroRaster {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+    padding-block: var(--space-4) var(--space-12);
+  }
+  /* Auf dem Handy zuerst das Bild, dann die Eckdaten */
+  .posterRahmen {
+    order: -1;
+    box-shadow: 6px 6px 0 var(--hl);
+  }
+  .spalten {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+  }
 }

@@ -47,7 +47,7 @@ async function Inhalt({ slug }: { slug: string }) {
     .from("events")
     .select(
       `id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
-       beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus,
+       beginn, einlass, ende, ort_id, bild_pfad, bild_alt, bild_fokus, poster_statt_bild,
        mindestalter, dresscode, lineup, abendkasse, abendkasse_hinweis, featured,
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
@@ -106,6 +106,7 @@ async function Inhalt({ slug }: { slug: string }) {
     streichpreisEuro:
       event.streichpreis_cent === null ? "" : euroAus(event.streichpreis_cent as number),
     featured: (event.featured as boolean) ?? false,
+    posterStattBild: (event.poster_statt_bild as boolean | null) ?? false,
     fastlaneAktiv: (event.fastlane_aktiv as boolean) ?? false,
     fastlanePreisEuro: euroAus((event.fastlane_preis_cent as number) ?? 0),
     fastlaneKontingent:

@@ -40,6 +40,7 @@ function vorlage(): EventStand {
     abendkasseHinweis: "",
     streichpreisEuro: "",
     featured: false,
+    posterStattBild: false,
     fastlaneAktiv: false,
     fastlanePreisEuro: "10,00",
     fastlaneKontingent: "50",

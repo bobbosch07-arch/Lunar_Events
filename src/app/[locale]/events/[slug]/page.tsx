@@ -16,12 +16,17 @@ import { pruefePresaleZugang } from "@/app/aktionen/bestellung";
 import { versandEingerichtet } from "@/lib/mail";
 import {
   einlassFlaggen,
+  sichtbaresBild,
   streichpreisZu,
   verbergeSpaetePreise,
+  verkaufsHinweis,
   verkaufsstartKommt,
   type VerkaufsStand,
 } from "@/lib/typen";
 import { Streichpreis } from "@/components/Streichpreis";
+import { EventPoster } from "@/components/EventPoster";
+import { Laufband } from "@/components/Laufband";
+import { Eckzeichen, Stern, akzent } from "@/components/Deko";
 import css from "./event.module.css";
 
 type Props = {
@@ -48,7 +53,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: beschreibung,
       type: "website",
       siteName: t("titel"),
-      images: event.bild ? [{ url: bildUrl(event.bild.pfad) }] : undefined,
+      images: (() => {
+        const bild = sichtbaresBild(event);
+        return bild ? [{ url: bildUrl(bild.pfad) }] : undefined;
+      })(),
     },
   };
 }
@@ -64,9 +72,10 @@ export default async function EventSeite({ params, searchParams }: Props) {
   const event = await holeEvent(slug);
   if (!event) notFound();
 
-  const [phasen, t, f] = await Promise.all([
+  const [phasen, t, tl, f] = await Promise.all([
     holePhasen(event.id),
     getTranslations("event"),
+    getTranslations("laufband"),
     getFormatter(),
   ]);
 
@@ -91,98 +100,140 @@ export default async function EventSeite({ params, searchParams }: Props) {
   const streichAb = guenstigste !== null ? streichpreisZu(guenstigste, streichpreis) : null;
   const flaggen = einlassFlaggen(event);
 
-  const infos: Array<[string, string]> = [
-    [t("datum"), f.dateTime(beginn, "lang")],
-    [t("beginn"), f.dateTime(beginn, { hour: "2-digit", minute: "2-digit" })],
+  // Kacheln unter "Gut zu wissen". Lange Werte (Ort) nehmen die ganze Breite.
+  const infos: Array<{ name: string; wert: string; breit?: boolean }> = [
+    { name: t("datum"), wert: f.dateTime(beginn, "lang"), breit: true },
   ];
   if (event.einlass) {
-    infos.splice(1, 0, [
-      t("einlass"),
-      f.dateTime(new Date(event.einlass), { hour: "2-digit", minute: "2-digit" }),
-    ]);
+    infos.push({
+      name: t("einlass"),
+      wert: f.dateTime(new Date(event.einlass), { hour: "2-digit", minute: "2-digit" }),
+    });
   }
-  infos.push([
-    t("ort"),
-    [event.ort.name, event.ort.strasse, `${event.ort.plz ?? ""} ${event.ort.stadt}`.trim()]
+  infos.push({ name: t("beginn"), wert: f.dateTime(beginn, { hour: "2-digit", minute: "2-digit" }) });
+  infos.push({
+    name: t("ort"),
+    wert: [event.ort.name, event.ort.strasse, `${event.ort.plz ?? ""} ${event.ort.stadt}`.trim()]
       .filter(Boolean)
       .join(", "),
-  ]);
+    breit: true,
+  });
   if (event.mindestalter) {
-    infos.push([t("alter"), t("alterWert", { jahre: event.mindestalter })]);
+    infos.push({ name: t("alter"), wert: t("alterWert", { jahre: event.mindestalter }) });
   }
-  if (event.dresscode) infos.push([t("dresscode"), event.dresscode]);
-  infos.push([t("veranstalter"), event.veranstalter]);
+  if (event.dresscode) infos.push({ name: t("dresscode"), wert: event.dresscode });
+  infos.push({ name: t("veranstalter"), wert: event.veranstalter, breit: true });
+
+  const ticketsZiel = `/events/${event.slug}${promo ? `?promo=${promo}` : ""}#tickets`;
+  const hinweis = vergangen ? null : verkaufsHinweis(event);
+  const sticker =
+    hinweis === "presale"
+      ? [tl("stickerPresaleOben"), tl("stickerPresaleUnten")]
+      : hinweis === "online"
+        ? [tl("stickerOnlineOben"), tl("stickerOnlineUnten")]
+        : hinweis === "ausverkauft"
+          ? [tl("stickerAusOben"), tl("stickerAusUnten")]
+          : null;
+  const bild = sichtbaresBild(event);
+  const tag = f.dateTime(beginn, { day: "2-digit" });
+  const monat = f.dateTime(beginn, { month: "short" }).replace(".", "");
 
   return (
     <>
       <a href="#inhalt" className="sprunglink">
         Zum Inhalt springen
       </a>
+      {!vergangen ? <Laufband events={[event]} /> : null}
       {/* "Tickets" oben springt wie der Knopf im Hero zur Ticketauswahl
           und nimmt das Promoter-Kürzel mit. */}
-      <Kopfzeile
-        ueberHero
-        ticketZiel={`/events/${event.slug}${promo ? `?promo=${promo}` : ""}#tickets`}
-      />
+      <Kopfzeile ueberHero ticketZiel={ticketsZiel} />
       <Zaehler art="event_gesehen" eventId={event.id} />
 
       <main id="inhalt">
-        <section className={css.hero} data-grund="tief">
-          {event.bild ? (
-            <Image
-              src={bildUrl(event.bild.pfad)}
-              alt={event.bild.alt ?? event.titel}
-              fill
-              priority
-              sizes="100vw"
-              className={css.heroBild}
-              style={{ objectPosition: event.bild.fokus ?? "center" }}
-            />
-          ) : (
-            <div className={css.heroGrund} aria-hidden="true" />
-          )}
-          <div className={css.heroSchleier} aria-hidden="true" />
+        <section className={css.hero}>
+          <Stern className={`${css.stern} ${css.stern1}`} />
+          <Stern className={`${css.stern} ${css.stern2}`} />
 
-          <div className={`seitenbreite ${css.heroInhalt}`}>
-            <span className="eyebrow">{event.kategorie}</span>
-            <h1 className={css.titel}>{event.titel}</h1>
-            {event.untertitel ? (
-              <p className={css.untertitel}>{event.untertitel}</p>
-            ) : null}
-
-            <div className={css.eckdaten}>
-              <span className={css.eckpunkt}>{f.dateTime(beginn, "lang")}</span>
-              <span className={css.eckTrenner} aria-hidden="true" />
-              <span className={css.eckpunkt}>
-                {event.ort.name} · {event.ort.stadt}
-              </span>
-              {guenstigste !== null && !vergangen ? (
-                <>
-                  <span className={css.eckTrenner} aria-hidden="true" />
-                  <span className={css.eckpunkt}>
-                    ab {preisText(guenstigste, locale)}
-                    {streichAb !== null ? (
-                      <>
-                        {" "}
-                        <Streichpreis cent={streichAb} />
-                      </>
-                    ) : null}
+          <div className={`seitenbreite ${css.heroRaster}`}>
+            <div className={css.heroInhalt}>
+              <div className={css.tags}>
+                <span className={css.tag}>{event.kategorie}</span>
+                {flaggen.map((fl) => (
+                  <span key={fl.art} className={css.tag}>
+                    {t("flaggeAlter", { jahre: fl.jahre })}
                   </span>
-                </>
+                ))}
+              </div>
+              <h1 className={css.titel}>{event.titel}</h1>
+              {event.untertitel ? (
+                <p className={css.untertitel}>{event.untertitel}</p>
+              ) : null}
+
+              <ul className={css.eckdaten}>
+                <li>
+                  <Eckzeichen name="kalender" className={css.eckzeichen} />
+                  {f.dateTime(beginn, "lang")}
+                </li>
+                <li>
+                  <Eckzeichen name="uhr" className={css.eckzeichen} />
+                  {event.einlass
+                    ? `${t("einlass")} ${f.dateTime(new Date(event.einlass), { hour: "2-digit", minute: "2-digit" })}`
+                    : `${t("beginn")} ${f.dateTime(beginn, { hour: "2-digit", minute: "2-digit" })}`}
+                </li>
+                <li>
+                  <Eckzeichen name="ort" className={css.eckzeichen} />
+                  {event.ort.name} · {event.ort.stadt}
+                </li>
+              </ul>
+
+              {guenstigste !== null && !vergangen ? (
+                <p className={css.preis}>
+                  <span className={css.preisAb}>ab</span> {preisText(guenstigste, locale)}
+                  {streichAb !== null ? (
+                    <>
+                      {" "}
+                      <Streichpreis cent={streichAb} />
+                    </>
+                  ) : null}
+                </p>
+              ) : null}
+
+              {!vergangen ? (
+                <div className={css.heroKnopf}>
+                  <Knopf href={ticketsZiel} groesse="gross">
+                    <Stern className={css.knopfStern} />
+                    {t("ticketsKaufen")}
+                  </Knopf>
+                </div>
               ) : null}
             </div>
 
-            {!vergangen ? (
-              <div className={css.heroKnopf}>
-                <Knopf
-                  href={`/events/${event.slug}${promo ? `?promo=${promo}` : ""}#tickets`}
-                  stil="hell"
-                  groesse="gross"
-                >
-                  {t("ticketsKaufen")}
-                </Knopf>
-              </div>
-            ) : null}
+            <div className={css.posterRahmen}>
+              {bild ? (
+                <Image
+                  src={bildUrl(bild.pfad)}
+                  alt={bild.alt ?? event.titel}
+                  fill
+                  priority
+                  sizes="(max-width: 900px) 100vw, 440px"
+                  className={css.posterBild}
+                  style={{ objectPosition: bild.fokus ?? "center" }}
+                />
+              ) : (
+                <EventPoster titel={event.titel} zeile={`${event.ort.name} · ${event.ort.stadt}`} />
+              )}
+              <span className={css.datum} aria-hidden="true">
+                <b>{tag}</b>
+                <span>{monat}</span>
+              </span>
+              {sticker ? (
+                <span className={`sticker ${css.heroSticker}`}>
+                  {sticker[0]}
+                  <br />
+                  <b>{sticker[1]}</b>
+                </span>
+              ) : null}
+            </div>
           </div>
         </section>
 
@@ -200,7 +251,10 @@ export default async function EventSeite({ params, searchParams }: Props) {
 
                 {event.lineup.length > 0 ? (
                   <div className={css.lineup}>
-                    <span className="eyebrow">{t("lineup")}</span>
+                    <span className="eyebrow">
+                      <Stern className={css.eyebrowStern} />
+                      {t("lineup")}
+                    </span>
                     <ul className={css.lineupListe}>
                       {event.lineup.map((name) => (
                         <li key={name} className={css.lineupName}>
@@ -212,13 +266,11 @@ export default async function EventSeite({ params, searchParams }: Props) {
                 ) : null}
               </div>
 
-              <div>
-                <div className={css.abschnittKopf}>
-                  <span className="eyebrow">{t("infoTitel")}</span>
-                </div>
+              <div className={css.fakten} data-grund="tief">
+                <h2 className={css.faktenTitel}>{t.rich("infoTitelRich", { akzent })}</h2>
                 <dl className={css.infoliste}>
-                  {infos.map(([name, wert]) => (
-                    <div key={name} className={css.infozeile}>
+                  {infos.map(({ name, wert, breit }) => (
+                    <div key={name} className={`${css.infozeile} ${breit ? css.infoBreit : ""}`}>
                       <dt className={css.infoName}>{name}</dt>
                       <dd className={css.infoWert}>{wert}</dd>
                     </div>
@@ -232,8 +284,11 @@ export default async function EventSeite({ params, searchParams }: Props) {
         <section className="abschnitt" data-grund="gedaempft" id="tickets">
           <div className="seitenbreite">
             <div className={css.abschnittKopf}>
-              <span className="eyebrow">{t("ticketsEyebrow")}</span>
-              <h2>{t("ticketsTitel")}</h2>
+              <span className="eyebrow">
+                <Stern className={css.eyebrowStern} />
+                {t("ticketsEyebrow")}
+              </span>
+              <h2 className={css.ticketsTitel}>{t("ticketsTitel")}</h2>
             </div>
 
             {vergangen ? (

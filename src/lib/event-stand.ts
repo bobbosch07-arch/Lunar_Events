@@ -56,6 +56,8 @@ export type EventStand = {
   /** Streichpreis (0030), "" = keiner. */
   streichpreisEuro: string;
   featured: boolean;
+  /** Automatisches Poster statt des hochgeladenen Bilds zeigen (0038). */
+  posterStattBild: boolean;
   fastlaneAktiv: boolean;
   fastlanePreisEuro: string;
   /** Leer = unbegrenzt. */

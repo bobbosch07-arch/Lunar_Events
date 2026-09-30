@@ -74,6 +74,8 @@ export type Veranstaltung = {
   ende: string | null;
   ort: Ort;
   bild: EventBild | null;
+  /** Poster statt Bild zeigen, auch wenn ein Bild hochgeladen ist (0038). */
+  poster_statt_bild?: boolean;
   mindestalter: number | null;
   dresscode: string | null;
   /** Line-up: nur Namen (0036). */
@@ -146,6 +148,16 @@ export function verkaufsHinweis(
   if (!verkaufsstartKommt(event, jetzt)) return "online";
   const presaleAb = event.presale_ab ? new Date(event.presale_ab).getTime() : null;
   return presaleAb !== null && presaleAb <= jetzt ? "presale" : "bald";
+}
+
+/**
+ * Das Bild, das Gäste sehen: das hochgeladene, außer das Event soll
+ * ausdrücklich das automatische Poster zeigen (0038). null = Poster.
+ */
+export function sichtbaresBild(
+  event: Pick<Veranstaltung, "bild" | "poster_statt_bild">,
+): EventBild | null {
+  return event.poster_statt_bild ? null : event.bild;
 }
 
 /** Das Fast-Lane-Upgrade, wie die Kasse es anbietet. */
@@ -569,11 +581,13 @@ export function phasenZustaende(
  * Was die Verkaufsleiste unter der aktuellen Phase zeigt.
  *
  * Nur echte Zahlen (Briefing: Dringlichkeit „nur aus wahrheitsgemäßer
- * Verfügbarkeit"). Erscheint erst ab der Hälfte — eine Leiste bei 8 %
- * sagte „hier will keiner hin" und wäre das Gegenteil von dem, wofür sie
- * da ist. Ohne Kontingent gibt es nichts zu füllen, also keine Leiste.
+ * Verfügbarkeit"). Erscheint erst ab 70 % (vorher 50 %, geändert am
+ * 30.09.2026) — eine Leiste bei 8 % sagte „hier will keiner hin" und wäre
+ * das Gegenteil von dem, wofür sie da ist. Davor steht bei echter
+ * Knappheit „Wenige Tickets verfügbar" statt der genauen Zahl. Ohne
+ * Kontingent gibt es nichts zu füllen, also keine Leiste.
  */
-export const LEISTE_AB = 0.5;
+export const LEISTE_AB = 0.7;
 
 export type Verkaufsstand = {
   anteil: number;

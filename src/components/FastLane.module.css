@@ -118,34 +118,6 @@
 
 /* Gewählt zeigt Rahmen UND Haken UND Goldkante — Gold allein ist kein
    Merkmal (Briefing, Barrierefreiheit). */
-.wahl {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--space-3);
-  width: 100%;
-  margin-top: var(--space-2);
-  padding: var(--space-4);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  font-size: var(--fs-body-s);
-  line-height: var(--lh-body);
-  cursor: pointer;
-  transition: border-color var(--dur-schnell) var(--ease);
-}
-
-.wahl input {
-  margin-top: 2px;
-  width: 20px;
-  height: 20px;
-  accent-color: var(--signal);
-  flex: none;
-}
-
-.wahlAn {
-  border-color: var(--signal);
-  box-shadow: inset 3px 0 0 var(--akzent);
-}
-
 .wahlPreis {
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
@@ -158,7 +130,39 @@
   color: var(--warning);
 }
 
+.fuer {
+  font-size: var(--fs-body-s);
+  color: var(--auf-grund-2);
+}
+
+/* "Ohne Fast Lane weiter" klein darüber, der Hauptknopf darunter */
 .knoepfe {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
   width: 100%;
   margin-top: var(--space-2);
+}
+
+.ohne {
+  min-height: var(--tap);
+  padding: 0 var(--space-3);
+  border: 0;
+  background: none;
+  color: var(--auf-grund-3);
+  font-size: var(--fs-body-s);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.ohne:hover {
+  color: var(--auf-grund-2);
+}
+
+.knopfStern {
+  width: 16px;
+  height: 16px;
+  flex: none;
 }

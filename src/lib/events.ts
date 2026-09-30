@@ -15,7 +15,7 @@ import { phasenFolge, phasenZustaende } from "./typen";
 
 const AUSWAHL = `
   id, slug, titel, untertitel, teaser, beschreibung, kategorie, status,
-  beginn, einlass, ende, bild_pfad, bild_alt, bild_fokus, mindestalter,
+  beginn, einlass, ende, bild_pfad, bild_alt, bild_fokus, poster_statt_bild, mindestalter,
   dresscode, lineup, veranstalter, abendkasse, abendkasse_hinweis, featured,
   fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
   fastlane_beschreibung, presale_ab, verkauf_ab,
@@ -133,6 +133,7 @@ function baueEvent(z: Zeile): Veranstaltung {
           fokus: (z.bild_fokus as string | null) ?? null,
         }
       : null,
+    poster_statt_bild: (z.poster_statt_bild as boolean | null) ?? false,
     mindestalter: (z.mindestalter as number | null) ?? null,
     dresscode: (z.dresscode as string | null) ?? null,
     lineup: (z.lineup as string[] | null) ?? [],

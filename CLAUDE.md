@@ -85,7 +85,10 @@ Runden davor in `docs/redesign-boards*.html`.
   Hero, Eventposter, später Ticket und Story. Das Logo selbst wird nur
   umgefärbt, nie nachgebaut.
 - **Events ohne Foto** zeigen ein erzeugtes Poster (`EventPoster`):
-  Verlauf, Sichel, Titel. Ein hochgeladenes Bild geht immer vor.
+  Verlauf, Sichel, Titel. Ein hochgeladenes Bild geht vor, außer im
+  Backoffice ist „Automatisches Poster statt Bild zeigen“ angehakt
+  (`events.poster_statt_bild`, 0038). Wer eine neue Fläche mit Eventbild
+  baut, fragt `sichtbaresBild(event)` statt `event.bild`.
 - **Laufband und Sticker** (`Laufband`, `verkaufsHinweis` in typen.ts)
   kommen nur aus echten Daten: „Presale läuft“ steht nur im Presale-Fenster.
 - **„Tickets sichern“** oben auf der Startseite und „Tickets“ in der
@@ -239,8 +242,11 @@ in Schritt 3 („ohne gültigen Ausweis kein Einlass und keine Erstattung“) �
 Bezahlwege hängen an `zugestimmt`. Weitere Flaggen kommen als eigene `art` dazu.
 
 **Die Verkaufsleiste zeigt nur echte Zahlen** (`verkaufsstand`): Anteil
-verkauft und Preis der nächsten Phase, erst ab 50 %, ab 80 % in
-Warnfarbe. Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer
+verkauft und Preis der nächsten Phase, erst ab 70 % (`LEISTE_AB`, bis
+30.09.2026 waren es 50 %), ab 80 % in Warnfarbe. Davor steht bei echter
+Knappheit (höchstens `KNAPP_AB` Tickets übrig) „Wenige Tickets verfügbar“
+statt der genauen Zahl — Wunsch Bobbo. „Wenige“ erscheint weiter nur, wo
+es stimmt; auf jeder Phase wäre es erfundene Knappheit (§ 5 UWG). Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer
 Verfügbarkeit — nie erfundene Zahlen, keine Countdowns.
 
 **Fast Lane ist ein Upgrade, keine Phase** (Migration 0011). Es hängt an
@@ -252,6 +258,13 @@ Eingang ist. Es läuft durch dieselben Stellen wie ein Phasenkontingent:
 gibt zurück, `bestaetige_zahlung` markiert die Tickets, `entwerte_ticket`
 meldet es dem Scanner. Wer ein Kontingent anfasst, muss alle vier
 mitdenken.
+
+**Seit 30.09.2026 ist „Mit Fast Lane weiter · + Preis“ der große
+Hauptknopf im Fenster**, „Ohne Fast Lane weiter“ steht klein und grau
+darüber (Wunsch Bobbo). Erlaubt, weil der Gast Fast Lane mit einem eigenen
+Klick wählt. Vorab angehakt wird es trotzdem nie: Ein Aufpreis per
+Voreinstellung wird nicht Vertragsbestandteil (§ 312a Abs. 3 BGB). Das hat
+Bobbo nach Rückfrage so bestätigt — nicht wieder aufmachen.
 
 Angeboten wird es nur für **die ganze Bestellung**: Reichen die freien
 Plätze nicht für alle Tickets, gibt es kein Angebot. Das Fenster in der

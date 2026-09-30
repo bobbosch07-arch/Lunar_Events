@@ -65,7 +65,7 @@
     "auswaehlen": "Auswählen",
     "gewaehlt": "Gewählt",
     "ausverkauft": "Ausverkauft",
-    "nochVerfuegbar": "Noch {anzahl} verfügbar",
+    "wenigeVerfuegbar": "Wenige Tickets verfügbar",
     "verfuegbar": "Verfügbar",
     "baldVerfuegbar": "Ab {datum}",
     "aufAnfrage": "auf Anfrage",
@@ -105,7 +105,8 @@
     "fomoDanachVerborgen": "Danach {phase}: ???",
     "flaggeAlter": "Ü{jahre}",
     "flaggeHinweis": "Einlass ab {jahre} · Ausweis mitbringen",
-    "lineup": "Line-up"
+    "lineup": "Line-up",
+    "infoTitelRich": "Gut zu <akzent>wissen</akzent>"
   },
   "vip": {
     "eyebrow": "VIP Experience",
@@ -459,7 +460,8 @@
     "fuerTickets": "Fast Lane {anzahl, plural, one {für mein Ticket} other {für alle # Tickets}}",
     "restKnapp": "{rest, plural, one {Noch # Fast-Lane-Platz.} other {Noch # Fast-Lane-Plätze.}}",
     "weiterMit": "Mit Fast Lane weiter",
-    "weiterOhne": "Ohne Fast Lane weiter"
+    "weiterOhne": "Ohne Fast Lane weiter",
+    "weiterMitPreis": "Mit Fast Lane weiter · + {preis}"
   },
   "ueberweisung": {
     "vorkasse": "Vorkasse",

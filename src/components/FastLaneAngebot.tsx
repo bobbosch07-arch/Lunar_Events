@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Knopf } from "./Knopf";
+import { Stern } from "./Deko";
 import { preisText } from "@/lib/format";
 import { KNAPP_AB, type FastLane } from "@/lib/typen";
 import css from "./FastLane.module.css";
@@ -19,6 +20,14 @@ import css from "./FastLane.module.css";
  * Deshalb erscheint es genau einmal je Kasse, lässt sich überall
  * schließen, und die Wahl bleibt danach in der Kasse änderbar — niemand
  * muss sich in diesem Fenster entscheiden.
+ *
+ * Seit 30.09.2026 ist "Mit Fast Lane weiter" der große Hauptknopf, "Ohne
+ * Fast Lane weiter" steht klein darüber (Wunsch Bobbo). Das ist erlaubt,
+ * weil der Gast Fast Lane mit einem eigenen Klick wählt. Vorab angehakt
+ * wird trotzdem nichts: Ein Aufpreis, der per Voreinstellung zustande
+ * kommt, wird nicht Vertragsbestandteil (§ 312a Abs. 3 BGB) — der Gast
+ * könnte ihn zurückverlangen. Schließen, Escape und Klick daneben heißen
+ * weiterhin "ohne".
  */
 export function FastLaneAngebot({
   offen,
@@ -38,16 +47,11 @@ export function FastLaneAngebot({
   const locale = useLocale();
   const t = useTranslations("fastlane");
   const fenster = useRef<HTMLDialogElement>(null);
-  const [haken, setHaken] = useState(gewaehlt);
 
   useEffect(() => {
     const d = fenster.current;
     if (!d) return;
     if (offen && !d.open) {
-      // Nie vorangekreuzt: Ein kostenpflichtiges Extra muss der Gast selbst
-      // anhaken (§ 312a Abs. 3 BGB) — und ein untergeschobenes Upgrade
-      // wäre genau der Druck, den das Briefing nicht will.
-      setHaken(gewaehlt);
       // Ältere Safari-Versionen kennen showModal nicht oder scheitern daran.
       // Dann lieber kein Angebot als eine Kasse, die nicht mehr reagiert
       // (Rückmeldung iPhone, 19.09.2026).
@@ -59,8 +63,7 @@ export function FastLaneAngebot({
       }
     }
     if (!offen && d.open) d.close();
-    // gewaehlt bewusst nicht als Abhängigkeit: der Haken soll sich beim
-    // Öffnen setzen, nicht bei jeder Änderung von außen springen.
+    // Nur auf "offen" reagieren; schliessen ändert sich bei jedem Aufbau.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offen]);
 
@@ -120,17 +123,10 @@ export function FastLaneAngebot({
           <span className={css.preisZusatz}>{t("proTicket")}</span>
         </p>
 
-        <label className={`${css.wahl} ${haken ? css.wahlAn : ""}`}>
-          <input
-            type="checkbox"
-            checked={haken}
-            onChange={(e) => setHaken(e.target.checked)}
-          />
-          <span>
-            {t("fuerTickets", { anzahl })}
-            <span className={css.wahlPreis}> · + {preisText(gesamt, locale)}</span>
-          </span>
-        </label>
+        <p className={css.fuer}>
+          {t("fuerTickets", { anzahl })}
+          <span className={css.wahlPreis}> · + {preisText(gesamt, locale)}</span>
+        </p>
 
         {knapp ? (
           <p className={css.knapp}>
@@ -139,8 +135,12 @@ export function FastLaneAngebot({
         ) : null}
 
         <div className={css.knoepfe}>
-          <Knopf onClick={() => uebernehmen(haken)} voll>
-            {haken ? t("weiterMit") : t("weiterOhne")}
+          <button type="button" className={css.ohne} onClick={() => uebernehmen(false)}>
+            {t("weiterOhne")}
+          </button>
+          <Knopf onClick={() => uebernehmen(true)} groesse="gross" voll>
+            <Stern className={css.knopfStern} />
+            {gewaehlt ? t("weiterMit") : t("weiterMitPreis", { preis: preisText(gesamt, locale) })}
           </Knopf>
         </div>
       </div>

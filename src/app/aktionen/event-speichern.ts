@@ -37,6 +37,7 @@ export type EventEingabe = {
   bild_pfad: string | null;
   bild_alt: string | null;
   bild_fokus: string | null;
+  poster_statt_bild: boolean;
   mindestalter: number | null;
   dresscode: string | null;
   lineup: string[];
@@ -126,6 +127,7 @@ export async function speichereEvent(
     bild_pfad: eingabe.bild_pfad || null,
     bild_alt: eingabe.bild_alt?.trim() || null,
     bild_fokus: eingabe.bild_fokus || null,
+    poster_statt_bild: Boolean(eingabe.poster_statt_bild),
     mindestalter: eingabe.mindestalter,
     dresscode: eingabe.dresscode?.trim() || null,
     lineup: eingabe.lineup,

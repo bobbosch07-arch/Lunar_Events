@@ -81,6 +81,7 @@ export function EventFormular({
       bild_pfad: stand.bildPfad || null,
       bild_alt: stand.bildAlt || null,
       bild_fokus: stand.bildFokus || null,
+      poster_statt_bild: stand.posterStattBild,
       mindestalter: stand.mindestalter ? Number(stand.mindestalter) : null,
       dresscode: stand.dresscode || null,
       lineup: stand.lineup
@@ -354,10 +355,19 @@ export function EventFormular({
             setStand((v) => ({ ...v, bildPfad: pfad, bildAlt: alt, bildFokus: fokus }))
           }
         />
+        <label className={css.schalter}>
+          <input
+            type="checkbox"
+            checked={stand.posterStattBild}
+            onChange={(e) => setze("posterStattBild", e.target.checked)}
+          />
+          Automatisches Poster statt Bild zeigen
+        </label>
         <p className={css.hinweis}>
-          Ohne Bild zeigt die Seite eine dunkle Verlaufsfläche. Das sieht
-          ordentlich aus, verkauft aber nichts — laut Briefing trägt die
-          Fotografie die halbe Gestaltung.
+          Ohne Bild zeigt die Seite ein automatisches Poster: violetter
+          Verlauf, gelbe Sichel, Titel und Ort. Mit dem Häkchen erscheint das
+          Poster auch dann, wenn ein Bild hochgeladen ist. Das Bild bleibt
+          gespeichert und kommt zurück, sobald das Häkchen wieder weg ist.
         </p>
       </section>
 

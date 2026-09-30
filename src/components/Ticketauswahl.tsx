@@ -209,8 +209,11 @@ export function Ticketauswahl(props: Props) {
               <div className={css.links}>
                 <div className={css.kopf}>
                   <span className={css.name}>{phase.name}</span>
+                  {/* Knapp heißt: höchstens KNAPP_AB Tickets übrig. Dann steht
+                      "Wenige Tickets verfügbar" statt der genauen Zahl
+                      (30.09.2026) — bis die Verkaufsleiste ab 70 % übernimmt. */}
                   <span
-                    className={`${css.zustand} ${rest !== null ? css.knapp : ""}`}
+                    className={`${css.zustand} ${rest !== null && !stand ? css.knapp : ""}`}
                   >
                     {zustand.art === "folgt"
                       ? t("folgt", { phase: zustand.nach })
@@ -225,8 +228,8 @@ export function Ticketauswahl(props: Props) {
                                 month: "long",
                               }).format(new Date(zustand.ab)),
                             })
-                          : rest !== null
-                            ? t("nochVerfuegbar", { anzahl: rest })
+                          : rest !== null && !stand
+                            ? t("wenigeVerfuegbar")
                             : zustand.art === "anfrage"
                               ? ""
                               : t("verfuegbar")}

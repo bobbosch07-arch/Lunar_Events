@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { streichpreisZu, type Veranstaltung } from "@/lib/typen";
+import { sichtbaresBild, streichpreisZu, type Veranstaltung } from "@/lib/typen";
 import { bildUrl } from "@/lib/bilder";
 import { preisText } from "@/lib/format";
 import { Streichpreis } from "./Streichpreis";
@@ -22,6 +22,7 @@ export function EventKarte({ event, prioritaet = false, breit = false }: Props) 
   const f = useFormatter();
   const locale = useLocale();
   const beginn = new Date(event.beginn);
+  const bild = sichtbaresBild(event);
 
   const tag = f.dateTime(beginn, { day: "2-digit" });
   const monat = f.dateTime(beginn, { month: "short" }).replace(".", "");
@@ -29,14 +30,14 @@ export function EventKarte({ event, prioritaet = false, breit = false }: Props) 
   return (
     <Link href={`/events/${event.slug}`} className={`${css.karte} ${breit ? css.breit : ""}`}>
       <div className={css.bildfeld}>
-        {event.bild ? (
+        {bild ? (
           <Image
-            src={bildUrl(event.bild.pfad)}
-            alt={event.bild.alt ?? event.titel}
+            src={bildUrl(bild.pfad)}
+            alt={bild.alt ?? event.titel}
             fill
             sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw"
             className={css.bild}
-            style={{ objectPosition: event.bild.fokus ?? "center" }}
+            style={{ objectPosition: bild.fokus ?? "center" }}
             priority={prioritaet}
           />
         ) : (

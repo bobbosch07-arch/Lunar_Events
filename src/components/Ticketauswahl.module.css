@@ -12,24 +12,24 @@
   gap: var(--space-4) var(--space-6);
   align-items: center;
   padding: var(--space-5) var(--space-6);
-  border: 1px solid var(--linie);
+  border: 1.5px solid var(--linie);
   border-radius: var(--radius-lg);
-  background: var(--grund);
+  background: var(--grund-2);
   transition:
     border-color var(--dur-normal) var(--ease),
-    background-color var(--dur-normal) var(--ease);
+    background-color var(--dur-normal) var(--ease),
+    box-shadow var(--dur-schnell) var(--ease-aus);
 }
 
-/* Gewählt trägt Rahmen UND Akzentkante UND Häkchen — die Farbe allein
-   wäre für Farbenblinde kein Merkmal. */
+/* Gewählt trägt Rahmen UND harten Schatten UND die Menge im Zähler —
+   die Farbe allein wäre für Farbenblinde kein Merkmal. */
 .gewaehlt {
   border-color: var(--signal);
-  box-shadow: inset 3px 0 0 var(--akzent);
-  background: var(--grund-2);
+  box-shadow: 5px 5px 0 var(--signal);
 }
 
 .aus {
-  background: var(--grund-2);
+  background: var(--grund);
   border-style: dashed;
 }
 
@@ -42,7 +42,7 @@
 /* Noch nicht dran: sichtbar, aber zurückgenommen. Nicht durchgestrichen
    wie "ausverkauft" — diese Phase kommt ja noch. */
 .folgt {
-  background: var(--grund-2);
+  background: var(--grund);
 }
 
 .folgt .name,
@@ -51,7 +51,7 @@
 }
 
 .vip {
-  border-color: var(--border-gold);
+  border-color: var(--hl);
 }
 
 /* ---------- Verkaufsstand der aktuellen Phase ---------- */
@@ -119,7 +119,7 @@
   font-family: var(--font-display);
   font-weight: var(--fw-display);
   font-size: var(--fs-h4);
-  letter-spacing: var(--ls-label);
+  letter-spacing: 0.01em;
   text-transform: uppercase;
   color: var(--auf-grund);
 }
@@ -131,9 +131,13 @@
   color: var(--auf-grund-3);
 }
 
-/* Echte Knappheit wird benannt, aber nicht angeschrien. */
+/* Echte Knappheit wird benannt, als kleine rosa Marke. */
 .knapp {
-  color: var(--warning);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--hl);
+  color: var(--auf-hl);
+  font-weight: var(--fw-bold);
 }
 
 .beschreibung {
@@ -226,6 +230,16 @@
   background: var(--grund-3);
 }
 
+/* Plus ist der Weg nach vorn: gelb gefüllt */
+.mengeKnopf:last-child:not(:disabled) {
+  background: var(--signal);
+  color: var(--auf-signal);
+}
+
+.mengeKnopf:last-child:hover:not(:disabled) {
+  background: var(--signal-hover);
+}
+
 .mengeKnopf:disabled {
   color: var(--auf-grund-3);
   cursor: not-allowed;
@@ -234,7 +248,7 @@
 .mengeWert {
   min-width: 40px;
   text-align: center;
-  /* Bewusst die Textschrift, nicht Syne: deren Null hat keinen Strich und
+  /* Bewusst die Textschrift: Die Null der breiten Überschriftschrift
      liest sich in einem Bedienelement wie ein kleines o. */
   font-family: var(--font-body);
   font-weight: var(--fw-bold);
@@ -257,9 +271,9 @@
   padding: var(--space-5) var(--space-6);
   /* Auf Geräten mit Home-Indikator läge die Leiste sonst darunter. */
   padding-bottom: max(var(--space-5), env(safe-area-inset-bottom));
-  border: 1px solid var(--linie);
+  border: 1.5px solid var(--linie-stark);
   border-radius: var(--radius-lg);
-  background: var(--grund);
+  background: var(--nacht-950);
   box-shadow: var(--schatten-hoch);
 }
 
