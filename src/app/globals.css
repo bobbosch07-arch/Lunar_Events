@@ -237,8 +237,12 @@ hr {
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--akzent);
-  -webkit-mask: radial-gradient(circle at 64% 38%, transparent 0 34%, #000 34.6%);
-  mask: radial-gradient(circle at 64% 38%, transparent 0 34%, #000 34.6%);
+  /* Das Loch (Radius 40 % der Breite, Mitte bei 68 % / 34 %) ragt oben
+     rechts über den Rand hinaus, sonst bliebe ein geschlossener Ring.
+     Die Prozente beziehen sich auf den Weg bis zur fernsten Ecke
+     (0,948 × Breite), daher 42,2 %. */
+  -webkit-mask: radial-gradient(circle farthest-corner at 68% 34%, transparent 0 42.2%, #000 42.8%);
+  mask: radial-gradient(circle farthest-corner at 68% 34%, transparent 0 42.2%, #000 42.8%);
   pointer-events: none;
 }
 
