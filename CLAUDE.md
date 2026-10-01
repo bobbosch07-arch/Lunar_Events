@@ -991,7 +991,20 @@ Protokoll (das Vercel nach einer Stunde vergisst) und gab still `false`
 zurück. `/api/status` zeigte die ganze Zeit „mail: true“, weil es nur
 prüfte, ob ein Schlüssel *gesetzt* ist. Zehn echte Kunden von THE OPENING
 bekamen keine Ticket-Mail; aufgefallen ist es erst, weil der Newsletter
-„nicht funktionierte“. Daraus drei Regeln:
+„nicht funktionierte“.
+
+**Die Ursachen, in dieser Reihenfolge:** In Vercel stand ein
+**SMTP-Schlüssel** (`xsmtpsib-…`); die Schnittstelle nimmt nur
+**API-Schlüssel** (`xkeysib-…`) und antwortet sonst 401 „Key not found“.
+Der neue API-Schlüssel scheiterte dann an Brevos **IP-Sperre** (Sicherheit →
+Autorisierte IPs, für API-Schlüssel ausschalten; Vercel wechselt die IP
+ständig, eine einzelne freizugeben hilft nicht). Und: **Vercel friert die
+Umgebungsvariablen beim Bauen ein.** Ein neuer Wert wirkt erst mit einem
+neuen Deploy, und ein wiederhergestellter alter Deploy läuft mit dem alten
+Schlüssel. Nach einem Rollback setzt Vercel Pushes außerdem nicht mehr
+automatisch live, bis ein Deploy wieder per „Promote“ hochgestuft ist.
+
+Daraus drei Regeln:
 
 - **`/api/status` fragt den Anbieter** (`pruefeVersand`, Brevo
   `GET /v3/account` und `/v3/senders`, ohne eine Mail zu schicken):
