@@ -328,16 +328,17 @@ hr {
 }
 
 /* Ein Abschnitt ohne eigene Fläche ist durchsichtig: Grund und
-   Sternenstaub des body laufen ungebrochen durch. Mit Fläche (data-grund) läuft
-   sie oben und unten weich in die Nacht aus, statt hart abzubrechen —
-   nur bei Hintergründen, Karten behalten ihre Kanten. */
+   Sternenstaub des body laufen ungebrochen durch. Nacht-Flächen
+   (gedaempft, tief, dunkel) laufen oben und unten weich in die Nacht aus,
+   statt hart abzubrechen. Gelb und Rosa sind Karten über die volle Breite
+   und behalten ihre Kanten (Wunsch 01.10.2026). */
 .abschnitt {
   padding-block: var(--abschnitt);
   background: transparent;
   color: var(--auf-grund);
 }
 
-.abschnitt[data-grund] {
+.abschnitt[data-grund]:not([data-grund="gelb"], [data-grund="rosa"]) {
   background:
     var(--sternenstaub) 0 0 / 480px 480px repeat,
     linear-gradient(
@@ -349,10 +350,8 @@ hr {
     );
 }
 
-/* Auf Gelb und Rosa liegt Text auf der Fläche — dort mehr Luft, damit er
-   nicht im Übergang steht. */
 .abschnitt:is([data-grund="gelb"], [data-grund="rosa"]) {
-  padding-block: calc(var(--abschnitt) + var(--uebergang) * 0.6);
+  background-color: var(--grund);
 }
 
 /* Breite Inhalte scrollen in sich selbst, nie die Seite */

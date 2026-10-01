@@ -277,10 +277,6 @@
   color: rgba(42, 11, 94, 0.08);
   pointer-events: none;
   user-select: none;
-  /* Die Buchstaben enden alle auf einer Höhe; ohne Ausblenden zeichnen
-     sich oben und unten zwei gerade Linien über die ganze Breite ab. */
-  -webkit-mask: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
-  mask: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
 }
 
 .marke {

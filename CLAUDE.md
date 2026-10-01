@@ -112,8 +112,9 @@ Runden davor in `docs/redesign-boards*.html`.
   Nordlichter ineinander verlaufen“). Ein festes Nordlicht-Leuchten hinter
   der Seite war kurz drin und ist auf Wunsch wieder raus — es geht um die
   Übergänge, nicht um zusätzliches Licht. Abschnitte ohne `data-grund`
-  sind durchsichtig; mit `data-grund` läuft
-  ihre Fläche oben und unten über `--uebergang` weich aus. Heros malen
+  sind durchsichtig; Nacht-Flächen (`gedaempft`, `tief`, `dunkel`) laufen
+  oben und unten über `--uebergang` weich aus. **Gelb und Rosa nicht** —
+  die gelten als Karte und behalten ihre Kanten (Wunsch 01.10.2026). Heros malen
   ihren Himmel in `::before` und blenden ihn unten aus, die Fußzeile läuft
   oben ein. Seiten-Rahmen (Kasse, Bestätigung, Ticket) haben deshalb
   **keine** eigene Hintergrundfarbe — sonst verschwindet der Cosmos.
