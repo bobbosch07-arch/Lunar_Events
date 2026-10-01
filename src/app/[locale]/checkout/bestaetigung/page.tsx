@@ -18,6 +18,7 @@ import { preisText } from "@/lib/format";
 import { eigeneAdresse } from "@/lib/stripe";
 import css from "./bestaetigung.module.css";
 import { steuerhinweis } from "@/lib/steuer";
+import { Kosmos } from "@/components/Deko";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -128,7 +129,9 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
         </div>
       </header>
 
-      <main className={css.inhalt}>
+      <main className={`${css.inhalt} cosmos-host`}>
+        <Kosmos teil="comet" bewegung="float" className={css.komet} />
+        <Kosmos teil="sparkle-cluster" bewegung="twinkle" handy className={css.funkeln} />
         <div className="seitenbreite">
           <div className={css.jubel}>
             <span className="eyebrow">{f.dateTime(new Date(), "lang")}</span>

@@ -3,7 +3,6 @@
   align-items: center;
   min-height: 62vh;
   padding-block: var(--abschnitt);
-  background: var(--grund);
 }
 
 .mitte {

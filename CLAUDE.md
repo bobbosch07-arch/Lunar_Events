@@ -108,6 +108,25 @@ Runden davor in `docs/redesign-boards*.html`.
 - **„Tickets sichern“** oben auf der Startseite und „Tickets“ in der
   Kopfzeile führen zur Ticketauswahl des nächsten Events mit freien Tickets
   (Wunsch 30.09.2026). Auf der Eventseite zur eigenen, mit Promoter-Kürzel.
+- **Keine harten Kanten im Hintergrund** (Wunsch 01.10.2026, „wie
+  Nordlichter“): Hinter der ganzen Seite liegt ein festes Nordlicht
+  (`body::before`, `--aurora`), der Sternenstaub scrollt im body mit.
+  Abschnitte ohne `data-grund` sind durchsichtig; mit `data-grund` läuft
+  ihre Fläche oben und unten über `--uebergang` weich aus. Heros malen
+  ihren Himmel in `::before` und blenden ihn unten aus, die Fußzeile läuft
+  oben ein. Seiten-Rahmen (Kasse, Bestätigung, Ticket) haben deshalb
+  **keine** eigene Hintergrundfarbe — sonst verschwindet der Cosmos.
+  Karten und Kästen behalten ihre Kanten. Im klassischen Look ist das
+  alles aus (`--aurora: none`, `--uebergang: 0px`).
+- **Stripe-Formular** (`StripeZahlung`): dunkle Felder wie die Kasse,
+  Auswahl in Mondgelb mit hartem Schatten, Systemschrift (eine `var()`
+  im Stripe-Rahmen machte die Schriftangabe ungültig → Serifen). Die
+  Zahlarten-Liste ist ein Accordion und braucht eigene Regeln
+  (`.AccordionItem`). Farben stehen als Literale, weil Stripe keine
+  CSS-Variablen kennt — ändert sich ein Token, muss der Wert mit.
+- **Ticket** (`TicketKarte`): violetter Kopf mit angeschnittener Sichel
+  (`--sichel-maske`), rosa Typ-Marke, gelbe Beschriftungen, harter rosa
+  Schatten (VIP: gelb). Der QR-Code bleibt auf Weiß.
 - **Achtung bei Tokens, die andere Tokens benutzen:** `--x: var(--signal)`
   auf `:root` wird dort aufgelöst und wechselt auf Gelb nicht mit.
   Komponenten benutzen deshalb `var(--signal)` direkt.

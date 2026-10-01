@@ -8,10 +8,19 @@
   margin-top: -92px;
   padding-top: 92px;
   padding-bottom: var(--space-16);
-  background:
-    var(--sternenstaub) 0 0 / 480px 480px repeat,
-    var(--verlauf-himmel);
   overflow: hidden;
+}
+
+/* Der Himmel liegt als eigene Ebene hinter dem Hero und läuft unten weich
+   in die Nacht aus — der Inhalt selbst wird dabei nicht ausgeblendet. */
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: var(--verlauf-himmel);
+  -webkit-mask: linear-gradient(to bottom, #000 calc(100% - var(--uebergang) * 1.6), transparent);
+  mask: linear-gradient(to bottom, #000 calc(100% - var(--uebergang) * 1.6), transparent);
 }
 
 .geist {
@@ -29,6 +38,8 @@
   color: rgba(247, 240, 255, 0.06);
   pointer-events: none;
   user-select: none;
+  -webkit-mask: linear-gradient(to bottom, #000 40%, transparent);
+  mask: linear-gradient(to bottom, #000 40%, transparent);
 }
 
 .heroSichel {

@@ -21,6 +21,7 @@ import {
 import { appleEingerichtet } from "@/lib/wallet/apple";
 import { googleEingerichtet } from "@/lib/wallet/google";
 import css from "./tickets.module.css";
+import { Kosmos } from "@/components/Deko";
 
 type Props = { params: Promise<{ locale: string; token: string }> };
 
@@ -136,7 +137,9 @@ export default async function TicketAnsicht({ params }: Props) {
             </Link>
           </div>
         </header>
-        <main className={css.inhalt}>
+        <main className={`${css.inhalt} cosmos-host`}>
+          <Kosmos teil="planet-pink" bewegung="float" className={css.planet} />
+          <Kosmos teil="sparkle-yellow" bewegung="twinkle" handy className={css.funkeln} />
           <div className="seitenbreite">
             <div className={css.kopfzeile}>
               <span className="eyebrow">Zahlung ausstehend</span>
@@ -177,7 +180,9 @@ export default async function TicketAnsicht({ params }: Props) {
         </div>
       </header>
 
-      <main className={css.inhalt}>
+      <main className={`${css.inhalt} cosmos-host`}>
+          <Kosmos teil="planet-pink" bewegung="float" className={css.planet} />
+          <Kosmos teil="sparkle-yellow" bewegung="twinkle" handy className={css.funkeln} />
         <div className="seitenbreite">
           <div className={css.kopfzeile}>
             <span className="eyebrow">{t("titel")}</span>
@@ -491,7 +496,9 @@ async function ListenTickets({
         </div>
       </header>
 
-      <main className={css.inhalt}>
+      <main className={`${css.inhalt} cosmos-host`}>
+          <Kosmos teil="planet-pink" bewegung="float" className={css.planet} />
+          <Kosmos teil="sparkle-yellow" bewegung="twinkle" handy className={css.funkeln} />
         <div className="seitenbreite">
           <div className={css.kopfzeile}>
             <span className="eyebrow">{eyebrow}</span>

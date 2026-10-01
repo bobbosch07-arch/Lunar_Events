@@ -1,40 +1,74 @@
+/* Das Ticket im Look des Posters: violetter Kopf mit Sichel, harter rosa
+   Schatten. Der QR-Code bleibt auf weißem Grund — am Einlass zählt, dass
+   die Kamera ihn sofort erkennt. */
 .ticket {
   display: flex;
   flex-direction: column;
   background: var(--grund-2);
   color: var(--text-on-dark);
-  border: 1px solid var(--border-dark);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: 6px 6px 0 var(--hl);
 }
 
 .vip {
-  border-color: var(--border-gold);
+  box-shadow: 6px 6px 0 var(--signal);
 }
 
 .kopf {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-5);
-  border-bottom: 1px solid var(--border-dark);
+  background: var(--verlauf-poster);
+}
+
+/* Das Logo darf nicht schrumpfen, sonst drückt eine lange Marke
+   ("EARLY BIRD · FAST LANE") es schmal und verzerrt es. */
+.kopf > img {
+  flex: none;
+}
+
+/* Die Marke bricht lieber um, als über den Rand zu laufen */
+.kopf .typ {
+  white-space: normal;
+  text-align: right;
+}
+
+/* Die Sichel aus dem Logo, angeschnitten oben rechts */
+.kopf::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  right: -26px;
+  top: -42px;
+  width: 128px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--mondgelb-500);
+  -webkit-mask: var(--sichel-maske);
+  mask: var(--sichel-maske);
 }
 
 .typ {
   font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--text-on-dark-muted);
-  border: 1px solid var(--border-dark);
+  color: var(--auf-hl);
+  background: var(--hl);
   border-radius: var(--radius-sm);
-  padding: 4px 9px;
+  padding: 5px 9px;
   white-space: nowrap;
 }
 
 .typVip {
-  color: var(--hl);
-  border-color: var(--border-gold);
+  color: var(--auf-signal);
+  background: var(--signal);
 }
 
 .koerper {
@@ -67,9 +101,10 @@
 
 .datenName {
   font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
   letter-spacing: var(--ls-label);
   text-transform: uppercase;
-  color: var(--text-on-dark-muted);
+  color: var(--akzent-text);
 }
 
 .datenWert {
@@ -86,7 +121,7 @@
   gap: var(--space-5);
   margin-top: auto;
   padding: var(--space-5);
-  border-top: 1px dashed var(--border-dark);
+  border-top: 2px dashed var(--linie-stark);
 }
 
 .code {

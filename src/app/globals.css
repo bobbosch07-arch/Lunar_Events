@@ -34,6 +34,25 @@ body {
   overflow-x: hidden;
 }
 
+/* Das Nordlicht liegt fest hinter allem; der Sternenstaub (body) scrollt
+   mit. Zusammen ergibt das Tiefe ohne eine einzige harte Kante. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  background: var(--aurora);
+  pointer-events: none;
+  animation: nordlicht 38s ease-in-out infinite alternate;
+}
+
+@keyframes nordlicht {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, -2%, 0) scale(1.05); }
+  100% { transform: translate3d(-2%, 3%, 0) scale(1.02); }
+}
+
+
 h1,
 h2,
 h3,
@@ -240,12 +259,8 @@ hr {
   aspect-ratio: 1;
   border-radius: 50%;
   background: var(--akzent);
-  /* Das Loch (Radius 40 % der Breite, Mitte bei 68 % / 34 %) ragt oben
-     rechts über den Rand hinaus, sonst bliebe ein geschlossener Ring.
-     Die Prozente beziehen sich auf den Weg bis zur fernsten Ecke
-     (0,948 × Breite), daher 42,2 %. */
-  -webkit-mask: radial-gradient(circle farthest-corner at 68% 34%, transparent 0 42.2%, #000 42.8%);
-  mask: radial-gradient(circle farthest-corner at 68% 34%, transparent 0 42.2%, #000 42.8%);
+  -webkit-mask: var(--sichel-maske);
+  mask: var(--sichel-maske);
   pointer-events: none;
 }
 
@@ -329,12 +344,32 @@ hr {
   padding-inline: var(--rand-seite);
 }
 
+/* Ein Abschnitt ohne eigene Fläche ist durchsichtig: Nordlicht und
+   Sternenstaub laufen ungebrochen durch. Mit Fläche (data-grund) läuft
+   sie oben und unten weich in die Nacht aus, statt hart abzubrechen —
+   nur bei Hintergründen, Karten behalten ihre Kanten. */
 .abschnitt {
   padding-block: var(--abschnitt);
-  background-color: var(--grund);
-  background-image: var(--sternenstaub);
-  background-size: 480px 480px;
+  background: transparent;
   color: var(--auf-grund);
+}
+
+.abschnitt[data-grund] {
+  background:
+    var(--sternenstaub) 0 0 / 480px 480px repeat,
+    linear-gradient(
+      to bottom,
+      transparent 0,
+      var(--grund) var(--uebergang),
+      var(--grund) calc(100% - var(--uebergang)),
+      transparent 100%
+    );
+}
+
+/* Auf Gelb und Rosa liegt Text auf der Fläche — dort mehr Luft, damit er
+   nicht im Übergang steht. */
+.abschnitt:is([data-grund="gelb"], [data-grund="rosa"]) {
+  padding-block: calc(var(--abschnitt) + var(--uebergang) * 0.6);
 }
 
 /* Breite Inhalte scrollen in sich selbst, nie die Seite */

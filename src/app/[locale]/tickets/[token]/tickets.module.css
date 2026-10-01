@@ -2,7 +2,6 @@
    im Halbdunkel, mit hochgedrehter Helligkeit. */
 .rahmen {
   min-height: 100vh;
-  background: var(--nacht-950);
   color: var(--text-on-dark);
 }
 
@@ -146,4 +145,17 @@
   .raster {
     grid-template-columns: 1fr;
   }
+}
+
+/* Cosmos-Deko: Planet rechts neben dem Ticket, ein Funkeln am Titel */
+.planet {
+  width: 170px;
+  right: 5%;
+  top: 120px;
+}
+
+.funkeln {
+  width: 26px;
+  right: 12%;
+  top: 36px;
 }

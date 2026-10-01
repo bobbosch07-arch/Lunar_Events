@@ -2,7 +2,6 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--grund);
 }
 
 .kopf {
@@ -178,4 +177,17 @@
   margin-top: var(--space-2);
   font-size: var(--fs-caption);
   color: var(--auf-grund-2);
+}
+
+/* Cosmos-Deko: Sternschnuppe oben rechts, Funkeln neben "Du bist dabei." */
+.komet {
+  width: 180px;
+  right: 6%;
+  top: 40px;
+}
+
+.funkeln {
+  width: 84px;
+  left: min(62%, 640px);
+  top: 70px;
 }

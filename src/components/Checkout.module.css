@@ -5,12 +5,10 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--grund);
 }
 
 .kopf {
   border-bottom: 1px solid var(--border-light);
-  background: var(--grund);
 }
 
 .kopfReihe {
@@ -46,11 +44,19 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Erledigt und aktuell unterscheiden sich in Farbe UND Gewicht —
-   Gold allein wäre kein verlässliches Merkmal. */
+/* Erledigt und aktuell unterscheiden sich in Farbe UND Gewicht UND der
+   rosa Marke an der Nummer — die Farbe allein wäre kein verlässliches
+   Merkmal. */
 .schrittAktiv {
   color: var(--text-primary);
   font-weight: var(--fw-bold);
+}
+
+.schrittAktiv .schrittNr {
+  padding: 2px 5px;
+  border-radius: var(--radius-sm);
+  background: var(--hl);
+  color: var(--auf-hl);
 }
 
 .schrittFertig {
@@ -438,7 +444,7 @@
   font-weight: var(--fw-display);
   font-size: var(--fs-h3);
   font-variant-numeric: tabular-nums;
-  color: var(--text-primary);
+  color: var(--akzent-text);
 }
 
 .zfAendern {
@@ -480,15 +486,16 @@
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-5);
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-lg);
   background: var(--grund);
   cursor: pointer;
 }
 
+/* Gewählt wie die Ticketphase: gelber Rahmen mit hartem Schatten */
 .zahlartGewaehlt {
   border-color: var(--signal);
-  box-shadow: inset 3px 0 0 var(--akzent);
+  box-shadow: 5px 5px 0 var(--signal);
   background: var(--grund-2);
 }
 

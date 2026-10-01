@@ -4,7 +4,6 @@
 
 .rahmen {
   min-height: 100vh;
-  background: var(--grund);
   color: var(--text-primary);
 }
 

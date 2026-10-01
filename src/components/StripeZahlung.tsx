@@ -96,7 +96,9 @@ export function StripeZahlung({
    * Stripe malt das Formular in einem eigenen Rahmen. Damit es nicht wie
    * ein Fremdkörper wirkt, bekommt es unsere Tokens mitgegeben — die
    * Werte stehen hier ausnahmsweise als Literale, weil Stripe keine
-   * CSS-Variablen auflösen kann.
+   * CSS-Variablen auflösen kann. Violett-Nacht (30.09.2026): Felder wie
+   * die der Kasse (--grund-2, Lila-Weiß), Fokus und Auswahl in Mondgelb.
+   * Ändert sich ein Token, muss der Wert hier mit.
    */
   const optionen: StripeElementsOptions = {
     clientSecret,
@@ -104,37 +106,57 @@ export function StripeZahlung({
     appearance: {
       theme: "flat",
       variables: {
-        colorPrimary: "#0b1728",
-        colorBackground: "#fcfbf8",
-        colorText: "#101418",
-        colorTextSecondary: "#5e6268",
-        colorDanger: "#a64040",
-        fontFamily: "var(--font-body), system-ui, sans-serif",
+        colorPrimary: "#ffe14a",
+        colorBackground: "#2d1260",
+        colorText: "#f7f0ff",
+        colorTextSecondary: "#c4b9d5",
+        colorTextPlaceholder: "#9788b0",
+        colorIcon: "#c4b9d5",
+        colorDanger: "#ff9a9a",
+        // Im Stripe-Rahmen gibt es unsere CSS-Variablen nicht — eine
+        // var() machte die ganze Angabe ungültig, und Stripe fiel auf eine
+        // Serifenschrift zurück. Systemschrift ist der ehrliche Ersatz.
+        fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
         fontSizeBase: "16px",
         borderRadius: "3px",
         spacingUnit: "4px",
       },
       rules: {
         ".Input": {
-          border: "1px solid #e4e0d7",
+          border: "1px solid #4d3579",
           boxShadow: "none",
           padding: "12px 14px",
         },
         ".Input:focus": {
-          border: "1px solid #0b1728",
-          outline: "2px solid #d4b873",
+          border: "1px solid #f7f0ff",
+          outline: "2px solid #ffe14a",
           outlineOffset: "1px",
         },
         ".Label": {
           fontSize: "12px",
           letterSpacing: "0.2em",
           textTransform: "uppercase",
-          color: "#5e6268",
+          color: "#c4b9d5",
         },
-        ".Tab": { border: "1px solid #e4e0d7", boxShadow: "none" },
+        ".Tab": { border: "1px solid #4d3579", boxShadow: "none", backgroundColor: "#2d1260" },
         ".Tab--selected": {
-          border: "1px solid #0b1728",
-          boxShadow: "inset 3px 0 0 #c6a15b",
+          border: "1px solid #ffe14a",
+          boxShadow: "4px 4px 0 #ffe14a",
+        },
+        ".TabLabel--selected": { color: "#ffe14a" },
+        ".TabIcon--selected": { fill: "#ffe14a" },
+        ".Block": { backgroundColor: "#2d1260", border: "1px solid #4d3579", boxShadow: "none" },
+        // Die Zahlarten als aufklappbare Liste (Accordion) malt Stripe sonst weiß
+        ".AccordionItem": {
+          backgroundColor: "#2d1260",
+          border: "1px solid #4d3579",
+          boxShadow: "none",
+          color: "#f7f0ff",
+        },
+        ".AccordionItem--selected": {
+          border: "1px solid #ffe14a",
+          boxShadow: "4px 4px 0 #ffe14a",
+          color: "#ffe14a",
         },
       },
     },
