@@ -26,7 +26,7 @@ import {
 import { Streichpreis } from "@/components/Streichpreis";
 import { EventPoster } from "@/components/EventPoster";
 import { Laufband } from "@/components/Laufband";
-import { Eckzeichen, Stern, akzent } from "@/components/Deko";
+import { Eckzeichen, Kosmos, Stern, akzent } from "@/components/Deko";
 import css from "./event.module.css";
 
 type Props = {
@@ -237,7 +237,8 @@ export default async function EventSeite({ params, searchParams }: Props) {
           </div>
         </section>
 
-        <section className="abschnitt">
+        <section className="abschnitt cosmos-host">
+          <Kosmos teil="black-hole" bewegung="float" className={css.schwarzesLoch} />
           <div className="seitenbreite">
             <div className={css.spalten}>
               <div className={css.text}>
@@ -281,7 +282,9 @@ export default async function EventSeite({ params, searchParams }: Props) {
           </div>
         </section>
 
-        <section className="abschnitt" data-grund="gedaempft" id="tickets">
+        <section className="abschnitt cosmos-host" data-grund="gedaempft" id="tickets">
+          <Kosmos teil="orbit-ring" bewegung="spin" className={css.orbit} />
+          <Kosmos teil="sparkle-pink" bewegung="twinkle" handy className={css.funkelTickets} />
           <div className="seitenbreite">
             <div className={css.abschnittKopf}>
               <span className="eyebrow">

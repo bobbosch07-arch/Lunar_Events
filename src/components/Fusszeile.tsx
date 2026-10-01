@@ -1,6 +1,6 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Logo } from "./Logo";
+import { Logo, SloganLogo } from "./Logo";
 import { Newsletter } from "./Newsletter";
 import css from "./Fusszeile.module.css";
 
@@ -16,7 +16,7 @@ export function Fusszeile() {
       <div className="seitenbreite">
         <div className={css.oben}>
           <div className={css.marke}>
-            <Logo ton="ivory" hoehe={38} />
+            <Logo ton="farbig" hoehe={72} />
             <p className={css.markeSatz}>
               Ausgewählte Nächte in Darmstadt.
             </p>
@@ -76,6 +76,11 @@ export function Fusszeile() {
               </li>
             </ul>
           </div>
+        </div>
+
+        {/* Das Sub-Logo als Gruß zum Schluss (30.09.2026) */}
+        <div className={css.gruss}>
+          <SloganLogo hoehe={130} className={css.grussBild} />
         </div>
 
         <div className={css.unten}>

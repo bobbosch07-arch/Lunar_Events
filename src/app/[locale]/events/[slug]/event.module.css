@@ -7,8 +7,29 @@
   isolation: isolate;
   margin-top: -92px;
   padding-top: 92px;
-  background: var(--verlauf-himmel);
+  background:
+    var(--sternenstaub) 0 0 / 480px 480px repeat,
+    var(--verlauf-himmel);
   overflow: hidden;
+}
+
+/* ---------- Cosmos-Deko (hinter dem Inhalt, auf dem Handy nur Funkeln) ---------- */
+.schwarzesLoch {
+  width: 210px;
+  left: 3%;
+  bottom: 6%;
+}
+
+.orbit {
+  width: 240px;
+  right: 3%;
+  top: 36px;
+}
+
+.funkelTickets {
+  width: 30px;
+  right: 22%;
+  top: 70px;
 }
 
 .stern {

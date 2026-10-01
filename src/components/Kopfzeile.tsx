@@ -110,7 +110,7 @@ export function Kopfzeile({ ueberHero = false, ticketZiel = "/events" }: Props) 
       <div className={css.kasten}>
         <div className={css.reihe}>
           <Link href="/" className={css.markeLink} aria-label="Lunar Events">
-            <Logo ton="ivory" hoehe={56} prioritaet />
+            <Logo ton="farbig" hoehe={50} prioritaet />
           </Link>
 
           <nav className={css.mitte} aria-label={t("events")}>

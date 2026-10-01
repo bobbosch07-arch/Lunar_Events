@@ -18,7 +18,10 @@ html {
 
 body {
   margin: 0;
-  background: var(--grund);
+  background-color: var(--grund);
+  /* Sternenstaub nur in Violett-Nacht (--sternenstaub in tokens.css) */
+  background-image: var(--sternenstaub);
+  background-size: 480px 480px;
   color: var(--auf-grund);
   font-family: var(--font-body);
   font-size: var(--fs-body);
@@ -268,6 +271,55 @@ hr {
   font-size: 1.45em;
 }
 
+/* ---------- Cosmos-Deko (Designs/cosmos, 30.09.2026) ----------
+   Rein dekorativ: aria-hidden, keine Klicks, nie über Text (z-index -1
+   im .cosmos-host). Sparsam: pro Bildschirm höchstens ein großes Widget
+   und drei bis fünf Funkeln. Die Dateien liegen in public/cosmos/. */
+.cosmos-host {
+  position: relative;
+  isolation: isolate;
+}
+
+.cosmos-deco {
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.cosmos-divider {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  margin-inline: auto;
+  pointer-events: none;
+}
+
+@keyframes cosmos-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50% { opacity: 0.45; transform: scale(0.78) rotate(12deg); }
+}
+@keyframes cosmos-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes cosmos-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cosmos-twinkle { animation: cosmos-twinkle 3.2s ease-in-out infinite; transform-origin: center; }
+.cosmos-twinkle--slow { animation-duration: 5s; animation-delay: -1.4s; }
+.cosmos-float { animation: cosmos-float 6s ease-in-out infinite; }
+.cosmos-spin { animation: cosmos-spin 60s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-twinkle, .cosmos-float, .cosmos-spin { animation: none; }
+}
+@media (max-width: 720px) {
+  .cosmos-deco--hide-mobile { display: none; }
+}
+
 /* ---------- Layout-Huellen ---------- */
 
 .seitenbreite {
@@ -279,7 +331,9 @@ hr {
 
 .abschnitt {
   padding-block: var(--abschnitt);
-  background: var(--grund);
+  background-color: var(--grund);
+  background-image: var(--sternenstaub);
+  background-size: 480px 480px;
   color: var(--auf-grund);
 }
 

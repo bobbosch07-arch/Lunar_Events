@@ -38,7 +38,7 @@ export default async function Anmelden({
 
   return (
     <main className={css.seite}>
-      <Logo ton="ivory" hoehe={64} />
+      <Logo ton="farbig" hoehe={72} />
       {token_hash ? (
         <>
           <p className={css.text}>Dein Zugang zu Lunar Events ist bereit.</p>

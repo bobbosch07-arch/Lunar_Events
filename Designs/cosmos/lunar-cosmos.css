@@ -1,0 +1,46 @@
+/* Lunar Events · Cosmos-Deko. Alle Elemente sind rein dekorativ (aria-hidden, pointer-events:none). */
+.cosmos-bg {
+  background-image: url("stardust-tile.svg");
+  background-size: 480px 480px;
+  background-repeat: repeat;
+}
+.cosmos-bg--dense { background-image: url("stardust-tile-dense.svg"); }
+
+.cosmos-host { position: relative; isolation: isolate; }
+.cosmos-deco {
+  position: absolute;
+  pointer-events: none;
+  user-select: none;
+  z-index: -1;
+}
+
+.cosmos-divider {
+  display: block;
+  width: 100%;
+  max-width: 1200px;
+  height: auto;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+@keyframes cosmos-twinkle {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50% { opacity: .45; transform: scale(.78) rotate(12deg); }
+}
+@keyframes cosmos-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes cosmos-spin { to { transform: rotate(360deg); } }
+
+.cosmos-twinkle { animation: cosmos-twinkle 3.2s ease-in-out infinite; transform-origin: center; }
+.cosmos-twinkle--slow { animation-duration: 5s; animation-delay: -1.4s; }
+.cosmos-float { animation: cosmos-float 6s ease-in-out infinite; }
+.cosmos-spin { animation: cosmos-spin 60s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cosmos-twinkle, .cosmos-float, .cosmos-spin { animation: none; }
+}
+@media (max-width: 720px) {
+  .cosmos-deco--hide-mobile { display: none; }
+}

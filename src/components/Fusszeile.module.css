@@ -1,5 +1,7 @@
 .fuss {
-  background: var(--nacht-950);
+  background:
+    url("/cosmos/stardust-tile.svg") 0 0 / 480px 480px repeat,
+    var(--nacht-950);
   color: var(--text-on-dark-muted);
   padding-block: var(--space-20) var(--space-10);
 }
@@ -9,8 +11,7 @@
   grid-template-columns: minmax(220px, 1fr) auto;
   gap: var(--space-12);
   align-items: start;
-  padding-bottom: var(--space-12);
-  border-bottom: 1px solid var(--border-dark);
+  padding-bottom: var(--space-4);
 }
 
 .marke {
@@ -54,6 +55,19 @@
 
 .punkt:hover {
   color: var(--akzent-text);
+}
+
+.gruss {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-12) var(--space-4);
+  border-bottom: 1px solid var(--border-dark);
+}
+
+/* Auf schmalen Schirmen schrumpft das Bild mit, statt überzustehen */
+.grussBild {
+  max-width: 100%;
+  height: auto !important;
 }
 
 .unten {

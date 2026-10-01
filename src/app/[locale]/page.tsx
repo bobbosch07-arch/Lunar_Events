@@ -5,7 +5,7 @@ import { EventKarte } from "@/components/EventKarte";
 import { VipSektion } from "@/components/VipSektion";
 import { Knopf } from "@/components/Knopf";
 import { Laufband } from "@/components/Laufband";
-import { Stern, akzent } from "@/components/Deko";
+import { Kosmos, Stern, akzent } from "@/components/Deko";
 import { holeFeaturedEvents, holeKommendeEvents } from "@/lib/events";
 import { verkaufsHinweis } from "@/lib/typen";
 import css from "./start.module.css";
@@ -136,7 +136,7 @@ export default async function Startseite({
         </section>
 
         {featured.length > 0 ? (
-          <section className="abschnitt">
+          <section className={`abschnitt ${css.featured}`}>
             <div className="seitenbreite">
               <div className={css.kopfzeile}>
                 <div className={css.kopfLinks}>
@@ -147,7 +147,9 @@ export default async function Startseite({
                   <h2 className={css.abschnittTitel}>{t.rich("featuredTitel", { akzent })}</h2>
                 </div>
               </div>
-              <div className={css.raster}>
+              <div className={`cosmos-host ${css.raster}`}>
+                <Kosmos teil="planet-ringed" bewegung="float" className={css.planetRing} />
+                <Kosmos teil="sparkle-cluster" bewegung="twinkle-langsam" className={css.funkelKarte} />
                 {featured.map((e, i) => (
                   <EventKarte
                     key={e.id}
@@ -194,6 +196,9 @@ export default async function Startseite({
         ) : null}
 
         <section className={`abschnitt ${css.vipAbschnitt}`}>
+          {/* Füller für die Lücke zwischen Eventkarte und VIP (Designs/cosmos) */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/cosmos/divider-cosmos.svg" className={`cosmos-divider ${css.trenner}`} alt="" aria-hidden="true" />
           <div className="seitenbreite">
             <VipSektion />
           </div>

@@ -44,3 +44,42 @@ export function Eckzeichen({ name, className }: { name: keyof typeof SYMBOLE; cl
     </svg>
   );
 }
+
+type KosmosTeil =
+  | "black-hole" | "comet" | "moon-sickle" | "orbit-ring" | "planet-pink"
+  | "planet-ringed" | "planet-violet" | "sparkle-cluster" | "sparkle-pink"
+  | "sparkle-white" | "sparkle-yellow";
+
+/**
+ * Ein Deko-Widget aus Designs/cosmos (public/cosmos). Rein dekorativ,
+ * liegt hinter dem Inhalt — das Elternelement braucht die Klasse
+ * cosmos-host. Größe und Lage kommen über className aus dem Modul der
+ * Seite; "wackeln" (twinkle, float, spin) und "handy" (auf dem Handy
+ * zeigen) steuern den Rest.
+ */
+export function Kosmos({
+  teil,
+  className,
+  bewegung,
+  handy = false,
+}: {
+  teil: KosmosTeil;
+  className?: string;
+  bewegung?: "twinkle" | "twinkle-langsam" | "float" | "spin";
+  handy?: boolean;
+}) {
+  const klassen = [
+    "cosmos-deco",
+    bewegung === "twinkle" ? "cosmos-twinkle" : null,
+    bewegung === "twinkle-langsam" ? "cosmos-twinkle cosmos-twinkle--slow" : null,
+    bewegung === "float" ? "cosmos-float" : null,
+    bewegung === "spin" ? "cosmos-spin" : null,
+    handy ? null : "cosmos-deco--hide-mobile",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  // SVG ohne Optimierung: next/image brächte hier nichts außer Umwegen.
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/cosmos/${teil}.svg`} alt="" aria-hidden="true" className={klassen} />;
+}

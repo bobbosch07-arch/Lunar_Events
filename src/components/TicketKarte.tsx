@@ -52,7 +52,7 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
       data-grund="dunkel"
     >
       <div className={css.kopf}>
-        <Logo ton="ivory" hoehe={26} />
+        <Logo ton="farbig" hoehe={30} />
         <span
           className={`${css.typ} ${ticket.art === "vip" ? css.typVip : ""} ${
             entwertet ? css.entwertetMarke : ""

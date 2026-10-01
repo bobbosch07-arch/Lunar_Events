@@ -8,7 +8,9 @@
   margin-top: -92px;
   padding-top: 92px;
   padding-bottom: var(--space-16);
-  background: var(--verlauf-himmel);
+  background:
+    var(--sternenstaub) 0 0 / 480px 480px repeat,
+    var(--verlauf-himmel);
   overflow: hidden;
 }
 
@@ -209,10 +211,32 @@
   max-width: 44ch;
 }
 
-/* Der VIP-Block ist selbst eine Fläche — der Abstand darüber kommt schon
-   vom Abschnitt davor. */
+/* Zwischen Eventkarte und VIP liegt der Cosmos-Trenner statt leerer
+   Fläche — die beiden Abschnitte rücken dafür zusammen. */
+.featured {
+  padding-bottom: 0;
+}
+
 .vipAbschnitt {
   padding-top: 0;
+}
+
+.trenner {
+  margin-bottom: var(--space-4);
+}
+
+/* Ringplanet schaut links hinter der Eventkarte hervor, Funkeln rechts
+   oben. Beides liegt hinter der Karte (z-index -1 im cosmos-host). */
+.planetRing {
+  width: 170px;
+  left: -118px;
+  top: 34%;
+}
+
+.funkelKarte {
+  width: 72px;
+  right: -44px;
+  top: -52px;
 }
 
 /* ---------- Wer wir sind (rosa Fläche) ---------- */

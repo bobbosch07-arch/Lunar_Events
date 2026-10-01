@@ -139,7 +139,7 @@ export default async function WartelisteSeite({ params }: Props) {
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">
-            <Logo ton="navy" hoehe={40} prioritaet />
+            <Logo ton="farbig" hoehe={44} prioritaet />
           </Link>
         </div>
       </header>

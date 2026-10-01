@@ -46,6 +46,9 @@
     radial-gradient(70% 55% at 8% 0%, rgba(255, 143, 214, 0.55) 0%, rgba(255, 143, 214, 0) 70%),
     radial-gradient(110% 90% at 92% 12%, #8a4dff 0%, #5b21c9 38%, #2e0e6b 72%, #1a0840 100%);
   --verlauf-poster: linear-gradient(160deg, #8a4dff 0%, #5b21c9 45%, #220a4f 100%);
+  /* Kachelbarer Sternenstaub für Nacht-Flächen (Designs/cosmos). Auf Gelb,
+     Rosa und im klassischen Look: keiner. */
+  --sternenstaub: url("/cosmos/stardust-tile.svg");
 
   /* ---------- Klassisch: Grundfarben (Werkzeuge des Personals) ---------- */
   --ivory-50: #fcfbf8;
@@ -265,6 +268,7 @@
 
 /* Mondgelbe Fläche: Tinte als Text, Knöpfe werden dunkel */
 [data-grund="gelb"] {
+  --sternenstaub: none;
   --grund: var(--mondgelb-500);
   --grund-2: #ffe86f;
   --grund-3: #fff09a;
@@ -289,6 +293,7 @@
 
 /* Rosa Fläche: wie Gelb, nur liegt jetzt Gelb im Akzentbalken */
 [data-grund="rosa"] {
+  --sternenstaub: none;
   --grund: var(--rosa-400);
   --grund-2: #ffa3de;
   --grund-3: var(--rosa-300);
@@ -317,6 +322,8 @@
    ============================================================ */
 :root:has([data-thema="klassisch"]) {
   color-scheme: light;
+
+  --sternenstaub: none;
 
   --text-primary: #101418;
   --text-secondary: #5e6268;

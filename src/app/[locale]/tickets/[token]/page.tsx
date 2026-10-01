@@ -132,7 +132,7 @@ export default async function TicketAnsicht({ params }: Props) {
         <header className={css.kopf}>
           <div className="seitenbreite">
             <Link href="/" aria-label="Lunar Events">
-              <Logo ton="ivory" hoehe={40} prioritaet />
+              <Logo ton="farbig" hoehe={44} prioritaet />
             </Link>
           </div>
         </header>
@@ -172,7 +172,7 @@ export default async function TicketAnsicht({ params }: Props) {
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">
-            <Logo ton="ivory" hoehe={40} prioritaet />
+            <Logo ton="farbig" hoehe={44} prioritaet />
           </Link>
         </div>
       </header>
@@ -486,7 +486,7 @@ async function ListenTickets({
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">
-            <Logo ton="ivory" hoehe={40} prioritaet />
+            <Logo ton="farbig" hoehe={44} prioritaet />
           </Link>
         </div>
       </header>

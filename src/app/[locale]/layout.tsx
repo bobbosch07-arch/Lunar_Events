@@ -74,7 +74,7 @@ export async function generateMetadata({
       locale: locale === "de" ? "de_DE" : "en_GB",
     },
     twitter: { card: "summary_large_image" },
-    icons: { icon: "/favicon.ico" },
+    icons: { icon: "/favicon.ico", apple: "/apple-icon.png" },
   };
 }
 

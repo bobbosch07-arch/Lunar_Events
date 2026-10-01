@@ -69,7 +69,7 @@ export default async function TuerZahlen({ params }: Props) {
         <div className="seitenbreite">
           <div className={css.kopfReihe}>
             <Link href="/" aria-label="Lunar Events">
-              <Logo ton="navy" hoehe={44} prioritaet />
+              <Logo ton="farbig" hoehe={44} prioritaet />
             </Link>
             <span className={css.sicher}>{t("titel")}</span>
           </div>

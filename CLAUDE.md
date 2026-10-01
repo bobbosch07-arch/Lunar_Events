@@ -82,8 +82,22 @@ Runden davor in `docs/redesign-boards*.html`.
   `gedaempft`, `gelb`, `rosa`. Auf Gelb und Rosa werden Knöpfe von selbst
   dunkel, weil `--signal` dort Tinte ist.
 - **Die Sichel** (`.sichel` in globals.css) ist das wiederkehrende Motiv:
-  Hero, Eventposter, später Ticket und Story. Das Logo selbst wird nur
-  umgefärbt, nie nachgebaut.
+  Hero, Eventposter, später Ticket und Story. Ihr Loch muss über den Rand
+  ragen, sonst wird sie ein Ring (Rückmeldung 30.09.2026).
+- **Logo (seit 30.09.2026 farbig):** gelbe Sichel, rosa Sterne, „LUNAR“
+  Lila-Weiß, „EVENTS“ Rosa — von Bobbo als fertige Datei geliefert
+  (Quellen in `assets/logo/*-quelle.png`), nur zugeschnitten:
+  `public/logo/lunar-farbig.png`, `mark-farbig.png` (Sichel allein, auch
+  Favicon und Apple-Icon) und `lunar-slogan.png` (Sub-Logo mit „SEE YOU
+  after dark“, `<SloganLogo />`, steht als Gruß in der Fußzeile).
+  `<Logo ton="farbig">` auf Gästeseiten; ivory/navy/gold nur noch im
+  klassischen Look. Nicht nachbauen, nicht zur Laufzeit färben.
+- **Cosmos-Deko** (Bobbos Designs in `Designs/cosmos/`, README dort;
+  ausgeliefert aus `public/cosmos/`): Sternenstaub als `--sternenstaub`
+  auf allen Nacht-Flächen (nicht auf Gelb, Rosa, klassisch), einzelne
+  Widgets über `<Kosmos teil=… />` aus `Deko.tsx` in einem `cosmos-host`.
+  Regeln aus der README: pro Bildschirm höchstens ein großes Widget und
+  drei bis fünf Funkeln, nie über Text, große auf dem Handy aus.
 - **Events ohne Foto** zeigen ein erzeugtes Poster (`EventPoster`):
   Verlauf, Sichel, Titel. Ein hochgeladenes Bild geht vor, außer im
   Backoffice ist „Automatisches Poster statt Bild zeigen“ angehakt
