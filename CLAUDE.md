@@ -129,6 +129,22 @@ Runden davor in `docs/redesign-boards*.html`.
 - **Ticket** (`TicketKarte`): violetter Kopf mit angeschnittener Sichel
   (`--sichel-maske`), rosa Typ-Marke, gelbe Beschriftungen, harter rosa
   Schatten (VIP: gelb). Der QR-Code bleibt auf Weiß.
+- **Außerhalb der Seite** (Etappe 5): Die **Mails** (`mail.ts`,
+  `huelle`/`kopfBalken`) haben Nacht als Grund, einen violetten Kopf mit
+  dem farbigen Logo (als Bild von der eigenen Adresse), gelbe Beschriftungen,
+  gelbe Knöpfe mit rosa Schattenkante (`border-right/bottom`, weil
+  Mailprogramme keinen `box-shadow` können) und unten den Slogan;
+  `color-scheme: dark`, damit nichts umgekehrt wird. Zum Ansehen ohne
+  Versand: `mail.ts` mit `tsc` nach CommonJS übersetzen und `fetch`
+  abfangen. Die **Teilen-Bilder**: `events/[slug]/opengraph-image.tsx`
+  als Poster (große Sichel, rosa Datum, gelber Preis), dazu
+  `[locale]/opengraph-image.tsx` mit dem Slogan-Logo für alle übrigen
+  Seiten. Beide ohne Unbounded (bräuchte eine eingebettete TTF/WOFF).
+  Der **Wallet-Pass**: `PASS_FARBEN` in Nacht, Lila-Weiß und Mondgelb,
+  Bilder aus `scripts/wallet_bilder.py` (schreibt nach `assets/wallet`
+  und `public/wallet`). Google übernimmt Farbe und Logo nur beim ersten
+  Anlegen der Event-Klasse — ein schon angelegtes Event behält den alten
+  Kopf. In allen dreien stehen die Farben als Literale.
 - **Achtung bei Tokens, die andere Tokens benutzen:** `--x: var(--signal)`
   auf `:root` wird dort aufgelöst und wechselt auf Gelb nicht mit.
   Komponenten benutzen deshalb `var(--signal)` direkt.

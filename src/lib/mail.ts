@@ -133,20 +133,35 @@ export async function versende(nachricht: Nachricht): Promise<boolean> {
 
 /* ------------------------------------------------------------------ */
 
+/*
+ * Violett-Nacht (30.09.2026) auch in der Mail: Nacht als Grund, violetter
+ * Kopf mit dem farbigen Logo, Knöpfe in Mondgelb mit rosa Schattenkante,
+ * unten der Slogan. Die Farben stehen als Literale, weil Mailprogramme
+ * keine CSS-Variablen kennen — dieselben Werte wie in tokens.css
+ * (#14062e nacht-950, #220a4f nacht-800, #3a1a73 nacht-600, #5b21c9
+ * violett, #ffe14a mondgelb, #ff8fd6 rosa, #f7f0ff lila-weiß, #2a0b5e
+ * tinte). Ändert sich dort etwas, muss es hier mit.
+ *
+ * "color-scheme: dark" sagt Apple Mail und Outlook, dass die Mail schon
+ * dunkel ist — sonst kehren manche die Farben um.
+ */
 function huelle(inhalt: string): string {
   // Tabellen und Inline-Styles: Mailprogramme verstehen nichts anderes
   // verlässlich. Flexbox und externe Stylesheets fallen aus.
   return `<!doctype html>
 <html lang="de"><head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark" />
+<meta name="supported-color-schemes" content="dark" />
 </head>
-<body style="margin:0;padding:0;background:#f7f5f0;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f7f5f0;padding:32px 16px;">
+<body style="margin:0;padding:0;background:#14062e;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#14062e;padding:32px 16px;">
 <tr><td align="center">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#fcfbf8;border:1px solid #e4e0d7;border-radius:4px;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#101418;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#220a4f;border-radius:4px;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#f7f0ff;">
 ${inhalt}
-<tr><td style="padding:24px 28px;border-top:1px solid #e4e0d7;background:#f7f5f0;font-size:12px;line-height:1.6;color:#858990;">
-Lunar Events · <a href="${eigeneAdresse()}" style="color:#5e6268;">lunar-events.de</a><br />
+<tr><td style="padding:24px 28px;border-top:1px solid #3a1a73;background:#1a0840;font-size:12px;line-height:1.6;color:#9788b0;">
+<div style="margin-bottom:10px;font-size:15px;"><span style="font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;letter-spacing:1px;color:#f7f0ff;">SEE YOU</span> <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;color:#ff8fd6;">after dark</span></div>
+Lunar Events · <a href="${eigeneAdresse()}" style="color:#c4b9d5;">lunar-events.de</a><br />
 Fragen? Antworte einfach auf diese Mail.
 </td></tr>
 </table>
@@ -154,10 +169,15 @@ Fragen? Antworte einfach auf diese Mail.
 </body></html>`;
 }
 
+/**
+ * Der Kopf: violetter Himmel (Verlauf, wo das Mailprogramm ihn kann, sonst
+ * Violett), das farbige Logo als Bild von der eigenen Seite, darunter der
+ * Titel. Werden Bilder blockiert, steht dort "Lunar Events".
+ */
 function kopfBalken(titel: string): string {
-  return `<tr><td style="padding:28px;background:#07111f;color:#f8f7f3;">
-<div style="font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#d4b873;">Lunar Events</div>
-<div style="font-size:24px;font-weight:700;letter-spacing:1px;margin-top:8px;text-transform:uppercase;">${titel}</div>
+  return `<tr><td style="padding:28px;background:#5b21c9;background-image:linear-gradient(160deg,#8a4dff 0%,#5b21c9 45%,#2e0e6b 100%);color:#f7f0ff;">
+<img src="${eigeneAdresse()}/logo/lunar-farbig.png" width="110" height="70" alt="Lunar Events" style="display:block;border:0;width:110px;height:auto;margin-bottom:20px;color:#ffe14a;font-size:14px;font-weight:700;letter-spacing:2px;" />
+<div style="font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:900;letter-spacing:0.5px;line-height:1.15;text-transform:uppercase;">${titel}</div>
 </td></tr>`;
 }
 
@@ -209,24 +229,24 @@ ${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">${satz}</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
 <div style="font-size:15px;margin-top:2px;">${daten.ort}</div></td></tr>
 <tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Bestellnummer</div>
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Bestellnummer</div>
 <div style="font-size:15px;margin-top:2px;">${daten.bestellnummer}</div></td></tr>
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 ${
   daten.paesse?.length
     ? "Im Anhang liegen deine Pässe für Apple Wallet. Einmal antippen, dann liegen sie auf dem Sperrbildschirm, sobald du am Veranstaltungsort bist.<br /><br />"
@@ -287,22 +307,22 @@ export async function meldeVipAnfrage(daten: VipMail): Promise<boolean> {
   const html = huelle(`
 ${kopfBalken("VIP-Anfrage")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;">
 ${zeilen
   .map(
     ([name, wert]) =>
-      `<tr><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;width:110px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">${name}</td><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;font-size:15px;">${wert}</td></tr>`,
+      `<tr><td style="padding:12px 18px;border-bottom:1px solid #3a1a73;width:110px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">${name}</td><td style="padding:12px 18px;border-bottom:1px solid #3a1a73;font-size:15px;">${wert}</td></tr>`,
   )
   .join("")}
 </table>
 ${
   daten.nachricht
-    ? `<p style="margin:20px 0 0;padding:16px 18px;background:#f7f5f0;border-radius:3px;font-size:14px;line-height:1.7;">${daten.nachricht.replace(/</g, "&lt;")}</p>`
+    ? `<p style="margin:20px 0 0;padding:16px 18px;background:#2d1260;border-radius:3px;font-size:14px;line-height:1.7;">${daten.nachricht.replace(/</g, "&lt;")}</p>`
     : ""
 }
-<p style="margin:24px 0 0;font-size:13px;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;color:#c4b9d5;">
 Im Formular steht „innerhalb von 24 Stunden“. Das ist eine Zusage.
-<br /><a href="${eigeneAdresse()}/backoffice/vip" style="color:#101418;">Im Backoffice bearbeiten</a>
+<br /><a href="${eigeneAdresse()}/backoffice/vip" style="color:#f7f0ff;">Im Backoffice bearbeiten</a>
 </p>
 </td></tr>`);
 
@@ -355,26 +375,26 @@ ${kopfBalken("Presale")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">du warst schon bei uns. Deshalb kommst du vor allen anderen an Tickets für <strong>${maskiere(daten.eventTitel)}</strong>.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
 <tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Öffentlicher Verkauf</div>
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Öffentlicher Verkauf</div>
 <div style="font-size:15px;margin-top:2px;">ab ${daten.oeffentlichAb}</div></td></tr>
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Zum Presale</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Zum Presale</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Der Link ist persönlich und gilt nur mit dieser Mailadresse (${daten.an}).
 </p>
-<p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#858990;">
+<p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#9788b0;">
 Du bekommst diese Mail, weil du bei Lunar Events Tickets gekauft hast.
-Keine Einladungen mehr? <a href="${daten.abmeldeLink}" style="color:#5e6268;">Hier abbestellen</a>.
+Keine Einladungen mehr? <a href="${daten.abmeldeLink}" style="color:#c4b9d5;">Hier abbestellen</a>.
 </p>
 </td></tr>`);
 
@@ -432,14 +452,14 @@ ${kopfBalken("Warteliste")}
 <p style="margin:0 0 24px;">du möchtest auf die Warteliste für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}), für ${stueck}. Bestätige das mit einem Klick, erst dann stehst du drauf.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Eintrag bestätigen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Eintrag bestätigen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Wird etwas frei, schreiben wir dir. Dann hast du ${ANGEBOT_STUNDEN} Stunden Zeit zum Kaufen.
 </p>
-<p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#858990;">
+<p style="margin:16px 0 0;font-size:12px;line-height:1.7;color:#9788b0;">
 Du hast dich nicht eingetragen? Dann ignoriere diese Mail. Ohne Klick passiert nichts.
 </p>
 </td></tr>`);
@@ -489,26 +509,26 @@ ${kopfBalken("Du bist dran")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">für <strong>${maskiere(daten.eventTitel)}</strong> ist etwas frei geworden. ${stueck} für dich reserviert.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
 <div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
 <tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Reserviert bis</div>
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Reserviert bis</div>
 <div style="font-size:15px;margin-top:2px;"><strong>${daten.bis} Uhr</strong></div></td></tr>
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.kaufLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Jetzt kaufen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.kaufLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Jetzt kaufen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Danach gehen die Tickets an den Nächsten auf der Liste.
-Doch keine Zeit? <a href="${daten.freigebenLink}" style="color:#5e6268;">Tickets freigeben</a>, dann ist der Nächste gleich dran.
+Doch keine Zeit? <a href="${daten.freigebenLink}" style="color:#c4b9d5;">Tickets freigeben</a>, dann ist der Nächste gleich dran.
 </p>
 </td></tr>`);
 
@@ -567,21 +587,21 @@ ${kopfBalken("Gästeliste")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">du stehst auf der Gästeliste für <strong>${maskiere(daten.eventTitel)}</strong>${mit}.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
 <tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
 <div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">${daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen"}</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen"}</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 ${daten.personen === 1 ? "Zeig den Code am Einlass." : "Jede Person braucht ihren eigenen Code. Schick deiner Begleitung den Link oder zeigt die Codes nacheinander."}
 Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.
 </p>
@@ -637,31 +657,31 @@ ${kopfBalken("VIP")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da: ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #e4e0d7;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wann</div>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
+<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
 <div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;${daten.tisch ? "border-bottom:1px solid #e4e0d7;" : ""}">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Wo</div>
+<tr><td style="padding:16px 18px;${daten.tisch ? "border-bottom:1px solid #3a1a73;" : ""}">
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
 <div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
 ${
   daten.tisch
     ? `<tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">Platz</div>
+<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Platz</div>
 <div style="font-size:15px;margin-top:2px;">${maskiere(daten.tisch)}</div></td></tr>`
     : ""
 }
 </table>
 
-<p style="margin:0 0 8px;font-size:13px;color:#5e6268;">Auf der Liste:</p>
+<p style="margin:0 0 8px;font-size:13px;color:#c4b9d5;">Auf der Liste:</p>
 <ul style="margin:0 0 24px;padding-left:20px;">${liste}</ul>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Jede Person braucht ihr eigenes Ticket. Unter jedem Ticket steht ein Link nur für diese Person. Schick ihn weiter, dann hat sie ihr Ticket selbst.
 Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 </p>
@@ -713,15 +733,15 @@ export async function sendeAnmeldungImBackoffice(daten: AnmeldeMail): Promise<bo
 ${kopfBalken("Anmeldung")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 24px;">Jemand hat sich mit Admin-Rechten im Backoffice angemeldet.</p>
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;">
 ${zeilen
   .map(
     ([name, wert]) =>
-      `<tr><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;width:80px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#858990;">${name}</td><td style="padding:12px 18px;border-bottom:1px solid #e4e0d7;font-size:15px;">${maskiere(wert)}</td></tr>`,
+      `<tr><td style="padding:12px 18px;border-bottom:1px solid #3a1a73;width:80px;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">${name}</td><td style="padding:12px 18px;border-bottom:1px solid #3a1a73;font-size:15px;">${maskiere(wert)}</td></tr>`,
   )
   .join("")}
 </table>
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Warst du das nicht? Dann sofort das Passwort ändern (Backoffice → Mein Zugang) und den
 zweiten Faktor neu einrichten.
 </p>
@@ -763,10 +783,10 @@ export async function sendeSchichtplan(daten: SchichtplanMail): Promise<boolean>
   const anrede = daten.name ? `Hallo ${daten.name.split(" ")[0]},` : "Hallo,";
   const zeilen = daten.schichten
     .map(
-      (s) => `<tr><td style="padding:14px 18px;border-bottom:1px solid #e4e0d7;font-size:15px;">
+      (s) => `<tr><td style="padding:14px 18px;border-bottom:1px solid #3a1a73;font-size:15px;">
 <strong>${maskiere(s.rolle)}</strong>${s.station ? ` · ${maskiere(s.station)}` : ""}<br />
 ${s.von} – ${s.bis} Uhr · ${s.stunden.toString().replace(".", ",")} Std${s.pauseMin > 0 ? ` (inkl. ${s.pauseMin} Min Pause)` : ""}
-${s.notiz ? `<br /><span style="color:#5e6268;">${maskiere(s.notiz)}</span>` : ""}
+${s.notiz ? `<br /><span style="color:#c4b9d5;">${maskiere(s.notiz)}</span>` : ""}
 </td></tr>`,
     )
     .join("");
@@ -777,16 +797,16 @@ ${kopfBalken("Dein Plan")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 24px;">hier ist deine Einteilung für <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}${daten.ort ? `, ${maskiere(daten.ort)}` : ""}).</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #e4e0d7;border-radius:3px;margin-bottom:24px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
 ${zeilen}
 </table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.planLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Mein Plan</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.planLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Mein Plan</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Unter „Mein Plan" steht immer der aktuelle Stand. Wenn sich etwas ändert, gilt das dort.
 Passt dir eine Schicht nicht, meld dich einfach.
 </p>
@@ -843,7 +863,7 @@ ${kopfBalken("Abgesagt")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 20px;">leider müssen wir <strong>${maskiere(daten.eventTitel)}</strong> (${daten.wann}) absagen. Das tut uns aufrichtig leid.</p>
 <p style="margin:0 0 20px;">${geld}</p>
-<p style="margin:0;font-size:13px;line-height:1.7;color:#5e6268;">Fragen? Antworte einfach auf diese Mail oder schreib an kontakt@lunar-events.de.</p>
+<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">Fragen? Antworte einfach auf diese Mail oder schreib an kontakt@lunar-events.de.</p>
 </td></tr>`);
 
   const text = `${anredeText}
@@ -890,10 +910,10 @@ export async function sendeErinnerung(daten: ErinnerungMail): Promise<boolean> {
   const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
 
   const zeile = (label: string, wert: string) =>
-    `<tr><td style="padding:4px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#858990;width:110px;vertical-align:top;">${label}</td><td style="padding:4px 0;font-size:15px;">${wert}</td></tr>`;
+    `<tr><td style="padding:4px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#ffe14a;width:110px;vertical-align:top;">${label}</td><td style="padding:4px 0;font-size:15px;">${wert}</td></tr>`;
 
   const anfahrt = daten.karte
-    ? `${maskiere(daten.ort)}<br><a href="${daten.karte}" style="color:#0b1728;">Route ansehen</a>`
+    ? `${maskiere(daten.ort)}<br><a href="${daten.karte}" style="color:#ffe14a;">Route ansehen</a>`
     : maskiere(daten.ort);
 
   const zeilen = [
@@ -912,12 +932,12 @@ ${kopfBalken("Morgen")}
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">${zeilen}</table>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Tickets öffnen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#5e6268;">
-Auf der Ticketseite kannst du die Tickets auch in Apple Wallet oder Google Wallet legen. Bring den QR-Code mit — gedruckt oder auf dem Handy.
+<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
+Auf der Ticketseite kannst du die Tickets auch in Apple Wallet oder Google Wallet legen. Bring den QR-Code mit: gedruckt oder auf dem Handy.
 </p>
 </td></tr>`);
 
@@ -957,11 +977,11 @@ ${kopfBalken("Newsletter")}
 <p style="margin:0 0 20px;">fast geschafft. Bestätige mit einem Klick, dass wir dir Neues von Lunar Events schicken dürfen: neue Events, Presale-Starts, hin und wieder etwas hinter den Kulissen.</p>
 
 <table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#0b1728;border-radius:4px;">
-<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#fcfbf8;text-decoration:none;font-size:13px;letter-spacing:2px;text-transform:uppercase;">Anmeldung bestätigen</a>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Anmeldung bestätigen</a>
 </td></tr></table>
 
-<p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#858990;">
+<p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#9788b0;">
 Du hast dich nicht angemeldet? Dann ignoriere diese Mail. Ohne Klick tragen wir dich nicht ein.
 </p>
 </td></tr>`);

@@ -26,10 +26,14 @@ export type PassDaten = {
   vip: boolean;
 };
 
-/** Farben, die beide Anbieter in eigener Schreibweise brauchen. */
+/**
+ * Farben, die beide Anbieter in eigener Schreibweise brauchen.
+ * Violett-Nacht (30.09.2026): Nacht als Grund, Lila-Weiß als Schrift,
+ * Beschriftungen in Mondgelb — dieselben Werte wie in tokens.css.
+ */
 export const PASS_FARBEN = {
-  hintergrundRgb: "rgb(7, 17, 31)",
-  schriftRgb: "rgb(248, 247, 243)",
-  nebenschriftRgb: "rgb(212, 184, 115)",
-  hintergrundHex: "#07111F",
+  hintergrundRgb: "rgb(34, 10, 79)",
+  schriftRgb: "rgb(247, 240, 255)",
+  nebenschriftRgb: "rgb(255, 225, 74)",
+  hintergrundHex: "#220A4F",
 } as const;
