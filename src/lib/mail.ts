@@ -150,7 +150,24 @@ export type Versandpruefung = {
   einzelmails: boolean | null;
   /** Ist die Absenderadresse beim Anbieter angelegt und aktiv? */
   absenderAktiv: boolean | null;
+  /** Bei Ablehnung: die Meldung des Anbieters, z. B. "Key not found". */
+  meldung?: string;
+  /**
+   * Wie der Schlüssel aussieht, ohne ihn zu verraten. Am 01.10.2026 stand
+   * in Vercel erst ein SMTP-Schlüssel (`xsmtpsib-`), den die Schnittstelle
+   * nicht annimmt; die Form zeigt solche Verwechslungen sofort.
+   */
+  form?: { art: "api" | "smtp" | "unbekannt"; laenge: number; leerzeichenOderZeichen: boolean };
 };
+
+function schluesselForm(wert: string): NonNullable<Versandpruefung["form"]> {
+  return {
+    art: wert.startsWith("xkeysib-") ? "api" : wert.startsWith("xsmtpsib-") ? "smtp" : "unbekannt",
+    laenge: wert.length,
+    // Mitkopierte Leerzeichen, Zeilenumbrüche oder Anführungszeichen.
+    leerzeichenOderZeichen: /[\s"'=]/.test(wert),
+  };
+}
 
 /**
  * Fragt beim Anbieter nach, ob der Versand überhaupt gehen kann — ohne eine
@@ -172,7 +189,14 @@ export async function pruefeVersand(): Promise<Versandpruefung> {
       fetch("https://api.brevo.com/v3/senders", { headers: kopf, cache: "no-store" }),
     ]);
     if (!konto.ok) {
-      return { schluessel: `abgelehnt_${konto.status}`, einzelmails: null, absenderAktiv: null };
+      const antwort = (await konto.json().catch(() => null)) as { message?: string } | null;
+      return {
+        schluessel: `abgelehnt_${konto.status}`,
+        einzelmails: null,
+        absenderAktiv: null,
+        meldung: antwort?.message?.slice(0, 160),
+        form: schluesselForm(process.env.BREVO_API_KEY!),
+      };
     }
     const kontoDaten = (await konto.json()) as { relay?: { enabled?: boolean } };
     const liste = absender.ok
