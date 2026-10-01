@@ -68,7 +68,7 @@ export default async function MeineTickets({
           {tickets.length === 0 ? (
             <div className={css.leer}>
               <p className={css.leerText}>{t("keine")}</p>
-              <Knopf href="/events">Events ansehen</Knopf>
+              <Knopf href="/events">{t("eventsAnsehen")}</Knopf>
             </div>
           ) : (
             <>

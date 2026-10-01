@@ -268,7 +268,8 @@
     "linkWarnungText": "Jeder Code lässt sich genau einmal einlösen. Gib den Link nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich.",
     "bestellnummer": "Bestellnummer {nummer}",
     "statusEingeloest": "Eingelöst",
-    "statusStorniert": "Storniert"
+    "statusStorniert": "Storniert",
+    "eventsAnsehen": "Events ansehen"
   },
   "konto": {
     "titel": "Account",

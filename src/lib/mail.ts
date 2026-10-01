@@ -228,8 +228,16 @@ export async function pruefeVersand(): Promise<Versandpruefung> {
  *
  * "color-scheme: dark" sagt Apple Mail und Outlook, dass die Mail schon
  * dunkel ist — sonst kehren manche die Farben um.
+ *
+ * Cosmos (01.10.2026): Sternenstaub hinter der Mail, rosa Planet im Kopf,
+ * Sternschnuppe über dem Fuß. Die Widgets sind **PNG** aus public/mail
+ * (`scripts/mail_bilder.mjs`), weil Gmail und Outlook keine SVGs zeigen,
+ * und **echte Bilder statt Hintergründe**, weil viele Mailprogramme
+ * Hintergrundbilder verwerfen. Einzige Ausnahme ist der Sternenstaub: Fehlt
+ * er, bleibt die Nachtfarbe, und es fehlt nichts.
  */
 function huelle(inhalt: string): string {
+  const bild = (datei: string) => `${eigeneAdresse()}/mail/${datei}`;
   // Tabellen und Inline-Styles: Mailprogramme verstehen nichts anderes
   // verlässlich. Flexbox und externe Stylesheets fallen aus.
   return `<!doctype html>
@@ -239,11 +247,14 @@ function huelle(inhalt: string): string {
 <meta name="supported-color-schemes" content="dark" />
 </head>
 <body style="margin:0;padding:0;background:#14062e;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#14062e;padding:32px 16px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" background="${bild("sternenstaub.png")}" bgcolor="#14062e" style="background-color:#14062e;background-image:url('${bild("sternenstaub.png")}');background-repeat:repeat;padding:32px 16px;">
 <tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#220a4f;border-radius:4px;overflow:hidden;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#f7f0ff;">
 ${inhalt}
-<tr><td style="padding:24px 28px;border-top:1px solid #3a1a73;background:#1a0840;font-size:12px;line-height:1.6;color:#9788b0;">
+<tr><td style="padding:0;background:#1a0840;line-height:0;font-size:0;">
+<img src="${bild("trenner.png")}" width="560" alt="" style="display:block;border:0;width:100%;max-width:560px;height:auto;" />
+</td></tr>
+<tr><td style="padding:4px 28px 24px;background:#1a0840;font-size:12px;line-height:1.6;color:#9788b0;">
 <div style="margin-bottom:10px;font-size:15px;"><span style="font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-weight:900;letter-spacing:1px;color:#f7f0ff;">SEE YOU</span> <span style="font-family:Georgia,'Times New Roman',serif;font-style:italic;color:#ff8fd6;">after dark</span></div>
 Lunar Events · <a href="${eigeneAdresse()}" style="color:#c4b9d5;">lunar-events.de</a><br />
 Fragen? Antworte einfach auf diese Mail.
@@ -255,19 +266,72 @@ Fragen? Antworte einfach auf diese Mail.
 
 /**
  * Der Kopf: violetter Himmel (Verlauf, wo das Mailprogramm ihn kann, sonst
- * Violett), das farbige Logo als Bild von der eigenen Seite, darunter der
- * Titel. Werden Bilder blockiert, steht dort "Lunar Events".
+ * Violett), links das farbige Logo, rechts der rosa Planet mit Funkeln,
+ * darunter der Titel. Logo und Planet stehen in einer eigenen Zeile über
+ * dem Titel, damit sie ihn auf schmalen Handys nie überdecken. Werden
+ * Bilder blockiert, steht dort "Lunar Events" und der Planet fehlt still.
  */
 function kopfBalken(titel: string): string {
-  return `<tr><td style="padding:28px;background:#5b21c9;background-image:linear-gradient(160deg,#8a4dff 0%,#5b21c9 45%,#2e0e6b 100%);color:#f7f0ff;">
-<img src="${eigeneAdresse()}/logo/lunar-farbig.png" width="110" height="70" alt="Lunar Events" style="display:block;border:0;width:110px;height:auto;margin-bottom:20px;color:#ffe14a;font-size:14px;font-weight:700;letter-spacing:2px;" />
-<div style="font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:900;letter-spacing:0.5px;line-height:1.15;text-transform:uppercase;">${titel}</div>
+  return `<tr><td style="padding:20px 20px 28px 28px;background:#5b21c9;background-image:linear-gradient(160deg,#8a4dff 0%,#5b21c9 45%,#2e0e6b 100%);color:#f7f0ff;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td valign="middle" style="padding-top:8px;"><img src="${eigeneAdresse()}/logo/lunar-farbig.png" width="110" height="70" alt="Lunar Events" style="display:block;border:0;width:110px;height:auto;color:#ffe14a;font-size:14px;font-weight:700;letter-spacing:2px;" /></td>
+<td valign="top" align="right" width="150"><img src="${eigeneAdresse()}/mail/kopf-deko.png" width="150" height="90" alt="" style="display:block;border:0;width:150px;height:90px;" /></td>
+</tr></table>
+<div style="padding:12px 8px 0 0;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:24px;font-weight:900;letter-spacing:0.5px;line-height:1.15;text-transform:uppercase;">${titel}</div>
 </td></tr>`;
 }
 
 /** Für alles, was ein Gast selbst eingetippt hat und ins HTML einer Mail geht. */
 function maskiere(t: string): string {
   return t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+
+/**
+ * Die Ticketkarte der Ticketseite (TicketKarte) als Mail-Tabelle: violetter
+ * Kopf mit Mondmarke und rosa Etikett, Eckdaten in zwei Spalten, gestrichelte
+ * Abrisskante, darunter der Knopf, rosa Schattenkante rechts und unten.
+ * `felder` geht so ins HTML, wie es kommt: Gasteingaben vorher maskieren.
+ */
+function ticketKarte(k: {
+  titel: string;
+  etikett: string;
+  felder: Array<[string, string]>;
+  link: string;
+  knopf: string;
+}): string {
+  const feld = ([name, wert]: [string, string], links: boolean) =>
+    `<td width="50%" valign="top" style="padding:0 ${links ? "12px" : "0"} 16px 0;">
+<div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">${name}</div>
+<div style="font-size:14px;line-height:1.5;margin-top:3px;color:#f7f0ff;">${wert}</div></td>`;
+  const zeilen: string[] = [];
+  for (let i = 0; i < k.felder.length; i += 2) {
+    const rechts = k.felder[i + 1];
+    zeilen.push(`<tr>${feld(k.felder[i], true)}${rechts ? feld(rechts, false) : '<td width="50%"></td>'}</tr>`);
+  }
+  return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="width:100%;margin-bottom:24px;background:#2d1266;border-radius:3px;border-right:5px solid #ff8fd6;border-bottom:5px solid #ff8fd6;">
+<tr><td style="padding:12px 16px 12px 18px;background:#5b21c9;background-image:linear-gradient(160deg,#8a4dff 0%,#5b21c9 60%,#3a128a 100%);border-radius:3px 3px 0 0;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td valign="middle"><img src="${eigeneAdresse()}/logo/mark-farbig.png" width="34" height="35" alt="" style="display:block;border:0;width:34px;height:35px;" /></td>
+<td valign="middle" align="right"><span style="display:inline-block;padding:7px 12px;background:#ff8fd6;color:#2a0b5e;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;">${k.etikett}</span></td>
+</tr></table>
+</td></tr>
+<tr><td style="padding:20px 18px 4px;">
+<div style="margin-bottom:16px;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:20px;font-weight:900;line-height:1.15;text-transform:uppercase;color:#f7f0ff;">${k.titel}</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0">${zeilen.join("")}</table>
+</td></tr>
+<tr><td style="padding:0 18px;"><div style="height:0;border-top:2px dashed #5a3d9e;line-height:0;font-size:0;">&nbsp;</div></td></tr>
+<tr><td style="padding:20px 18px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+<td valign="middle">
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${k.link}" style="display:inline-block;padding:14px 24px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${k.knopf}</a>
+</td></tr></table>
+</td>
+<td valign="middle" align="right" width="32"><img src="${eigeneAdresse()}/mail/funkeln.png" width="24" height="24" alt="" style="display:block;border:0;width:24px;height:24px;" /></td>
+</tr></table>
+</td></tr>
+</table>`;
 }
 
 /* ------------------------------------------------------------------ */
@@ -292,6 +356,8 @@ export type TicketMail = {
 
 export async function sendeTickets(daten: TicketMail): Promise<Versandergebnis> {
   const anrede = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  // Der Vorname kommt aus der Kasse, also vom Gast selbst: ins HTML nur maskiert.
+  const anredeHtml = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
   const marken = daten.garderobe ?? 0;
   const markenText = marken === 1 ? "eine Garderobenmarke" : `${marken} Garderobenmarken`;
   const nurGarderobe = daten.anzahl === 0 && marken > 0;
@@ -310,27 +376,25 @@ export async function sendeTickets(daten: TicketMail): Promise<Versandergebnis> 
   const html = huelle(`
 ${kopfBalken(nurGarderobe ? "Garderobe gebucht" : "Tickets sind da")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
-<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 16px;">${anredeHtml}</p>
 <p style="margin:0 0 24px;">${satz}</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
-<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
-<div style="font-size:15px;margin-top:2px;">${daten.ort}</div></td></tr>
-<tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Bestellnummer</div>
-<div style="font-size:15px;margin-top:2px;">${daten.bestellnummer}</div></td></tr>
-</table>
+${ticketKarte({
+  titel: daten.eventTitel,
+  etikett: nurGarderobe
+    ? "Garderobe"
+    : `${daten.anzahl} ${daten.anzahl === 1 ? "Ticket" : "Tickets"}`,
+  felder: [
+    ["Wann", daten.wann],
+    ["Wo", daten.ort],
+    ["Bestellung", daten.bestellnummer],
+    ...(daten.vorname ? ([["Gast", maskiere(daten.vorname)]] as Array<[string, string]>) : []),
+  ],
+  link: daten.ticketLink,
+  knopf: nurGarderobe ? "Marken öffnen" : "Tickets öffnen",
+})}
 
-<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
-</td></tr></table>
-
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
+<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 ${
   daten.paesse?.length
     ? "Im Anhang liegen deine Pässe für Apple Wallet. Einmal antippen, dann liegen sie auf dem Sperrbildschirm, sobald du am Veranstaltungsort bist.<br /><br />"
@@ -671,21 +735,20 @@ ${kopfBalken("Gästeliste")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">du stehst auf der Gästeliste für <strong>${maskiere(daten.eventTitel)}</strong>${mit}.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
-<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
-<div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
-</table>
+${ticketKarte({
+  titel: maskiere(daten.eventTitel),
+  etikett: "Gästeliste",
+  felder: [
+    ["Wann", daten.wann],
+    ["Wo", maskiere(daten.ort)],
+    ["Name", name],
+    ["Personen", String(daten.personen)],
+  ],
+  link: daten.ticketLink,
+  knopf: daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen",
+})}
 
-<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">${daten.personen === 1 ? "QR-Code öffnen" : "QR-Codes öffnen"}</a>
-</td></tr></table>
-
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
+<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 ${daten.personen === 1 ? "Zeig den Code am Einlass." : "Jede Person braucht ihren eigenen Code. Schick deiner Begleitung den Link oder zeigt die Codes nacheinander."}
 Ohne Handy geht es auch: Du stehst mit Namen auf der Liste.
 </p>
@@ -741,31 +804,23 @@ ${kopfBalken("VIP")}
 <p style="margin:0 0 16px;">Hallo ${name},</p>
 <p style="margin:0 0 24px;">eure VIP-Tickets für <strong>${maskiere(daten.eventTitel)}</strong> sind da: ${daten.gaeste.length === 1 ? "ein Ticket" : `${daten.gaeste.length} Tickets`}, jedes auf einen Namen.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;margin-bottom:24px;">
-<tr><td style="padding:16px 18px;border-bottom:1px solid #3a1a73;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wann</div>
-<div style="font-size:15px;margin-top:2px;">${daten.wann}</div></td></tr>
-<tr><td style="padding:16px 18px;${daten.tisch ? "border-bottom:1px solid #3a1a73;" : ""}">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Wo</div>
-<div style="font-size:15px;margin-top:2px;">${maskiere(daten.ort)}</div></td></tr>
-${
-  daten.tisch
-    ? `<tr><td style="padding:16px 18px;">
-<div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#ffe14a;">Platz</div>
-<div style="font-size:15px;margin-top:2px;">${maskiere(daten.tisch)}</div></td></tr>`
-    : ""
-}
-</table>
+${ticketKarte({
+  titel: maskiere(daten.eventTitel),
+  etikett: "VIP",
+  felder: [
+    ["Wann", daten.wann],
+    ["Wo", maskiere(daten.ort)],
+    ...(daten.tisch ? ([["Platz", maskiere(daten.tisch)]] as Array<[string, string]>) : []),
+    ["Tickets", String(daten.gaeste.length)],
+  ],
+  link: daten.ticketLink,
+  knopf: "Tickets öffnen",
+})}
 
 <p style="margin:0 0 8px;font-size:13px;color:#c4b9d5;">Auf der Liste:</p>
 <ul style="margin:0 0 24px;padding-left:20px;">${liste}</ul>
 
-<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
-</td></tr></table>
-
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
+<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Jede Person braucht ihr eigenes Ticket. Unter jedem Ticket steht ein Link nur für diese Person. Schick ihn weiter, dann hat sie ihr Ticket selbst.
 Wer den Link hat, kommt rein: gib ihn nur an Leute weiter, denen du vertraust.
 </p>
@@ -993,19 +1048,16 @@ export async function sendeErinnerung(daten: ErinnerungMail): Promise<boolean> {
   const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
   const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
 
-  const zeile = (label: string, wert: string) =>
-    `<tr><td style="padding:4px 0;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#ffe14a;width:110px;vertical-align:top;">${label}</td><td style="padding:4px 0;font-size:15px;">${wert}</td></tr>`;
-
   const anfahrt = daten.karte
     ? `${maskiere(daten.ort)}<br><a href="${daten.karte}" style="color:#ffe14a;">Route ansehen</a>`
     : maskiere(daten.ort);
 
-  const zeilen = [
-    zeile("Wann", daten.wann),
-    daten.einlass ? zeile("Einlass", daten.einlass) : "",
-    zeile("Wo", anfahrt),
-    daten.dresscode ? zeile("Dresscode", maskiere(daten.dresscode)) : "",
-  ].join("");
+  const felder: Array<[string, string]> = [
+    ["Wann", daten.wann],
+    ...(daten.einlass ? ([["Einlass", daten.einlass]] as Array<[string, string]>) : []),
+    ["Wo", anfahrt],
+    ...(daten.dresscode ? ([["Dresscode", maskiere(daten.dresscode)]] as Array<[string, string]>) : []),
+  ];
 
   const html = huelle(`
 ${kopfBalken("Morgen")}
@@ -1013,14 +1065,15 @@ ${kopfBalken("Morgen")}
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 20px;">morgen ist es so weit: <strong>${maskiere(daten.eventTitel)}</strong>. Hier noch einmal alles Wichtige und deine Tickets.</p>
 
-<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">${zeilen}</table>
+${ticketKarte({
+  titel: maskiere(daten.eventTitel),
+  etikett: "Tickets",
+  felder,
+  link: daten.ticketLink,
+  knopf: "Tickets öffnen",
+})}
 
-<table role="presentation" cellpadding="0" cellspacing="0"><tr>
-<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
-<a href="${daten.ticketLink}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Tickets öffnen</a>
-</td></tr></table>
-
-<p style="margin:24px 0 0;font-size:13px;line-height:1.7;color:#c4b9d5;">
+<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">
 Auf der Ticketseite kannst du die Tickets auch in Apple Wallet oder Google Wallet legen. Bring den QR-Code mit: gedruckt oder auf dem Handy.
 </p>
 </td></tr>`);
@@ -1041,6 +1094,47 @@ Lunar Events`;
   return versende({
     an: daten.an,
     betreff: `Morgen: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}
+
+export type ZugangsMail = { an: string; link: string };
+
+/**
+ * Der Anmeldelink für Konto und „Meine Tickets“ (auch fürs Team). Bis
+ * 01.10.2026 verschickte ihn Supabase selbst: mit der Vorlage aus dem
+ * Dashboard statt im Lunar-Look, und über Supabases eigenen Versand, der
+ * nur wenige Mails pro Stunde schafft. Der Link führt auf die
+ * Zwischenseite `/anmelden`, eingelöst wird erst beim Tippen.
+ */
+export async function sendeZugangslink(daten: ZugangsMail): Promise<Versandergebnis> {
+  const html = huelle(`
+${kopfBalken("Dein Zugang")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 24px;">Tipp auf den Knopf, dann bist du angemeldet und siehst deine Tickets.</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.link}" style="display:inline-block;padding:15px 28px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Jetzt anmelden</a>
+</td></tr></table>
+
+<p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#9788b0;">
+Der Link gilt eine Stunde und nur einmal. Du hast ihn nicht angefordert? Dann ignoriere diese Mail, ohne Klick passiert nichts.
+</p>
+</td></tr>`);
+
+  const text = `Tipp auf den Link, dann bist du angemeldet und siehst deine Tickets:
+
+${daten.link}
+
+Der Link gilt eine Stunde und nur einmal. Du hast ihn nicht angefordert? Dann ignoriere diese Mail, ohne Klick passiert nichts.
+
+Lunar Events`;
+
+  return versendeMitGrund({
+    an: daten.an,
+    betreff: "Dein Anmeldelink für Lunar Events",
     html,
     text,
   });

@@ -1024,6 +1024,38 @@ Daraus drei Regeln:
   wäre aus jedem Browser aufrufbar und könnte einem Gast das Postfach
   zuschütten. Nur über die Aktionen mit Rollenprüfung.
 
+### Anmeldelink über den eigenen Versand (seit 01.10.2026)
+
+`sendeAnmeldelink` (Konto, „Meine Tickets“, auch fürs Team) lässt Supabase
+den Link nur noch **ausstellen** (`auth.admin.generateLink`) und schickt ihn
+selbst über Brevo (`sendeZugangslink`), im Lunar-Look und auf die
+Zwischenseite `/anmelden`. Vorher verschickte Supabase die Mail mit der
+Dashboard-Vorlage und über den eigenen Versand, der nur wenige Mails pro
+Stunde schafft (ohne eigenes SMTP sogar nur an Team-Adressen). **Neue
+Adressen** bekommen dabei ein Konto und den Typ `signup` statt
+`magiclink`; `/auth/bestaetigen` nimmt beide an. Klemmt Brevo, fällt die
+Aktion auf `signInWithOtp` zurück: lieber eine Mail im alten Look als keine.
+
+### Cosmos in Mails und auf der Ticketkarte
+
+Alle Mails teilen `huelle()` und `kopfBalken()`: Sternenstaub hinter der
+Mail, rosa Planet mit Funkeln im Kopf, Sternschnuppe und Ringplanet
+(`trenner.png`) über dem Fuß. Die Widgets liegen als **PNG** in
+`public/mail` (`node scripts/mail_bilder.mjs` erzeugt sie aus
+`public/cosmos`), weil Gmail und Outlook keine SVGs zeigen, und sind
+**echte Bilder statt Hintergründe**, weil viele Mailprogramme
+Hintergrundbilder verwerfen; nur der Sternenstaub ist Hintergrund, ohne
+ihn bleibt die Nachtfarbe. Mails mit Tickets (Tickets, Erinnerung, VIP,
+Gästeliste) zeigen die **Ticketkarte** der Seite als Tabelle
+(`ticketKarte()`): violetter Kopf mit Mondmarke und rosa Etikett, Eckdaten
+in zwei Spalten, Abrisskante, Knopf, rosa Schattenkante. Auf der echten
+`TicketKarte` sitzt ein Funkeln auf der Abrisskante und ein Ringplanet
+angeschnitten in der Ecke; **nichts liegt über Text oder dem QR-Code**,
+die Kamera am Einlass soll nur den Code sehen. Prüfen ohne Versand: Mail
+nach CommonJS übersetzen, `fetch` abfangen, HTML in einen 390 px breiten
+iframe legen und mit Chrome ohne Fenster aufnehmen (Chrome rechnet sonst
+unter etwa 500 px kein Handy-Layout).
+
 ### Newsletter verschicken (Migration 0039)
 
 Backoffice-Reiter **„Newsletter“**: Kennzahlen (bestätigt, wartet,

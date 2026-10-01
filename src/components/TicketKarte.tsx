@@ -96,6 +96,13 @@ export async function TicketKarte({ ticket }: { ticket: TicketAnzeige }) {
       </div>
 
       <div className={css.fuss}>
+        {/* Cosmos (01.10.2026): ein Funkeln auf der Abrisskante, ein
+            Ringplanet angeschnitten in der Ecke. Beide liegen nie über Text
+            oder dem QR-Code; die Kamera am Einlass soll nichts anderes sehen. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/cosmos/sparkle-yellow.svg" alt="" aria-hidden="true" className={css.funkeln} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/cosmos/planet-ringed.svg" alt="" aria-hidden="true" className={css.planet} />
         <div
           className={css.code}
           // Das SVG stammt aus der QR-Bibliothek auf dem Server, nicht aus

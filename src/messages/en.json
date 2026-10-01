@@ -268,7 +268,8 @@
     "linkWarnungText": "Each code can be redeemed exactly once. Only share this link with people you trust, and never post it publicly.",
     "bestellnummer": "Order number {nummer}",
     "statusEingeloest": "Redeemed",
-    "statusStorniert": "Cancelled"
+    "statusStorniert": "Cancelled",
+    "eventsAnsehen": "See events"
   },
   "konto": {
     "titel": "Account",

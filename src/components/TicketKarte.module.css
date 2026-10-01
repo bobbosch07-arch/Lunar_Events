@@ -78,6 +78,13 @@
   padding: var(--space-6) var(--space-5) var(--space-5);
 }
 
+/* Sternenstaub als feine Struktur im Körper der Karte, wie hinter der
+   Seite, nur kleiner gekachelt: Die Karte ist schmaler als der Himmel. */
+.koerper,
+.fuss {
+  background: var(--sternenstaub) 0 0 / 320px 320px repeat;
+}
+
 .event {
   font-family: var(--font-display);
   font-weight: var(--fw-display);
@@ -116,12 +123,36 @@
 /* Die gestrichelte Kante ist der einzige Anklang an ein Papierticket —
    mehr Skeuomorphismus verträgt die Marke nicht. */
 .fuss {
+  position: relative;
+  isolation: isolate;
   display: flex;
   align-items: center;
   gap: var(--space-5);
   margin-top: auto;
   padding: var(--space-5);
   border-top: 2px dashed var(--linie-stark);
+}
+
+/* Sitzt mittig auf der gestrichelten Kante, wie ein Stern in der Perforation. */
+.funkeln {
+  position: absolute;
+  right: 28px;
+  top: -12px;
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+}
+
+/* Angeschnitten unten rechts, hinter allem. Der Text daneben hält per
+   padding-right Abstand, damit sich beide nie berühren. */
+.planet {
+  position: absolute;
+  z-index: -1;
+  right: -18px;
+  bottom: -22px;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
 }
 
 .code {
@@ -143,6 +174,7 @@
 .fusstext {
   flex: 1;
   min-width: 0;
+  padding-right: 40px;
 }
 
 .hinweis {

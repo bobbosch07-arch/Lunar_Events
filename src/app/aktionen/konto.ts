@@ -2,8 +2,9 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { serverClient } from "@/lib/supabase/server";
+import { dienstClient, serverClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
+import { sendeZugangslink, versandEingerichtet } from "@/lib/mail";
 import { pruefePasswort, SPAETER_COOKIE } from "@/lib/passwort";
 import { meldeAnmeldung } from "@/lib/anmeldemeldung";
 import { darfAdresse, darfAnschluss, darfMailSchicken, GRENZEN } from "@/lib/drossel";
@@ -28,6 +29,31 @@ export async function sendeAnmeldelink(
     return { ok: false, fehler: "email" };
   }
   if (!(await darfMailSchicken("anmeldelink", adresse))) return { ok: false, fehler: "zu_oft" };
+
+  // Seit 01.10.2026 über den eigenen Mailversand: im Lunar-Look und ohne
+  // Supabases Drossel (wenige Mails pro Stunde für das ganze Projekt).
+  // Supabase stellt nur den Link aus. Neue Adressen bekommen dabei ein
+  // Konto und den Typ "signup", bestehende "magiclink" — beides löst
+  // /auth/bestaetigen ein.
+  if (versandEingerichtet()) {
+    const { data, error } = await dienstClient().auth.admin.generateLink({
+      type: "magiclink",
+      email: adresse,
+    });
+    if (!error && data.properties?.hashed_token) {
+      const link = new URL("/anmelden", eigeneAdresse());
+      link.searchParams.set("token_hash", data.properties.hashed_token);
+      link.searchParams.set("type", data.properties.verification_type ?? "magiclink");
+      if (weiter) link.searchParams.set("weiter", weiter);
+      const versand = await sendeZugangslink({ an: adresse, link: link.toString() });
+      if (versand.ok) return { ok: true };
+      console.error("[konto] Anmeldelink über Brevo gescheitert:", versand.grund);
+    } else {
+      console.error("[konto] Anmeldelink nicht ausgestellt:", error?.message);
+    }
+    // Sonst unten weiter über Supabases eigenen Versand: lieber eine Mail
+    // im alten Look als gar keine, wenn der Mailanbieter klemmt.
+  }
 
   const db = await serverClient();
   const ziel = new URL("/auth/bestaetigen", eigeneAdresse());

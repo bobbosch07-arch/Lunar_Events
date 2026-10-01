@@ -23,8 +23,12 @@ export async function GET(anfrage: NextRequest) {
   // ihn angefordert hat — oder wenn er gar nicht angefordert, sondern
   // von der Veranstaltungsleitung ausgestellt wurde.
   const tokenHash = searchParams.get("token_hash");
+  // "signup" kommt seit 01.10.2026 vor: Den Anmeldelink stellt die App
+  // selbst aus (sendeAnmeldelink), und für eine neue Adresse nennt
+  // Supabase ihn so.
   const art = (searchParams.get("type") ?? "magiclink") as
     | "magiclink"
+    | "signup"
     | "email"
     | "recovery"
     | "invite";
