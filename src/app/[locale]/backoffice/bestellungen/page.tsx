@@ -5,6 +5,7 @@ import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Aufraeumknopf } from "@/components/Aufraeumknopf";
 import { VorkasseEingang } from "@/components/VorkasseEingang";
+import { FehlendeTicketMails, TicketMailNachsenden } from "@/components/TicketMailNachsenden";
 import { holeBestellungen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
 import css from "../backoffice.module.css";
@@ -47,8 +48,11 @@ async function Inhalt({ locale }: { locale: string }) {
     getFormatter(),
   ]);
 
+  const ohneMail = bestellungen.filter((b) => b.status === "bezahlt" && !b.mailGesendetAm).length;
+
   return (
     <>
+      {ohneMail > 0 ? <FehlendeTicketMails anzahl={ohneMail} /> : null}
       <div className={css.tabellenfeld}>
         <table className={css.tabelle}>
           <thead>
@@ -120,6 +124,13 @@ async function Inhalt({ locale }: { locale: string }) {
                           von Hand erstatten
                         </span>
                       </div>
+                    ) : null}
+                    {b.status === "bezahlt" ? (
+                      <TicketMailNachsenden
+                        bestellungId={b.id}
+                        email={b.email}
+                        gesendet={Boolean(b.mailGesendetAm)}
+                      />
                     ) : null}
                     {b.status === "offen" && b.vorkasse ? (
                       <div style={{ marginTop: 8 }}>

@@ -219,6 +219,8 @@ export type BestellZeile = {
   nachbuchung: boolean;
   /** Absage-Erstattung, die von Hand überwiesen werden muss (Vorkasse/Bar). */
   erstattungFaellig: boolean;
+  /** Wann die Ticket-Mail rausging; null = nie (oder vom Anbieter abgelehnt). */
+  mailGesendetAm: string | null;
 };
 
 export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
@@ -229,6 +231,7 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
     .select(
       `id, nummer, status, gesamt_cent, zahlungsart, zahlung_ref, erstellt_am, vorkasse, reserviert_bis,
        rabattcode, code_rabatt_cent, garderobe_menge, nachbuchung_zu, erstattung_faellig,
+       mail_gesendet_am,
        kunde:kunden(vorname, nachname, email),
        event:events(titel),
        tickets(id)`,
@@ -269,6 +272,7 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       garderobe: (b.garderobe_menge as number | null) ?? 0,
       erstattungFaellig: Boolean(b.erstattung_faellig),
       nachbuchung: Boolean(b.nachbuchung_zu),
+      mailGesendetAm: (b.mail_gesendet_am as string | null) ?? null,
     };
   });
 }

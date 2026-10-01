@@ -13,6 +13,7 @@ const ZIELE = [
   { href: "/backoffice/gaesteliste", name: "Gästeliste" },
   { href: "/backoffice/schichtplan", name: "Schichtplan" },
   { href: "/backoffice/vip", name: "VIP" },
+  { href: "/backoffice/newsletter", name: "Newsletter" },
   { href: "/backoffice/auswertung", name: "Auswertung" },
   { href: "/backoffice/hochrechnung", name: "Hochrechnung" },
   { href: "/backoffice/zugang", name: "Mein Zugang" },

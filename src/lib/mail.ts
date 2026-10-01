@@ -53,12 +53,24 @@ type Nachricht = {
 };
 
 export async function versende(nachricht: Nachricht): Promise<boolean> {
+  return (await versendeMitGrund(nachricht)).ok;
+}
+
+export type Versandergebnis = { ok: true } | { ok: false; grund: string };
+
+/**
+ * Wie `versende`, sagt aber, warum es nicht geklappt hat. Gebraucht vom
+ * Backoffice: Vom 18.09. bis 01.10.2026 lehnte der Anbieter jede Mail ab,
+ * und niemand merkte es, weil der Grund nur im Protokoll stand, das Vercel
+ * nach einer Stunde vergisst.
+ */
+export async function versendeMitGrund(nachricht: Nachricht): Promise<Versandergebnis> {
   const weg = anbieter();
   if (!weg) {
     console.warn(
       `[mail] Nicht verschickt (kein BREVO_API_KEY oder RESEND_API_KEY): "${nachricht.betreff}" an ${nachricht.an}`,
     );
-    return false;
+    return { ok: false, grund: "Kein Mailversand eingerichtet (BREVO_API_KEY fehlt)." };
   }
 
   const absender = zerlegeAbsender(ABSENDER);
@@ -119,15 +131,63 @@ export async function versende(nachricht: Nachricht): Promise<boolean> {
       console.error(
         `[mail] ${weg} hat abgelehnt (${antwort.status}): ${grund.slice(0, 200)}`,
       );
-      return false;
+      return { ok: false, grund: `${weg} hat abgelehnt (${antwort.status}): ${grund.slice(0, 200)}` };
     }
-    return true;
+    return { ok: true };
   } catch (fehler) {
     // Ein gescheiterter Versand darf niemals einen Kauf scheitern lassen:
     // Das Geld ist geflossen, die Tickets existieren, der Link steht auf
     // der Bestätigungsseite.
     console.error("[mail] Versand fehlgeschlagen:", (fehler as Error).message);
-    return false;
+    return { ok: false, grund: `Anbieter nicht erreichbar: ${(fehler as Error).message}` };
+  }
+}
+
+export type Versandpruefung = {
+  /** Nimmt der Anbieter den Schlüssel an? Sonst der HTTP-Status. */
+  schluessel: "gueltig" | "fehlt" | `abgelehnt_${number}` | "nicht_erreichbar";
+  /** Brevo: Darf das Konto Einzelmails verschicken (Transactional)? */
+  einzelmails: boolean | null;
+  /** Ist die Absenderadresse beim Anbieter angelegt und aktiv? */
+  absenderAktiv: boolean | null;
+};
+
+/**
+ * Fragt beim Anbieter nach, ob der Versand überhaupt gehen kann — ohne eine
+ * Mail zu schicken. `/api/status` sagte bis 01.10.2026 nur, ob ein Schlüssel
+ * *gesetzt* ist, und zeigte „mail: true", während Brevo jede Mail abwies.
+ *
+ * Nur für Brevo; bei Resend gibt es keine vergleichbare Abfrage ohne
+ * Vollzugriff, dort bleibt es bei `null`.
+ */
+export async function pruefeVersand(): Promise<Versandpruefung> {
+  const weg = anbieter();
+  if (!weg) return { schluessel: "fehlt", einzelmails: null, absenderAktiv: null };
+  if (weg === "resend") return { schluessel: "gueltig", einzelmails: null, absenderAktiv: null };
+
+  const kopf = { "api-key": process.env.BREVO_API_KEY!, Accept: "application/json" };
+  try {
+    const [konto, absender] = await Promise.all([
+      fetch("https://api.brevo.com/v3/account", { headers: kopf, cache: "no-store" }),
+      fetch("https://api.brevo.com/v3/senders", { headers: kopf, cache: "no-store" }),
+    ]);
+    if (!konto.ok) {
+      return { schluessel: `abgelehnt_${konto.status}`, einzelmails: null, absenderAktiv: null };
+    }
+    const kontoDaten = (await konto.json()) as { relay?: { enabled?: boolean } };
+    const liste = absender.ok
+      ? ((await absender.json()) as { senders?: Array<{ email: string; active: boolean }> }).senders
+      : undefined;
+    const eigene = zerlegeAbsender(ABSENDER).email.toLowerCase();
+    return {
+      schluessel: "gueltig",
+      einzelmails: kontoDaten.relay?.enabled ?? null,
+      absenderAktiv: liste
+        ? liste.some((s) => s.email.toLowerCase() === eigene && s.active)
+        : null,
+    };
+  } catch {
+    return { schluessel: "nicht_erreichbar", einzelmails: null, absenderAktiv: null };
   }
 }
 
@@ -206,7 +266,7 @@ export type TicketMail = {
   garderobe?: number;
 };
 
-export async function sendeTickets(daten: TicketMail): Promise<boolean> {
+export async function sendeTickets(daten: TicketMail): Promise<Versandergebnis> {
   const anrede = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
   const marken = daten.garderobe ?? 0;
   const markenText = marken === 1 ? "eine Garderobenmarke" : `${marken} Garderobenmarken`;
@@ -270,7 +330,7 @@ Wer den Link hat, kommt rein. Gib ihn nur an Leute weiter, denen du vertraust.
 
 Lunar Events`;
 
-  return versende({
+  return versendeMitGrund({
     an: daten.an,
     betreff: nurGarderobe
       ? `${daten.eventTitel} · Garderobe`
@@ -1001,5 +1061,99 @@ Lunar Events`;
     betreff: "Bitte bestätige deine Newsletter-Anmeldung",
     html,
     text,
+  });
+}
+
+/* ------------------------------------------------------------------ */
+
+export type NewsletterMail = {
+  an: string;
+  betreff: string;
+  /** Vom Team geschrieben: Leerzeile trennt Absätze, Adressen werden Links. */
+  text: string;
+  /** Optional ein Event, mit Poster und Knopf zu den Tickets. */
+  event?: { titel: string; wann: string; ort: string; link: string; bild: string };
+  /** Seite mit dem Abmeldeknopf, sichtbar in der Mail. */
+  abmeldeLink: string;
+  /**
+   * Adresse für die Ein-Klick-Abmeldung (RFC 8058): Gmail und Apple Mail
+   * zeigen dafür einen eigenen Knopf neben dem Absender.
+   */
+  einKlickLink: string;
+};
+
+/** Text aus dem Backoffice → HTML: maskiert, Absätze, klickbare Adressen. */
+function absaetze(roh: string): string {
+  return roh
+    .trim()
+    .split(/\n\s*\n/)
+    .map((absatz) => {
+      const html = maskiere(absatz.trim())
+        .replace(/\n/g, "<br />")
+        .replace(
+          /https?:\/\/[^\s<]+[^\s<.,;:!?)]/g,
+          (url) => `<a href="${url}" style="color:#ffe14a;">${url}</a>`,
+        );
+      return `<p style="margin:0 0 16px;">${html}</p>`;
+    })
+    .join("\n");
+}
+
+/**
+ * Newsletter an eine bestätigte Adresse. Werbung im Sinne von § 7 UWG:
+ * nur nach Double-Opt-in (0037), mit Abmeldelink im Text und als
+ * List-Unsubscribe-Kopfzeile.
+ */
+export async function sendeNewsletter(daten: NewsletterMail): Promise<Versandergebnis> {
+  const eventBlock = daten.event
+    ? `
+<tr><td style="padding:0 28px 28px;">
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #3a1a73;border-radius:3px;overflow:hidden;">
+<tr><td><a href="${daten.event.link}"><img src="${daten.event.bild}" width="502" alt="${maskiere(daten.event.titel)}" style="display:block;border:0;width:100%;height:auto;" /></a></td></tr>
+<tr><td style="padding:18px;">
+<div style="font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:18px;font-weight:900;text-transform:uppercase;line-height:1.2;">${maskiere(daten.event.titel)}</div>
+<div style="margin:6px 0 18px;font-size:14px;color:#c4b9d5;">${maskiere(daten.event.wann)} · ${maskiere(daten.event.ort)}</div>
+<table role="presentation" cellpadding="0" cellspacing="0"><tr>
+<td style="background:#ffe14a;border-radius:3px;border-right:4px solid #ff8fd6;border-bottom:4px solid #ff8fd6;">
+<a href="${daten.event.link}" style="display:inline-block;padding:13px 24px;color:#2a0b5e;text-decoration:none;font-family:'Arial Black','Helvetica Neue',Arial,sans-serif;font-size:13px;font-weight:900;letter-spacing:1px;text-transform:uppercase;">Zu den Tickets</a>
+</td></tr></table>
+</td></tr></table>
+</td></tr>`
+    : "";
+
+  const html = huelle(`
+${kopfBalken(maskiere(daten.betreff))}
+<tr><td style="padding:28px 28px ${daten.event ? "12px" : "28px"};font-size:15px;line-height:1.7;">
+${absaetze(daten.text)}
+</td></tr>${eventBlock}
+<tr><td style="padding:0 28px 24px;font-size:12px;line-height:1.7;color:#9788b0;">
+Du bekommst diese Mail, weil du dich für den Newsletter von Lunar Events angemeldet hast.
+<a href="${daten.abmeldeLink}" style="color:#c4b9d5;">Abmelden</a>
+</td></tr>`);
+
+  const text = `${daten.text.trim()}
+${
+  daten.event
+    ? `
+${daten.event.titel}
+${daten.event.wann} · ${daten.event.ort}
+Tickets: ${daten.event.link}
+`
+    : ""
+}
+Lunar Events
+
+Du bekommst diese Mail, weil du dich für den Newsletter von Lunar Events angemeldet hast.
+Abmelden: ${daten.abmeldeLink}`;
+
+  return versendeMitGrund({
+    an: daten.an,
+    betreff: daten.betreff,
+    html,
+    text,
+    kopfzeilen: {
+      "List-Unsubscribe": `<${daten.einKlickLink}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 }

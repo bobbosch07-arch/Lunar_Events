@@ -310,7 +310,9 @@
     "newsletterCta": "Join",
     "newsletterDanke": "Almost there. Click the confirmation link in your email.",
     "rechte": "© {jahr} Lunar Events",
-    "newsletterKeinVersand": "That didn’t work just now."
+    "newsletterKeinVersand": "That didn’t work just now.",
+    "newsletterFehlerEmail": "That address doesn’t look right.",
+    "newsletterAus": "Sign-up isn’t available right now."
   },
   "allgemein": {
     "laden": "One moment",
@@ -441,7 +443,7 @@
   },
   "newsletter": {
     "bestaetigenTitel": "Confirm your sign-up",
-    "bestaetigenText": "One more click and you’re in.",
+    "bestaetigenText": "Good to have you.",
     "bestaetigenKnopf": "Confirm sign-up",
     "bestaetigenErledigt": "Confirmed. Welcome to Lunar Events.",
     "abmeldenTitel": "Unsubscribe from the newsletter",
@@ -449,7 +451,8 @@
     "abmeldenKnopf": "Unsubscribe",
     "abmeldenErledigt": "Done. We won’t send you the newsletter anymore.",
     "fehler": "This link is no longer valid.",
-    "zurueck": "Back to the homepage"
+    "zurueck": "Back to the homepage",
+    "bestaetigenLaeuft": "One moment, signing you up …"
   },
   "fastlane": {
     "schliessen": "Close",

@@ -31,11 +31,13 @@ export function Newsletter() {
           if (antwort.ok) setFertig(true);
           else
             setFehler(
-              antwort.fehler === "email"
-                ? "Diese Adresse stimmt nicht."
-                : antwort.fehler === "kein_versand"
-                  ? "Newsletter-Anmeldung ist gerade nicht möglich."
-                  : "Das hat gerade nicht geklappt.",
+              t(
+                antwort.fehler === "email"
+                  ? "newsletterFehlerEmail"
+                  : antwort.fehler === "kein_versand"
+                    ? "newsletterAus"
+                    : "newsletterKeinVersand",
+              ),
             );
         });
       }}

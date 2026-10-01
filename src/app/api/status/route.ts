@@ -2,7 +2,7 @@ import { vorkasseEingerichtet } from "@/lib/vorkasse";
 import { NextResponse } from "next/server";
 import { datenbankVerbunden, serverClient } from "@/lib/supabase/server";
 import { gefundeneNamen, verwandteNamen } from "@/lib/supabase/umgebung";
-import { versandEingerichtet } from "@/lib/mail";
+import { pruefeVersand, versandEingerichtet } from "@/lib/mail";
 import { appleEingerichtet, zertifikatLaeuftAb } from "@/lib/wallet/apple";
 import { googleEingerichtet } from "@/lib/wallet/google";
 
@@ -38,7 +38,12 @@ export async function GET() {
     }
   }
 
-  const passAblauf = appleEingerichtet() ? await zertifikatLaeuftAb() : null;
+  const [passAblauf, mailPruefung] = await Promise.all([
+    appleEingerichtet() ? zertifikatLaeuftAb() : null,
+    // Gesetzt heißt nicht angenommen: Bis 01.10.2026 stand hier
+    // „mail: true", während der Anbieter jede Mail abwies.
+    pruefeVersand(),
+  ]);
 
   function schluesselArt(wert: string | undefined, testPraefix: string) {
     if (!wert) return "fehlt";
@@ -79,6 +84,7 @@ export async function GET() {
           : process.env.RESEND_API_KEY
             ? "resend"
             : null,
+        mailPruefung,
         appleWallet: appleEingerichtet(),
         appleZertifikatBis: passAblauf ? passAblauf.toISOString() : null,
         googleWallet: googleEingerichtet(),

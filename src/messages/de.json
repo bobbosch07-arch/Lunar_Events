@@ -310,7 +310,9 @@
     "newsletterCta": "Eintragen",
     "newsletterDanke": "Fast geschafft. Klick den Bestätigungslink in deiner Mail.",
     "rechte": "© {jahr} Lunar Events",
-    "newsletterKeinVersand": "Das hat gerade nicht geklappt."
+    "newsletterKeinVersand": "Das hat gerade nicht geklappt.",
+    "newsletterFehlerEmail": "Diese Adresse stimmt nicht.",
+    "newsletterAus": "Die Anmeldung ist gerade nicht möglich."
   },
   "allgemein": {
     "laden": "Einen Moment",
@@ -441,7 +443,7 @@
   },
   "newsletter": {
     "bestaetigenTitel": "Anmeldung bestätigen",
-    "bestaetigenText": "Ein Klick noch, dann bist du dabei.",
+    "bestaetigenText": "Schön, dass du dabei bist.",
     "bestaetigenKnopf": "Anmeldung bestätigen",
     "bestaetigenErledigt": "Bestätigt. Willkommen bei Lunar Events.",
     "abmeldenTitel": "Newsletter abbestellen",
@@ -449,7 +451,8 @@
     "abmeldenKnopf": "Abbestellen",
     "abmeldenErledigt": "Erledigt. Wir schicken dir keinen Newsletter mehr.",
     "fehler": "Dieser Link gilt nicht mehr.",
-    "zurueck": "Zur Startseite"
+    "zurueck": "Zur Startseite",
+    "bestaetigenLaeuft": "Einen Moment, wir tragen dich ein …"
   },
   "fastlane": {
     "schliessen": "Schließen",

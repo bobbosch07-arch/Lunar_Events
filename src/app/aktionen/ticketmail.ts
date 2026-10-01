@@ -1,10 +1,15 @@
 "use server";
 
-import { dienstClient } from "@/lib/supabase/server";
+import { revalidatePath } from "next/cache";
+import { dienstClient, serverClient } from "@/lib/supabase/server";
 import { eigeneAdresse } from "@/lib/stripe";
 import { sendeTickets } from "@/lib/mail";
 import { appleEingerichtet, erzeugeApplePass } from "@/lib/wallet/apple";
 import { ladePassDaten } from "@/lib/wallet/laden";
+
+export type TicketMailErgebnis =
+  | { ok: true; schonVerschickt?: boolean }
+  | { ok: false; grund: string };
 
 /**
  * Verschickt die Tickets — genau einmal je Bestellung.
@@ -16,9 +21,23 @@ import { ladePassDaten } from "@/lib/wallet/laden";
  *
  * Scheitert der Versand, bleibt der Vermerk leer und der nächste Anlauf
  * versucht es erneut — aber der Kauf gilt trotzdem. Tickets existieren
- * unabhängig davon, ob eine Mail ankommt.
+ * unabhängig davon, ob eine Mail ankommt. Nachschicken lässt es sich im
+ * Backoffice unter „Bestellungen" (`sendeTicketMailNach`).
  */
-export async function verschickeTickets(bestellungId: string): Promise<void> {
+export async function verschickeTickets(bestellungId: string): Promise<TicketMailErgebnis> {
+  return schickeTicketMail(bestellungId, false);
+}
+
+/**
+ * Nicht exportiert: Mit `erneut` geht die Mail auch dann raus, wenn sie
+ * schon einmal verschickt wurde. Ein exportierter Weg dorthin wäre aus
+ * jedem Browser aufrufbar und könnte einem Gast das Postfach zuschütten —
+ * deshalb nur über `sendeTicketMailNach`, das vorher die Rolle prüft.
+ */
+async function schickeTicketMail(
+  bestellungId: string,
+  erneut: boolean,
+): Promise<TicketMailErgebnis> {
   const db = dienstClient();
 
   const { data: bestellung } = await db
@@ -33,9 +52,9 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     .eq("id", bestellungId)
     .single();
 
-  if (!bestellung) return;
-  if (bestellung.status !== "bezahlt") return;
-  if (bestellung.mail_gesendet_am) return;
+  if (!bestellung) return { ok: false, grund: "Bestellung nicht gefunden." };
+  if (bestellung.status !== "bezahlt") return { ok: false, grund: "Bestellung ist nicht bezahlt." };
+  if (bestellung.mail_gesendet_am && !erneut) return { ok: true, schonVerschickt: true };
 
   const kunde = bestellung.kunde as unknown as {
     email: string;
@@ -47,7 +66,7 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     ort: { name: string; stadt: string };
   } | null;
 
-  if (!kunde?.email || !event) return;
+  if (!kunde?.email || !event) return { ok: false, grund: "Kunde oder Event fehlt." };
 
   const wann = new Intl.DateTimeFormat("de-DE", {
     timeZone: "Europe/Berlin",
@@ -118,10 +137,70 @@ export async function verschickeTickets(bestellungId: string): Promise<void> {
     garderobe: marken,
   });
 
-  if (geschickt) {
-    await db
-      .from("bestellungen")
-      .update({ mail_gesendet_am: new Date().toISOString() })
-      .eq("id", bestellungId);
+  if (!geschickt.ok) return geschickt;
+
+  await db
+    .from("bestellungen")
+    .update({ mail_gesendet_am: new Date().toISOString() })
+    .eq("id", bestellungId);
+  return { ok: true };
+}
+
+async function istAdmin(): Promise<boolean> {
+  // Mit dem Dienstschlüssel geht es weiter — also vorher die Rolle prüfen
+  // (CLAUDE.md, "Personal-Anmeldungen gelten nur begrenzt").
+  const sitzung = await serverClient();
+  const { data } = await sitzung.rpc("ist_mitarbeiter", { mindestens: "admin" });
+  return data === true;
+}
+
+/**
+ * Backoffice: Ticket-Mail einer Bestellung (erneut) schicken. Für Gäste,
+ * die nichts bekommen haben, und für Mails, die beim Kauf scheiterten.
+ */
+export async function sendeTicketMailNach(bestellungId: string): Promise<TicketMailErgebnis> {
+  if (!(await istAdmin())) return { ok: false, grund: "Nur für Admins." };
+  const ergebnis = await schickeTicketMail(bestellungId, true);
+  revalidatePath("/backoffice/bestellungen");
+  return ergebnis;
+}
+
+/**
+ * Backoffice: alle bezahlten Bestellungen ohne Ticket-Mail nachschicken.
+ * Hört beim ersten Fehlschlag auf — scheitert eine, scheitern meist alle
+ * (Schlüssel, Tageslimit), und der Grund soll sofort sichtbar sein.
+ */
+export async function sendeFehlendeTicketMails(): Promise<
+  { ok: true; verschickt: number; offen: number } | { ok: false; grund: string; verschickt: number }
+> {
+  if (!(await istAdmin())) return { ok: false, grund: "Nur für Admins.", verschickt: 0 };
+
+  const db = dienstClient();
+  const { data: fehlende, error } = await db
+    .from("bestellungen")
+    .select("id")
+    .eq("status", "bezahlt")
+    .is("mail_gesendet_am", null)
+    .order("erstellt_am")
+    .limit(40);
+  if (error) return { ok: false, grund: error.message, verschickt: 0 };
+
+  let verschickt = 0;
+  for (const { id } of fehlende ?? []) {
+    const ergebnis = await schickeTicketMail(id as string, false);
+    if (!ergebnis.ok) {
+      revalidatePath("/backoffice/bestellungen");
+      return { ok: false, grund: ergebnis.grund, verschickt };
+    }
+    if (!ergebnis.schonVerschickt) verschickt += 1;
   }
+
+  const { count } = await db
+    .from("bestellungen")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "bezahlt")
+    .is("mail_gesendet_am", null);
+
+  revalidatePath("/backoffice/bestellungen");
+  return { ok: true, verschickt, offen: count ?? 0 };
 }

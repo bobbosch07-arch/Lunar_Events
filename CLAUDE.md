@@ -983,6 +983,60 @@ Die neu gerechnete Seite sah „nichts mehr frei“ und nahm das Blatt samt Stri
 heraus. Die Nachbuchung setzt deshalb kein Cookie, der Ticketlink ist der
 Nachweis.
 
+## Mailversand
+
+**Vom 18.09. bis 01.10.2026 ging keine einzige Mail raus**, und niemand
+merkte es: Brevo lehnte jeden Aufruf ab, `versende()` schrieb den Grund ins
+Protokoll (das Vercel nach einer Stunde vergisst) und gab still `false`
+zurück. `/api/status` zeigte die ganze Zeit „mail: true“, weil es nur
+prüfte, ob ein Schlüssel *gesetzt* ist. Zehn echte Kunden von THE OPENING
+bekamen keine Ticket-Mail; aufgefallen ist es erst, weil der Newsletter
+„nicht funktionierte“. Daraus drei Regeln:
+
+- **`/api/status` fragt den Anbieter** (`pruefeVersand`, Brevo
+  `GET /v3/account` und `/v3/senders`, ohne eine Mail zu schicken):
+  `versand.mailPruefung.schluessel` ist `gueltig`, `abgelehnt_<HTTP>` oder
+  `nicht_erreichbar`, dazu `einzelmails` (Transactional freigeschaltet) und
+  `absenderAktiv`. Nach jeder Änderung am Mailversand dort nachsehen.
+- **`versendeMitGrund`** gibt den Ablehnungsgrund zurück, statt ihn nur zu
+  protokollieren. Wo ein Mensch auf das Ergebnis wartet (Backoffice), wird
+  er wörtlich angezeigt.
+- **Bestellungen ohne Ticket-Mail sind im Backoffice sichtbar:** Marke
+  „Mail fehlt“, Knopf „Nachsenden“ je Zeile und ein Banner „Alle
+  nachsenden“ (`sendeTicketMailNach`, `sendeFehlendeTicketMails` in
+  `aktionen/ticketmail.ts`). Bei verschickter Mail ein stiller Textknopf
+  „Mail erneut“ für Gäste, die nichts gefunden haben. Der Weg, eine schon
+  verschickte Mail noch einmal zu senden (`schickeTicketMail(…, true)`), ist
+  **nicht exportiert**: Ein exportierter Weg in einer `"use server"`-Datei
+  wäre aus jedem Browser aufrufbar und könnte einem Gast das Postfach
+  zuschütten. Nur über die Aktionen mit Rollenprüfung.
+
+### Newsletter verschicken (Migration 0039)
+
+Backoffice-Reiter **„Newsletter“**: Kennzahlen (bestätigt, wartet,
+abgemeldet), Mail schreiben (Betreff, Text, optional ein Event mit Poster
+aus seinem `opengraph-image` und Knopf „Zu den Tickets“), **erst „Testmail an
+mich“**, dann „An alle senden“. Eine **Ausgabe** (`newsletter_ausgaben`)
+ist eine geschriebene Mail; je Empfänger hält `newsletter_zustellungen`
+fest, dass sie rausging. `sendeAusgabe` schickt je Aufruf höchstens 50, die
+Oberfläche ruft nach, bis nichts mehr offen ist. Bricht es ab (Brevo:
+300 Mails am Tag im kostenlosen Tarif), steht die Ausgabe auf
+„unterbrochen“ und geht mit „Fortsetzen“ weiter, ohne Doppelte. Die
+Zustellungen hängen per Fremdschlüssel an der Adresse: „Entfernen“ in der
+Adressliste löscht beides.
+
+**Bestätigen geht mit einem Klick** (seit 01.10.): Die Seite
+`/newsletter/bestaetigen/<token>` löst die Bestätigung beim Öffnen im
+Browser aus. Vorher stand dort ein zweiter Knopf, gegen Mailprogramme, die
+Links für ihre Vorschau abrufen; dafür schlossen Gäste die Seite nach dem
+Mail-Klick und standen nie auf der Liste. Vorschau-Abrufer führen in aller
+Regel kein JavaScript aus. **Abmelden bleibt ein Knopf**, dazu die
+**Ein-Klick-Abmeldung** für Mailprogramme: `List-Unsubscribe` +
+`List-Unsubscribe-Post` (RFC 8058) zeigen auf `/api/newsletter/abmelden?t=…`.
+Dort meldet nur ein **POST** ab (so schicken es Gmail und Apple Mail); ein
+GET leitet auf die Seite mit dem Knopf weiter, damit ein Vorschau-Abruf
+niemanden abmeldet.
+
 ## Umgebungsvariablen
 
 **Beide Namen für den öffentlichen Supabase-Schlüssel werden akzeptiert**
@@ -1041,8 +1095,8 @@ Fertig und geprüft:
 - Garderobe: in der Kasse und auf der Ticketseite, Marken mit QR, Tresen mit Bügelnummer (offline), Rolle garderobe
 - VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
 
-Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live,
-Mail über Brevo läuft):
+Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live.
+Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):
 
 **A. Vor dem Teilen des Links**
 1. ~~Stripe-Webhook im Live-Modus, Testkauf mit Erstattung~~: erledigt
@@ -1080,6 +1134,8 @@ Mail über Brevo läuft):
 7. ~~Newsletter mit Double-Opt-in~~: erledigt 20.09. (0037). Bestätigungs-
    und Abmeldelink, `bestaetige_newsletter`/`melde_newsletter_ab`,
    `sendeNewsletterBestaetigung`. Auf der Liste steht erst, wer klickt.
+   **Verschicken** kam erst am 01.10. dazu (0039, Backoffice „Newsletter“),
+   siehe „Mailversand“.
 8. ~~Klarna ab 50 €~~: erledigt 20.09. Schalter `STRIPE_KLARNA=an` (erst nach
    dem Freischalten in Stripe setzen); dann wählt der Checkout die Zahlarten
    explizit, Klarna nur ab 50 € (`klarnaFuer`, `KLARNA_AB_CENT`). Ohne den
