@@ -54,13 +54,6 @@
   /* Kachelbarer Sternenstaub für Nacht-Flächen (Designs/cosmos). Auf Gelb,
      Rosa und im klassischen Look: keiner. */
   --sternenstaub: url("/cosmos/stardust-tile.svg");
-  /* Nordlicht hinter der ganzen Seite (fest, der Inhalt zieht darüber).
-     Weiche Lichtfelder statt Flächen mit harter Kante — Wunsch 01.10.2026. */
-  --aurora:
-    radial-gradient(55% 45% at 8% 12%, rgba(138, 77, 255, 0.42) 0%, transparent 70%),
-    radial-gradient(45% 40% at 92% 30%, rgba(255, 143, 214, 0.2) 0%, transparent 72%),
-    radial-gradient(60% 50% at 70% 88%, rgba(91, 33, 201, 0.45) 0%, transparent 72%),
-    radial-gradient(50% 45% at 12% 78%, rgba(74, 100, 255, 0.18) 0%, transparent 70%);
   /* Wie weit Flächen oben und unten in die Nacht auslaufen */
   --uebergang: clamp(72px, 10vw, 160px);
 
@@ -338,7 +331,6 @@
   color-scheme: light;
 
   --sternenstaub: none;
-  --aurora: none;
   --uebergang: 0px;
 
   --text-primary: #101418;

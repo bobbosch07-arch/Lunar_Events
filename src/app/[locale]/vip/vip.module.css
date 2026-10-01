@@ -1,8 +1,20 @@
+/* Der Himmel liegt als eigene Ebene dahinter und läuft oben und unten
+   weich in die Nacht aus, statt als Block anzusetzen. */
 .kopfbereich {
   position: relative;
-  background: var(--verlauf-himmel);
+  isolation: isolate;
   padding-block: var(--abschnitt);
   color: var(--text-on-dark);
+}
+
+.kopfbereich::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--verlauf-himmel);
+  -webkit-mask: linear-gradient(to bottom, transparent, #000 var(--uebergang), #000 calc(100% - var(--uebergang)), transparent);
+  mask: linear-gradient(to bottom, transparent, #000 var(--uebergang), #000 calc(100% - var(--uebergang)), transparent);
 }
 
 .kopfInhalt {

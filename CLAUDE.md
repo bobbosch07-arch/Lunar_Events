@@ -109,15 +109,16 @@ Runden davor in `docs/redesign-boards*.html`.
   Kopfzeile führen zur Ticketauswahl des nächsten Events mit freien Tickets
   (Wunsch 30.09.2026). Auf der Eventseite zur eigenen, mit Promoter-Kürzel.
 - **Keine harten Kanten im Hintergrund** (Wunsch 01.10.2026, „wie
-  Nordlichter“): Hinter der ganzen Seite liegt ein festes Nordlicht
-  (`body::before`, `--aurora`), der Sternenstaub scrollt im body mit.
-  Abschnitte ohne `data-grund` sind durchsichtig; mit `data-grund` läuft
+  Nordlichter ineinander verlaufen“). Ein festes Nordlicht-Leuchten hinter
+  der Seite war kurz drin und ist auf Wunsch wieder raus — es geht um die
+  Übergänge, nicht um zusätzliches Licht. Abschnitte ohne `data-grund`
+  sind durchsichtig; mit `data-grund` läuft
   ihre Fläche oben und unten über `--uebergang` weich aus. Heros malen
   ihren Himmel in `::before` und blenden ihn unten aus, die Fußzeile läuft
   oben ein. Seiten-Rahmen (Kasse, Bestätigung, Ticket) haben deshalb
   **keine** eigene Hintergrundfarbe — sonst verschwindet der Cosmos.
   Karten und Kästen behalten ihre Kanten. Im klassischen Look ist das
-  alles aus (`--aurora: none`, `--uebergang: 0px`).
+  aus (`--uebergang: 0px`).
 - **Stripe-Formular** (`StripeZahlung`): dunkle Felder wie die Kasse,
   Auswahl in Mondgelb mit hartem Schatten, Systemschrift (eine `var()`
   im Stripe-Rahmen machte die Schriftangabe ungültig → Serifen). Die

@@ -34,23 +34,6 @@ body {
   overflow-x: hidden;
 }
 
-/* Das Nordlicht liegt fest hinter allem; der Sternenstaub (body) scrollt
-   mit. Zusammen ergibt das Tiefe ohne eine einzige harte Kante. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: -10%;
-  z-index: -1;
-  background: var(--aurora);
-  pointer-events: none;
-  animation: nordlicht 38s ease-in-out infinite alternate;
-}
-
-@keyframes nordlicht {
-  0% { transform: translate3d(0, 0, 0) scale(1); }
-  50% { transform: translate3d(3%, -2%, 0) scale(1.05); }
-  100% { transform: translate3d(-2%, 3%, 0) scale(1.02); }
-}
 
 
 h1,
@@ -344,8 +327,8 @@ hr {
   padding-inline: var(--rand-seite);
 }
 
-/* Ein Abschnitt ohne eigene Fläche ist durchsichtig: Nordlicht und
-   Sternenstaub laufen ungebrochen durch. Mit Fläche (data-grund) läuft
+/* Ein Abschnitt ohne eigene Fläche ist durchsichtig: Grund und
+   Sternenstaub des body laufen ungebrochen durch. Mit Fläche (data-grund) läuft
    sie oben und unten weich in die Nacht aus, statt hart abzubrechen —
    nur bei Hintergründen, Karten behalten ihre Kanten. */
 .abschnitt {

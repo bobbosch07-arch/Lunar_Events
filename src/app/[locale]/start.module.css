@@ -38,16 +38,21 @@
   color: rgba(247, 240, 255, 0.06);
   pointer-events: none;
   user-select: none;
-  -webkit-mask: linear-gradient(to bottom, #000 40%, transparent);
-  mask: linear-gradient(to bottom, #000 40%, transparent);
+  /* Unten ragt sie über den Hero hinaus und würde dort abgeschnitten —
+     sie ist deshalb schon vorher ganz ausgeblendet, sonst entsteht an der
+     Unterkante eine gerade Linie. */
+  -webkit-mask: linear-gradient(to bottom, #000 10%, transparent 78%);
+  mask: linear-gradient(to bottom, #000 10%, transparent 78%);
 }
 
+/* Auf dem Handy sitzt die Sichel ganz im Hero: Unten angeschnitten ergab
+   sie eine harte waagerechte Kante. Rechts darf sie überstehen. */
 .heroSichel {
   position: absolute;
   z-index: -1;
-  width: 66vw;
-  right: -20vw;
-  bottom: -12vw;
+  width: 62vw;
+  right: -18vw;
+  bottom: 6vw;
 }
 
 .stern {
@@ -272,6 +277,10 @@
   color: rgba(42, 11, 94, 0.08);
   pointer-events: none;
   user-select: none;
+  /* Die Buchstaben enden alle auf einer Höhe; ohne Ausblenden zeichnen
+     sich oben und unten zwei gerade Linien über die ganze Breite ab. */
+  -webkit-mask: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
+  mask: linear-gradient(to bottom, transparent, #000 35%, #000 65%, transparent);
 }
 
 .marke {
