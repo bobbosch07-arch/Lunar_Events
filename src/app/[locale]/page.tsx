@@ -91,12 +91,12 @@ export default async function Startseite({
             ) : null}
             <div className={css.heroKnoepfe}>
               {naechstes ? (
-                <Knopf href={ticketZiel} groesse="gross">
+                <Knopf href={ticketZiel} groesse="gross" data-messen="start_tickets_sichern">
                   <Stern className={css.knopfStern} />
                   {t("ticketsSichern")}
                 </Knopf>
               ) : (
-                <Knopf href="/events" groesse="gross">
+                <Knopf href="/events" groesse="gross" data-messen="start_events">
                   {t("heroCta")}
                 </Knopf>
               )}

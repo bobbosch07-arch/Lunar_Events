@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { messe, type MessDaten } from "@/lib/messen";
 
 export type EreignisArt =
   | "seite"
@@ -14,9 +15,14 @@ export type EreignisArt =
 /**
  * Meldet ein Ereignis. Läuft über sendBeacon, damit ein Seitenwechsel
  * die Meldung nicht abschneidet — und damit sie nichts verzögert.
+ *
+ * Seit 03.10.2026 geht es zusätzlich an GA4 und Meta, aber nur, wenn im
+ * Banner zugestimmt wurde (`messe`). Die eigene Zählung hängt daran nicht:
+ * Sie läuft ohne Cookie für alle weiter.
  */
-export function zaehle(art: EreignisArt, eventId?: string | null) {
+export function zaehle(art: EreignisArt, eventId?: string | null, daten?: MessDaten) {
   if (typeof window === "undefined") return;
+  messe(art, eventId, daten);
 
   const suche = new URLSearchParams(window.location.search);
   const kampagne = suche.get("utm_campaign");
@@ -56,16 +62,21 @@ export function zaehle(art: EreignisArt, eventId?: string | null) {
 export function Zaehler({
   art,
   eventId,
+  daten,
 }: {
   art: EreignisArt;
   eventId?: string | null;
+  daten?: MessDaten;
 }) {
   const gezaehlt = useRef(false);
 
   useEffect(() => {
     if (gezaehlt.current) return;
     gezaehlt.current = true;
-    zaehle(art, eventId);
+    zaehle(art, eventId, daten);
+    // daten ist ein Objekt aus der Seite und ändert sich nicht; gezählt
+    // wird ohnehin nur einmal.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [art, eventId]);
 
   return null;

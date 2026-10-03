@@ -28,7 +28,7 @@ export function VipSektion({ eventSlug }: Props) {
         <h2 className={css.titel}>{t.rich("titel", { akzent })}</h2>
         <p className={css.text}>{t("text")}</p>
         <span className={css.knopf}>
-          <Knopf href={ziel}>{t("cta")}</Knopf>
+          <Knopf href={ziel} data-messen="vip_anfragen">{t("cta")}</Knopf>
         </span>
       </div>
 

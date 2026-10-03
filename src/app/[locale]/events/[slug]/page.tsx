@@ -147,7 +147,7 @@ export default async function EventSeite({ params, searchParams }: Props) {
       {/* "Tickets" oben springt wie der Knopf im Hero zur Ticketauswahl
           und nimmt das Promoter-Kürzel mit. */}
       <Kopfzeile ueberHero ticketZiel={ticketsZiel} />
-      <Zaehler art="event_gesehen" eventId={event.id} />
+      <Zaehler art="event_gesehen" eventId={event.id} daten={{ titel: event.titel }} />
 
       <main id="inhalt">
         <section className={css.hero}>
@@ -200,7 +200,7 @@ export default async function EventSeite({ params, searchParams }: Props) {
 
               {!vergangen ? (
                 <div className={css.heroKnopf}>
-                  <Knopf href={ticketsZiel} groesse="gross">
+                  <Knopf href={ticketsZiel} groesse="gross" data-messen="event_tickets_kaufen">
                     <Stern className={css.knopfStern} />
                     {t("ticketsKaufen")}
                   </Knopf>

@@ -1,0 +1,14 @@
+/* „Cookie-Einstellungen“ mitten im Text: Manche Seiten (Ticketseite,
+   Kasse) haben keinen Fuß, die Datenschutzerklärung ist aber von überall
+   erreichbar. Sieht aus wie ein Link, ist aber ein Knopf, weil er den
+   Banner öffnet. */
+.einwilligungKnopf {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--akzent-text);
+  text-decoration: underline;
+  cursor: pointer;
+}

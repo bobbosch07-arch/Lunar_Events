@@ -7,6 +7,9 @@ import {
   Liste,
   Angaben,
 } from "@/components/Textseite";
+import { GA_ID, META_PIXEL_ID } from "@/lib/einwilligung";
+import { EinwilligungAendern } from "@/components/Einwilligung";
+import css from "./datenschutz.module.css";
 
 export const metadata: Metadata = {
   title: "Datenschutz",
@@ -19,6 +22,10 @@ export const metadata: Metadata = {
  * Vorlage. Wer einen Dienst, eine Frist oder einen Ablauf ändert, ändert
  * diese Seite mit. Die Löschfristen setzt `loesche_alte_daten()` (0032) um.
  * Juristisch geprüft ist sie noch nicht (Roadmap E13).
+ *
+ * Google Analytics und das Meta-Pixel stehen nur drin, wenn sie eingerichtet
+ * sind (NEXT_PUBLIC_GA_ID, NEXT_PUBLIC_META_PIXEL_ID): Die Erklärung soll
+ * beschreiben, was die Seite tut, nicht was sie einmal tun könnte.
  */
 export default async function Datenschutz({
   params,
@@ -32,7 +39,7 @@ export default async function Datenschutz({
     <Textseite
       titel="Datenschutz"
       vorspann="Was wir speichern, warum, wo und wie lange."
-      stand="Stand: 19. September 2026. Wir passen die Erklärung an, sobald sich Dienste oder Abläufe ändern."
+      stand="Stand: 3. Oktober 2026. Wir passen die Erklärung an, sobald sich Dienste oder Abläufe ändern."
     >
       <Block titel="1. Verantwortlich">
         <Absatz>
@@ -48,7 +55,9 @@ export default async function Datenschutz({
         <Liste
           punkte={[
             "Wir speichern nur, was wir für Verkauf, Einlass und Kontakt brauchen.",
-            "Keine Analyse-Werkzeuge, keine Werbe-Pixel, keine Tracking-Cookies, keine Einbettungen sozialer Netzwerke.",
+            GA_ID || META_PIXEL_ID
+              ? `${[GA_ID ? "Google Analytics" : null, META_PIXEL_ID ? "das Meta-Pixel" : null].filter(Boolean).join(" und ")} ${GA_ID && META_PIXEL_ID ? "laden" : "lädt"} erst, wenn du im Cookie-Banner zustimmst. Ohne Zustimmung keine Tracking-Cookies.${META_PIXEL_ID ? "" : " Keine Werbe-Pixel."} Keine Einbettungen sozialer Netzwerke.`
+              : "Keine Analyse-Werkzeuge, keine Werbe-Pixel, keine Tracking-Cookies, keine Einbettungen sozialer Netzwerke.",
             "Unsere Server stehen in Frankfurt am Main. Einige Anbieter haben ihren Sitz in den USA. Wo das so ist, steht es unten dabei.",
             "Kartendaten sehen wir nie. Die gibst du direkt bei Stripe ein.",
           ]}
@@ -75,10 +84,11 @@ export default async function Datenschutz({
           (Art. 6 Abs. 1 lit. f DSGVO).
         </Absatz>
         <Absatz>
-          Reichweite zählen wir ohne Personenbezug: Wir speichern nur, welche
-          Seite aufgerufen wurde, gerundet auf die Stunde. Keine IP-Adresse,
-          keine Kennung, kein Cookie. Einen Rückschluss auf dich erlaubt das
-          nicht.
+          Reichweite zählen wir zusätzlich ohne Personenbezug: Wir speichern
+          nur, welche Seite aufgerufen wurde, gerundet auf die Stunde. Keine
+          IP-Adresse, keine Kennung, kein Cookie. Einen Rückschluss auf dich
+          erlaubt das nicht, und es läuft auch, wenn du im Cookie-Banner
+          ablehnst.
         </Absatz>
         <Absatz>
           Die Schriften liegen auf unserem eigenen Server. Beim Aufruf entsteht
@@ -238,6 +248,14 @@ export default async function Datenschutz({
               "Postfach",
               "Google Ireland Ltd., Dublin, Irland.",
             ],
+            ...(GA_ID
+              ? ([
+                  [
+                    "Statistik",
+                    "Google Ireland Ltd., Dublin, Irland (Google Analytics, nur mit deiner Einwilligung, Abschnitt 12).",
+                  ],
+                ] as Array<[string, string]>)
+              : []),
           ]}
         />
         <Absatz>
@@ -263,12 +281,59 @@ export default async function Datenschutz({
             "Anmeldung: hält deine Sitzung, solange du angemeldet bist.",
             "Rabattcode und Presale: Ein Code oder eine Einladung aus einem Link wird im Speicher dieses Browser-Tabs gemerkt und ist weg, sobald du den Tab schließt.",
             "Stripe setzt beim Bezahlen eigene Cookies, um Betrug zu erkennen.",
+            ...(GA_ID || META_PIXEL_ID
+              ? ["Deine Cookie-Auswahl: merkt sich zwölf Monate lang, wozu du ja oder nein gesagt hast, damit wir nicht bei jedem Besuch fragen."]
+              : []),
           ]}
         />
-        <Absatz>
-          Setzen wir einmal Reichweitenmessung oder Werbe-Pixel ein, fragen wir
-          vorher nach deiner Einwilligung.
-        </Absatz>
+        {GA_ID ? (
+          <>
+            <Absatz>
+              <strong>Google Analytics, nur mit deiner Einwilligung.</strong>{" "}
+              Stimmst du im Cookie-Banner der Statistik zu, nutzen wir Google
+              Analytics 4 der Google Ireland Ltd., Gordon House, Barrow Street,
+              Dublin 4, Irland. Google setzt dann Cookies (_ga, _ga_…, bis zu
+              zwei Jahre), die deinen Browser bei späteren Besuchen
+              wiedererkennen, und erfährt, welche Seiten du aufrufst, auf welche
+              Knöpfe du tippst und ob du Tickets kaufst (Event, Betrag,
+              Bestellnummer). Adressen, die einen Zugang enthalten, etwa deine
+              Ticketseite, geben wir nur ohne diesen Teil weiter. Google Analytics
+              speichert keine IP-Adressen. Google Signals und personalisierte
+              Werbung über Analytics sind ausgeschaltet. Die Auswertungsdaten
+              löscht Google nach 14 Monaten. Daten können an die Google LLC in den
+              USA gehen; Google ist nach dem EU-US Data Privacy Framework
+              zertifiziert.
+            </Absatz>
+          </>
+        ) : null}
+        {META_PIXEL_ID ? (
+          <Absatz>
+            <strong>Meta-Pixel, nur mit deiner Einwilligung.</strong> Stimmst
+            du Marketing zu, lädt das Pixel der Meta Platforms Ireland Ltd.,
+            Merrion Road, Dublin 4, Irland. Es setzt ein Cookie (_fbp, drei
+            Monate) und meldet Meta, dass du hier warst und ob du Tickets
+            kaufst. So können wir messen, ob unsere Werbung wirkt, und unsere
+            Events auf Instagram und Facebook Leuten zeigen, die schon hier
+            waren. Für das Erheben und Übermitteln sind wir mit Meta gemeinsam
+            verantwortlich (Art. 26 DSGVO), für alles danach ist Meta allein
+            verantwortlich. Daten können an die Meta Platforms Inc. in den USA
+            gehen; Meta ist nach dem EU-US Data Privacy Framework zertifiziert.
+          </Absatz>
+        ) : null}
+        {GA_ID || META_PIXEL_ID ? (
+          <Absatz>
+            Rechtsgrundlage ist deine Einwilligung (Art. 6 Abs. 1 lit. a DSGVO,
+            § 25 Abs. 1 TDDDG). Du kannst sie jederzeit widerrufen: hier oder über
+            „Cookie-Einstellungen“ unten auf den Seiten. Dann löschen wir die
+            Cookies und laden die Werkzeuge nicht mehr.{" "}
+            <EinwilligungAendern className={css.einwilligungKnopf} />
+          </Absatz>
+        ) : (
+          <Absatz>
+            Setzen wir einmal Reichweitenmessung oder Werbe-Pixel ein, fragen
+            wir vorher nach deiner Einwilligung.
+          </Absatz>
+        )}
       </Block>
 
       <Block titel="13. Wallet">

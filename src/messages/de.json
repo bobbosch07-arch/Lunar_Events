@@ -492,5 +492,22 @@
     "stickerOnlineUnten": "online",
     "stickerAusOben": "Sold",
     "stickerAusUnten": "out"
+  },
+  "einwilligung": {
+    "titel": "COOKIES? YOUR CALL.",
+    "text": "Wir möchten sehen, wie unsere Seite genutzt wird, damit wir sie besser machen. Dafür nutzen wir Google Analytics, aber nur, wenn du zustimmst. Kasse, Tickets und Anmeldung laufen immer, auch ohne.",
+    "textMitMarketing": "Wir möchten sehen, wie unsere Seite genutzt wird, und unsere Events gezielt auf Instagram zeigen. Dafür nutzen wir Google Analytics und das Meta-Pixel, aber nur, wenn du zustimmst. Kasse, Tickets und Anmeldung laufen immer, auch ohne.",
+    "datenschutz": "Mehr dazu",
+    "notwendigName": "Notwendig",
+    "notwendigText": "Kasse, Anmeldung und diese Auswahl. Immer an.",
+    "statistikName": "Statistik",
+    "statistikText": "Google Analytics: welche Seiten und Knöpfe genutzt werden und ob jemand wiederkommt.",
+    "marketingName": "Marketing",
+    "marketingText": "Meta-Pixel: damit wir Werbung auf Instagram an Leute zeigen können, die schon hier waren.",
+    "alle": "Akzeptieren",
+    "notwendig": "Nur notwendige",
+    "einstellungen": "Einstellungen",
+    "speichern": "Auswahl speichern",
+    "aendern": "Cookie-Einstellungen"
   }
 }

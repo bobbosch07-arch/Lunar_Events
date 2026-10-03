@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Betriebshinweis } from "@/components/Betriebshinweis";
 import { CodeMerker } from "@/components/CodeMerker";
+import { Einwilligung } from "@/components/Einwilligung";
 import "../globals.css";
 
 /**
@@ -110,6 +111,9 @@ export default async function RootLayout({
         <NextIntlClientProvider>
           <Betriebshinweis />
           <CodeMerker />
+          {/* Vor den Seiten, damit GA4 schon bereitsteht, wenn deren
+              Zähler beim ersten Anzeigen melden. */}
+          <Einwilligung />
           {children}
         </NextIntlClientProvider>
       </body>

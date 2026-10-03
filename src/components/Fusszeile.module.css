@@ -59,6 +59,18 @@
   color: var(--akzent-text);
 }
 
+/* „Cookie-Einstellungen“ ist ein Knopf (öffnet den Banner), soll aber
+   aussehen wie die Links daneben. */
+.textknopf {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--fs-body-s);
+  text-align: left;
+  cursor: pointer;
+}
+
 .gruss {
   display: flex;
   justify-content: center;

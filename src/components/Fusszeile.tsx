@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Logo, SloganLogo } from "./Logo";
 import { Newsletter } from "./Newsletter";
+import { EinwilligungAendern } from "./Einwilligung";
 import css from "./Fusszeile.module.css";
 
 const INSTAGRAM = "https://www.instagram.com/lunar_events.de";
@@ -73,6 +74,10 @@ export function Fusszeile() {
                 <Link href="/datenschutz" className={css.punkt}>
                   {t("datenschutz")}
                 </Link>
+              </li>
+              <li>
+                {/* Widerruf muss so leicht sein wie die Zustimmung. */}
+                <EinwilligungAendern className={`${css.punkt} ${css.textknopf}`} />
               </li>
             </ul>
           </div>

@@ -157,7 +157,7 @@ export function Kopfzeile({ ueberHero = false, ticketZiel = "/events" }: Props) 
                 </Link>
               ))}
             </span>
-            <Link href={ticketZiel} className={css.ticketsKnopf}>
+            <Link href={ticketZiel} className={css.ticketsKnopf} data-messen="kopf_tickets">
               <Stern className={css.knopfStern} />
               {t("tickets")}
             </Link>

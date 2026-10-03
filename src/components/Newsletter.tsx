@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import { trageInVerteilerEin } from "@/app/aktionen/newsletter";
+import { messe } from "@/lib/messen";
 import css from "./Newsletter.module.css";
 
 export function Newsletter() {
@@ -28,8 +29,10 @@ export function Newsletter() {
         setFehler(null);
         starte(async () => {
           const antwort = await trageInVerteilerEin(email);
-          if (antwort.ok) setFertig(true);
-          else
+          if (antwort.ok) {
+            setFertig(true);
+            messe("newsletter", null);
+          } else
             setFehler(
               t(
                 antwort.fehler === "email"

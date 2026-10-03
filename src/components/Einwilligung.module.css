@@ -1,0 +1,120 @@
+/* Der Banner im Look der Ticketkarte: Nacht, harter rosa Schatten. Er
+   liegt unten über der Seite, sperrt sie aber nicht: Wer erst lesen will,
+   liest, und bis zur Entscheidung lädt kein Werkzeug. */
+.banner {
+  position: fixed;
+  z-index: 60;
+  left: var(--space-4);
+  right: var(--space-4);
+  bottom: var(--space-4);
+  max-width: 520px;
+  max-height: calc(100dvh - 2 * var(--space-4));
+  overflow-y: auto;
+  padding: var(--space-5);
+  background: var(--grund-2) var(--sternenstaub) 0 0 / 320px 320px repeat;
+  color: var(--text-on-dark);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0 var(--hl);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h3);
+  letter-spacing: var(--ls-heading);
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+
+.text {
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+}
+
+.link {
+  color: var(--akzent-text);
+  text-decoration: underline;
+}
+
+.liste {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin: var(--space-4) 0 0;
+  padding: 0;
+}
+
+.punkt {
+  padding: var(--space-3);
+  border: 1px solid var(--linie-stark);
+  border-radius: var(--radius-sm);
+}
+
+.schalter {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  cursor: pointer;
+  font-size: var(--fs-body-s);
+}
+
+.schalter input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  accent-color: var(--akzent-text);
+}
+
+.schalter input:disabled {
+  cursor: not-allowed;
+}
+
+.erklaerung {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-on-dark-muted);
+  line-height: var(--lh-body);
+}
+
+/* Gleich groß, gleich auffällig: Ablehnen darf nicht schwerer sein als
+   Annehmen. */
+.knoepfe {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-top: var(--space-5);
+}
+
+.knoepfe > * {
+  width: 100%;
+  justify-content: center;
+}
+
+.textknopf {
+  display: block;
+  margin: var(--space-3) auto 0;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--text-on-dark-muted);
+  font: inherit;
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.textknopf:hover {
+  color: var(--text-on-dark);
+}
+
+@media (max-width: 420px) {
+  .knoepfe {
+    grid-template-columns: 1fr;
+  }
+}

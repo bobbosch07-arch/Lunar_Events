@@ -120,7 +120,15 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
 
   return (
     <div className={css.rahmen}>
-      {wartetAufUeberweisung ? null : <Zaehler art="kauf_abgeschlossen" eventId={eventId} />}
+      {wartetAufUeberweisung ? null : <Zaehler
+          art="kauf_abgeschlossen"
+          eventId={eventId}
+          daten={{
+            titel: event.titel,
+            wert: (bestellung.gesamt_cent as number) / 100,
+            nummer: bestellung.nummer as string,
+          }}
+        />}
       <header className={css.kopf}>
         <div className="seitenbreite">
           <Link href="/" aria-label="Lunar Events">

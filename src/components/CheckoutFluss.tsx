@@ -418,7 +418,7 @@ export function CheckoutFluss(props: Props) {
     if (code && ergebnis.code_tickets !== code.tickets) {
       setCode({ ...code, tickets: ergebnis.code_tickets, rabatt_cent: ergebnis.code_rabatt_cent });
     }
-    zaehle("daten_erfasst", props.eventId);
+    zaehle("daten_erfasst", props.eventId, { titel: props.eventTitel });
     setSchritt(3);
   }
 
@@ -474,7 +474,7 @@ export function CheckoutFluss(props: Props) {
 
   return (
     <>
-      <Zaehler art="kasse_begonnen" eventId={props.eventId} />
+      <Zaehler art="kasse_begonnen" eventId={props.eventId} daten={{ titel: props.eventTitel }} />
       {angebot ? (
         <FastLaneAngebot
           offen={angebotOffen}

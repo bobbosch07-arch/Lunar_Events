@@ -710,6 +710,55 @@ ein Seitenwechsel die Meldung nicht abschneidet. Bots werden am
 User-Agent grob aussortiert — sie sehen Seiten an und kaufen nie, was
 die Quote sonst verzerrt.
 
+### Tracking mit Einwilligung: GA4, vorbereitet Meta (03.10.2026)
+
+**Zusätzlich**, nicht statt der eigenen Zählung: Die läuft ohne Cookie für
+alle weiter und bleibt die vollständige Zahl. GA4 zeigt dazu Besucher,
+Wege und Klicks derer, die zustimmen (erfahrungsgemäß lehnt ein großer Teil
+ab). Mess-ID in `NEXT_PUBLIC_GA_ID` (`G-3WWTS4TB8R`), Meta-Pixel in
+`NEXT_PUBLIC_META_PIXEL_ID`. **Ohne ID gibt es weder Banner noch Abschnitt in
+der Datenschutzerklärung**; `NEXT_PUBLIC_` wird beim Bauen eingesetzt, nach
+dem Eintragen in Vercel also neu ausliefern.
+
+- **Erst nach dem Ja** (§ 25 TDDDG): `Einwilligung.tsx` im Layout zeigt den
+  Banner, lädt `gtag.js` bzw. das Pixel erst danach. Kategorien „Statistik“
+  (GA4) und „Marketing“ (Meta); Marketing erscheint nur mit Pixel-ID.
+  „Akzeptieren“ und „Nur notwendige“ sind **gleich groß und gleich
+  auffällig**, so verlangen es die Aufsichtsbehörden. Die Wahl liegt im Cookie
+  `lunar_einwilligung` (zwölf Monate, mit `angeboten`: kommt eine Kategorie
+  dazu, fragt der Banner neu). Gelesen über `useSyncExternalStore`, damit
+  Server und Browser beim ersten Zeichnen nicht auseinanderlaufen.
+- **Widerruf** über „Cookie-Einstellungen“ im Fuß und in der
+  Datenschutzerklärung (die Ticketseite hat keinen Fuß): löscht `_ga*` bzw.
+  `_fbp`/`_fbc` und lädt neu, weil sich ein geladenes Skript nicht entladen
+  lässt.
+- **Keine Zugänge zu Google oder Meta.** `/tickets/<token>`, Warteliste,
+  Promoter, Kasse-Zahlen und die Abmeldelinks tragen den Zugang in der
+  Adresse. `bereinigeAdresse()` macht daraus `…/_` und lässt von den
+  Parametern nur `utm_*` und `promo` übrig (weg sind u. a. `token_hash`,
+  `einladung`, `code`, Stripes `payment_intent_client_secret`). GA4 bekommt
+  `page_location` und `page_referrer` nur bereinigt, mit `send_page_view:
+  false`: Seitenaufrufe schickt `meldeSeite()` beim Seitenwechsel selbst.
+  **In GA4 muss dafür „Seitenänderungen anhand von Browserverlaufsereignissen“
+  (Optimierte Analysen → Seitenaufrufe) aus sein**, sonst meldet Google selbst
+  die rohe Adresse. Meta lässt sich die Adresse nicht vorschreiben, deshalb
+  geht an Meta auf Seiten mit Zugang **gar nichts** (`istSauber`), und
+  `disablePushState` schaltet dessen eigene Seitenwechsel ab.
+- **Ereignisse:** `zaehle()` gibt jedes eigene Ereignis auch an `messe()`
+  weiter, unter GA4-Standardnamen: `view_item`, `add_to_cart`,
+  `begin_checkout`, `add_shipping_info`, `purchase` (mit Betrag und
+  Bestellnummer als `transaction_id`, GA4 zählt einen neu geladenen Kauf so
+  nicht doppelt), `generate_lead` (VIP), `sign_up` (Newsletter). Klicks:
+  jedes Element mit `data-messen="name"` meldet `klick` mit `ziel`
+  (Kopf-Tickets, Start-Knöpfe, „Tickets kaufen“, VIP). Neue Knöpfe einfach
+  markieren.
+- **Personal-Werkzeuge** (Backoffice, Kasse, Einlass, Garderobe, Plan)
+  bekommen weder Banner noch Messung (`istInternerPfad`). Auf `localhost`
+  läuft GA4 mit `debug_mode` und landet in der DebugView.
+- GA4-Einstellungen, die dazugehören: Google Signals aus,
+  Datenaufbewahrung 14 Monate (so steht es in der Datenschutzerklärung),
+  Zusatz zur Datenverarbeitung akzeptiert.
+
 ## Backoffice — warum es so gebaut ist
 
 **Der Rahmen ist ein Layout** (`src/app/[locale]/backoffice/layout.tsx`),
@@ -1193,8 +1242,9 @@ Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):
     (412/412). **Bewusst deutsch geblieben:** Rechts- und Inhaltsseiten
     (Impressum, AGB, Datenschutz, About, Kontakt — deutsche Rechtsdokumente)
     und alle internen Werkzeuge (Backoffice, Scanner, „Mein Plan", Kasse).
-11. Cookie-Banner und Pixel, erst mit Werbekonten (**blockiert:** braucht die
-    Pixel-IDs/Werbekonten vom Kunden).
+11. Cookie-Banner und Pixel: **Banner und GA4 erledigt 03.10.** (siehe
+    „Tracking mit Einwilligung“). Meta-Pixel ist vorbereitet und wartet auf
+    die Pixel-ID (`NEXT_PUBLIC_META_PIXEL_ID`); TikTok käme genauso dazu.
 
 **D. Aufräumen**
 12. `zahlung-testen` auf ein eigenes Test-Event umstellen (`einlass-testen`
