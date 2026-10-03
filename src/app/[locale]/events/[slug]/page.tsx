@@ -314,6 +314,7 @@ export default async function EventSeite({ params, searchParams }: Props) {
                 <Ticketauswahl
                   eventId={event.id}
                   eventSlug={event.slug}
+                  eventTitel={event.titel}
                   phasen={phasenAnzeige}
                   streichpreisCent={streichpreis}
                   verkauf={verkauf}

@@ -25,6 +25,8 @@ import css from "./Ticketauswahl.module.css";
 type Props = {
   eventId: string;
   eventSlug: string;
+  /** Für die Messung (GA4 item_name), sonst steht dort nur die ID. */
+  eventTitel?: string;
   phasen: Phase[];
   /** Auf dem Server geprüft, mit Code oder Einladung aus der Adresse. */
   verkauf: VerkaufsStand;
@@ -139,7 +141,7 @@ export function Ticketauswahl(props: Props) {
 
     if (richtung === 1 && !gezaehlt.current) {
       gezaehlt.current = true;
-      zaehle("ticket_gewaehlt", props.eventId);
+      zaehle("ticket_gewaehlt", props.eventId, { titel: props.eventTitel });
     }
 
     setAuswahl((alt) => {

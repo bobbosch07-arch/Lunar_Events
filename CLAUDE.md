@@ -759,6 +759,34 @@ dem Eintragen in Vercel also neu ausliefern.
   Datenaufbewahrung 14 Monate (so steht es in der Datenschutzerklärung),
   Zusatz zur Datenverarbeitung akzeptiert.
 
+### GA4 im Backoffice („Auswertung“)
+
+Unter der eigenen Zählung zeigt `GaUebersicht` die GA4-Zahlen: Besucher,
+Besuche, Käufe und Umsatz, Besucher je Tag, **Weg zum Kauf in Personen**,
+je Event, Quellen und Kampagnen, Klicks, Seiten, Geräte, Städte, „gerade auf
+der Seite“ (Echtzeit) und der Vergleich mit der eigenen Zählung (grob die
+Zustimmungsquote). Zeitraum 7/28/90 Tage über `?ga=`. Gelesen wird über die
+**Google Analytics Data API** (`src/lib/ga-daten.ts`, zwei
+`batchRunReports` plus Echtzeit und Klicks einzeln), fünf Minuten im
+Speicher gehalten. Der Kauf trägt `price`/`quantity`, sonst wiese GA4 keinen
+Umsatz je Event aus.
+
+**Zugang ist ein Dienstkonto, kein API-Schlüssel:**
+1. Google Cloud Console → Projekt anlegen oder wählen → „APIs & Dienste“ →
+   **Google Analytics Data API** aktivieren.
+2. IAM → Dienstkonten → Dienstkonto anlegen (keine Rollen nötig) →
+   Schlüssel → „Schlüssel hinzufügen“ → JSON herunterladen.
+3. GA4 → Verwaltung → Property-Zugriffsverwaltung → die Adresse des
+   Dienstkontos (`…@….iam.gserviceaccount.com`) als **Betrachter** hinzufügen.
+4. Vercel: `GA_PROPERTY_ID` (Zahl aus Verwaltung → Property-Details, nicht
+   `G-…`) und `GA_DIENSTKONTO_JSON` (Inhalt der JSON-Datei, roh oder base64),
+   dann neu ausliefern.
+5. Für die Klickliste: Verwaltung → Benutzerdefinierte Definitionen →
+   Dimension „Klickziel“, Bereich Ereignis, Parameter `ziel`.
+
+Fehler zeigt die Seite wörtlich (403 heißt: Dienstkonto nicht freigegeben
+oder API nicht aktiviert, der Text sagt welches).
+
 ## Backoffice — warum es so gebaut ist
 
 **Der Rahmen ist ein Layout** (`src/app/[locale]/backoffice/layout.tsx`),

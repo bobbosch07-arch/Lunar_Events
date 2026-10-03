@@ -46,8 +46,17 @@ export function messe(art: string, eventId: string | null | undefined, daten: Me
   const ziel = ZUORDNUNG[art];
   if (!ziel) return;
 
+  // Beim Kauf mit Preis und Menge 1: Erst dann weist GA4 den Umsatz je
+  // Event aus (itemRevenue), nicht nur gesamt.
   const artikel = eventId
-    ? [{ item_id: eventId, item_name: daten.titel ?? undefined, item_category: "Event" }]
+    ? [
+        {
+          item_id: eventId,
+          item_name: daten.titel ?? undefined,
+          item_category: "Event",
+          ...(art === "kauf_abgeschlossen" && daten.wert != null ? { price: daten.wert, quantity: 1 } : {}),
+        },
+      ]
     : undefined;
 
   if (window.gtag) {

@@ -4,7 +4,9 @@ import { Suspense } from "react";
 import { BackofficeKopf } from "@/components/BackofficeKopf";
 import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { holeAuswertung, holeHerkunft } from "@/lib/backoffice";
+import { GA_ZEITRAEUME, GaUebersicht, GaZeitraum } from "@/components/GaUebersicht";
 import css from "../backoffice.module.css";
+import gaCss from "@/components/GaUebersicht.module.css";
 
 export const metadata: Metadata = {
   title: "Auswertung",
@@ -18,17 +20,33 @@ function anteil(oben: number, unten: number): string {
 
 export default async function Auswertung({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ ga?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const gewaehlt = Number((await searchParams).ga);
+  const gaTage = (GA_ZEITRAEUME as readonly number[]).includes(gewaehlt) ? gewaehlt : 28;
 
   return (
     <>
       <BackofficeKopf titel="Auswertung" />
       <Suspense fallback={<BackofficeSkelett kacheln={4} />}>
         <Inhalt />
+      </Suspense>
+
+      {/* GA4 lädt für sich: Google antwortet langsamer als die eigene
+          Datenbank, und die eigene Zählung soll darauf nicht warten. */}
+      <div className={gaCss.kopf}>
+        <h2 className={css.seitentitel} style={{ fontSize: "1.25rem", marginBottom: 0 }}>
+          Google Analytics
+        </h2>
+        <GaZeitraum tage={gaTage} />
+      </div>
+      <Suspense key={gaTage} fallback={<BackofficeSkelett kacheln={4} zeilen={6} />}>
+        <GaUebersicht tage={gaTage} />
       </Suspense>
     </>
   );
@@ -59,6 +77,9 @@ async function Inhalt() {
 
   return (
     <>
+      <h2 className={css.seitentitel} style={{ fontSize: "1.25rem" }}>
+        Eigene Zählung <span style={{ fontWeight: 400, fontSize: "0.85rem" }}>· alle Aufrufe, ohne Cookie</span>
+      </h2>
       <div className={css.kennzahlen}>
         {trichter.map(([name, wert, bezug]) => (
           <div key={name} className={css.kachel}>
@@ -148,8 +169,8 @@ async function Inhalt() {
         Das sind <strong>Aufrufe</strong>, keine Besucher. Wer zweimal
         hinschaut, zählt zweimal, und die Quote fällt entsprechend
         niedriger aus als bei Anbietern, die Personen wiedererkennen.
-        Für die Frage „welches Event zieht besser?" reicht das; für „wie
-        viele verschiedene Leute waren da?" nicht.
+        Für die Frage „welches Event zieht besser?“ reicht das; für „wie
+        viele verschiedene Leute waren da?“ nicht.
       </p>
     </>
   );
