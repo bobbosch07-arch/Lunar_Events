@@ -356,9 +356,18 @@ export type PromoterStatistik = {
     kommend: boolean;
     klicks: number;
     tickets: number;
+    /** Bis zum Stichtag (0040); ohne Stichtag dieselbe Zahl wie tickets. */
+    tickets_staffel: number;
+    stichtag: string | null;
+    /** Tickets nach Weg; "frueher" = vor 0040, Weg unbekannt. */
+    weg: { link: number; code: number; beides: number; frueher: number } | null;
+    stufen: PromoterStufe[];
   }>;
   codes: Array<{ code: string; art: RabattArt; wert: number; event_id: string | null }>;
 };
+
+/** Eine Stufe der Promoter-Staffel (0040). Stufen stapeln sich. */
+export type PromoterStufe = { ab: number; belohnung: string };
 
 /**
  * Was die Kasse über einen eingegebenen Code erfährt. Die Gründe decken

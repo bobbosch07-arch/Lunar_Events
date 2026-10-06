@@ -62,7 +62,8 @@ export function RabattcodeFormular({
     setFehler(null);
     setErfolg(null);
 
-    // Leer heißt 0 — erlaubt, wenn der Code nur den Presale öffnet.
+    // Leer heißt 0 — erlaubt, wenn der Code nur den Presale öffnet oder
+    // einem Promoter gehört (dann zählt er nur, 0040).
     const wertText = stand.wertText.trim() === "" ? "0" : stand.wertText;
     const wert = stand.art === "prozent" ? Number(wertText.trim()) : centAus(wertText);
     if (!Number.isFinite(wert)) {
@@ -190,7 +191,9 @@ export function RabattcodeFormular({
             </select>
             <span className={css.hinweis}>
               Käufe mit diesem Code zählen dann für den Promoter — auch wenn der
-              Gast über einen anderen Link kam.
+              Gast über einen anderen Link kam. Mit Rabatt 0 ist es ein reiner
+              Zuordnungs-Code (etwa „NIKLAS“ für Story und Flyer): Er gibt keinen
+              Rabatt, zählt aber für die Staffel und steht nicht im Link.
             </span>
           </div>
           <label className={css.schalter}>

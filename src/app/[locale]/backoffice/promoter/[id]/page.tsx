@@ -98,12 +98,15 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
               <th>Wann</th>
               <th className={css.zahl}>Klicks</th>
               <th className={css.zahl}>Tickets</th>
+              <th className={css.zahl}>Link</th>
+              <th className={css.zahl}>Code</th>
+              <th className={css.zahl}>Beides</th>
             </tr>
           </thead>
           <tbody>
             {events.length === 0 ? (
               <tr>
-                <td colSpan={4} className={css.leer}>
+                <td colSpan={7} className={css.leer}>
                   Noch keine Zahlen.
                 </td>
               </tr>
@@ -114,6 +117,9 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
                   <td className={css.nebensache}>{f.dateTime(new Date(e.beginn), "lang")}</td>
                   <td className={css.zahl}>{e.klicks}</td>
                   <td className={css.zahl}>{e.tickets}</td>
+                  <td className={css.zahl}>{e.weg?.link ?? 0}</td>
+                  <td className={css.zahl}>{e.weg?.code ?? 0}</td>
+                  <td className={css.zahl}>{e.weg?.beides ?? 0}</td>
                 </tr>
               ))
             )}
@@ -121,7 +127,9 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
         </table>
       </div>
       <p className={css.notiz}>
-        Dieselben Zahlen sieht der Promoter hinter seinem Statistik-Link.
+        Dieselben Zahlen sieht der Promoter hinter seinem Statistik-Link. Link,
+        Code und Beides sagen, wie der Gast kam; jede Bestellung zählt einmal.
+        Käufe vom 06.10.2026 und davor haben noch keinen Weg und fehlen dort.
       </p>
     </>
   );

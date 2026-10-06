@@ -480,6 +480,48 @@ Das Backoffice benutzt dieselbe Funktion, damit beide Seiten dieselben Zahlen
 zeigen; die Links baut `teilLinks()` für beide. „Neuen Link erzeugen“
 tauscht den Token — der alte liefert sofort 404.
 
+### Promoter-Staffel und Codes ohne Rabatt (Migration 0040, 06.10.2026)
+
+Grundlage ist das Promo-Konzept für THE OPENING (persönlicher Link plus
+„Sicherheitscode“, Staffel 5/10/15/20, Wettbewerb um den Tisch).
+
+- **Code ohne Rabatt:** Gehört ein Code einem Promoter, darf er 0 € haben
+  (`rabattcodes_wert`). Er gibt keinen Rabatt und zählt nur, wer den Gast
+  geschickt hat. Die Kasse zeigt „Code hinzugefügt“ statt „− 0 €“, der
+  Hinweis heißt jetzt „Promo- oder Rabattcode?“. **Ein solcher Code steht
+  nicht im Teil-Link** (`teilLinks`, `mitRabatt`): Sonst sähe jeder Kauf über
+  den Link aus wie „Link und Code“, und der Abgleich ginge verloren. Codes
+  mit Rabatt reisen weiter im Link mit.
+- **Weg je Bestellung** (`bestellungen.promoter_weg`): `link`, `code` oder
+  `beides`, gesetzt von `ordne_promoter_zu` zusammen mit der Zuordnung.
+  **Gezählt wird weiter je Bestellung mit ihren Tickets, nie doppelt**: Link
+  und Code derselben Person sind eine Bestellung („beides“). Über den Link von
+  B mit dem Code von A zählt allein A (`code`). Bestellungen davor haben
+  keinen Weg (`null`, im Backoffice „Früher“).
+- **Gezählt werden Tickets, nicht Positionen** (`promoter_tickets()`):
+  bezahlte Bestellungen, ohne stornierte Tickets. Auch die Promoter-Liste im
+  Backoffice zählt so, damit überall dieselbe Zahl steht.
+- **Staffel je Event** (`promoter_stufen`: ab Tickets, Belohnung) und
+  **Stichtag** (`events.promo_stichtag`): Für Staffel und Rangliste zählen
+  nur Bestellungen, die bis dahin bezahlt wurden; danach zählt ein Kauf noch
+  als Verkauf, aber nicht mehr für die Staffel. Stufen **stapeln** sich.
+  „23:59“ im Formular gilt bis zum Ende dieser Minute. Für THE OPENING aus
+  dem Konzept eingetragen: 5 Gratis-Ticket, 10 Fast Lane + Shot, 15 Mische,
+  20 zweites Gratis-Ticket + 2 Drinks je Ticket, Stichtag 11.11. 23:59.
+  Eigenkäufe der Promoter zählen (entschieden 06.10.).
+- **Der Promoter sieht nur sich** (Konzept: Zwischenstände nur als
+  Tendenz): auf seiner Seite „Deine Staffel“ mit Zahl bis Stichtag, Balken mit
+  Stufenmarken, „noch N bis …“, erreichten Stufen und der Aufteilung nach
+  Weg. `staffelStand()` in `lib/promoter.ts` rechnet für Seite und Backoffice
+  gleich.
+- **Backoffice, Eventseite:** Formular „Promoter-Staffel“ (Stichtag, Stufen,
+  `speichereStaffel` ersetzt die Stufen als Ganzes) und die **Rangliste**
+  (`promoter_rangliste`, nur Admins): Tickets bis Stichtag, Stufe, Link/Code/
+  Beides, „Erreicht am“. **Gleichstand:** vorn, wer die Zahl zuerst hatte,
+  also wessen letzte zählende Bestellung früher bezahlt wurde.
+- Prüfen: `node scripts/staffel-testen.mjs` (eigenes Test-Event), dazu
+  `promoter-testen.mjs` für die alte Zuordnung.
+
 ### Presale (Migration 0019)
 
 Je Event **`presale_ab`** und **`verkauf_ab`**. Davor kauft niemand,

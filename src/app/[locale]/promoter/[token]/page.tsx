@@ -5,7 +5,7 @@ import { Link } from "@/i18n/navigation";
 import { KopierFeld } from "@/components/KopierFeld";
 import { Logo } from "@/components/Logo";
 import { preisText } from "@/lib/format";
-import { teilLinks } from "@/lib/promoter";
+import { staffelStand, teilLinks } from "@/lib/promoter";
 import { eigeneAdresse } from "@/lib/stripe";
 import { dienstClient, datenbankVerbunden } from "@/lib/supabase/server";
 import type { PromoterStatistik } from "@/lib/typen";
@@ -46,6 +46,11 @@ export default async function PromoterSeite({ params }: Props) {
   const klicks = statistik.events.reduce((s, e) => s + e.klicks, 0);
   const tickets = statistik.events.reduce((s, e) => s + e.tickets, 0);
   const mitZahlen = statistik.events.filter((e) => e.klicks > 0 || e.tickets > 0);
+  // Staffel nur für kommende Events mit Stufen (0040). Vergangene stehen
+  // weiter unter „Deine Zahlen“.
+  const mitStaffel = statistik.events
+    .filter((e) => e.kommend && (e.stufen?.length ?? 0) > 0)
+    .sort((a, b) => a.beginn.localeCompare(b.beginn));
 
   const rabattFuer = (code: string) => {
     const c = statistik.codes.find((x) => x.code === code);
@@ -83,6 +88,82 @@ export default async function PromoterSeite({ params }: Props) {
           </div>
         </div>
 
+        {mitStaffel.length > 0 ? (
+          <section className={css.abschnitt}>
+            <h2 className={css.abschnittTitel}>{t("staffelTitel")}</h2>
+            {mitStaffel.map((e) => {
+              const stand = staffelStand(e.tickets_staffel, e.stufen);
+              const ziel = Math.max(...e.stufen.map((x) => x.ab));
+              const weg = e.weg;
+              return (
+                <div key={e.id} className={css.staffel}>
+                  <div className={css.linkKopf}>
+                    <span className={css.linkTitel}>{e.titel}</span>
+                    {e.stichtag ? (
+                      <span className={css.linkDatum}>
+                        {t("stichtag", { datum: f.dateTime(new Date(e.stichtag), "lang") })}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div className={css.staffelZahl}>
+                    <span className={css.summeWert}>{e.tickets_staffel}</span>
+                    <span className={css.summeName}>{t("staffelTickets")}</span>
+                  </div>
+
+                  {/* Balken über die ganze Staffel, die Stufen als Marken darauf. */}
+                  <div
+                    className={css.balken}
+                    role="progressbar"
+                    aria-valuemin={0}
+                    aria-valuemax={ziel}
+                    aria-valuenow={Math.min(e.tickets_staffel, ziel)}
+                    aria-label={t("staffelTickets")}
+                  >
+                    <span className={css.balkenFuellung} style={{ width: `${stand.anteil}%` }} />
+                    {e.stufen.map((x) => (
+                      <span
+                        key={x.ab}
+                        className={`${css.marke} ${e.tickets_staffel >= x.ab ? css.markeErreicht : ""}`}
+                        style={{ left: `${(x.ab / ziel) * 100}%` }}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
+
+                  <p className={css.staffelNaechste}>
+                    {stand.naechste
+                      ? t("nochBis", { anzahl: stand.fehlen, belohnung: stand.naechste.belohnung })
+                      : t("alleErreicht")}
+                  </p>
+
+                  <ul className={css.stufen}>
+                    {e.stufen.map((x) => {
+                      const geschafft = e.tickets_staffel >= x.ab;
+                      return (
+                        <li key={x.ab} className={`${css.stufe} ${geschafft ? css.stufeErreicht : ""}`}>
+                          <span className={css.stufeHaken} aria-hidden="true">
+                            {geschafft ? "✓" : ""}
+                          </span>
+                          <span className={css.stufeAb}>{t("stufe", { ab: x.ab })}</span>
+                          <span>{x.belohnung}</span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {weg && e.tickets > 0 ? (
+                    <p className={css.abschnittText}>
+                      {t("weg", { link: weg.link, code: weg.code, beides: weg.beides })}
+                    </p>
+                  ) : null}
+                  <p className={css.abschnittText}>{t("staffelHinweis")}</p>
+                </div>
+              );
+            })}
+          </section>
+        ) : null}
+
         <section className={css.abschnitt}>
           <h2 className={css.abschnittTitel}>{t("linksTitel")}</h2>
           {links.length === 0 ? (
@@ -98,8 +179,10 @@ export default async function PromoterSeite({ params }: Props) {
                       <span className={css.linkTitel}>{l.titel}</span>
                       <span className={css.linkDatum}>{l.datum}</span>
                     </div>
-                    {l.code && rabatt ? (
+                    {l.code && l.mitRabatt && rabatt ? (
                       <p className={css.linkCode}>{t("mitCode", { code: l.code, rabatt })}</p>
+                    ) : l.code ? (
+                      <p className={css.linkCode}>{t("deinCode", { code: l.code })}</p>
                     ) : null}
                     <KopierFeld
                       wert={l.link}

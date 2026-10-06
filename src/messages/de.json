@@ -173,8 +173,8 @@
     "reserviertNoch": "Reserviert für {minuten}:{sekunden}",
     "bestellnummer": "Bestellnummer",
     "code": {
-      "frage": "Rabattcode?",
-      "feld": "Rabattcode",
+      "frage": "Promo- oder Rabattcode?",
+      "feld": "Code",
       "einloesen": "Einlösen",
       "entfernen": "Entfernen",
       "zeile": "Rabatt",
@@ -188,7 +188,8 @@
       "schon_genutzt": "Diesen Code hast du schon einmal eingelöst.",
       "herausgenommen": "{grund} Wir haben ihn herausgenommen. Tipp einfach noch einmal auf Weiter.",
       "kostenlosText": "Mit deinem Rabattcode kostet diese Bestellung nichts. Eine Zahlung ist nicht nötig.",
-      "kostenlosKnopf": "Kostenlos bestellen"
+      "kostenlosKnopf": "Kostenlos bestellen",
+      "zugeordnet": "Code hinzugefügt"
     },
     "werbehinweis": "Wir laden dich per Mail zu kommenden Lunar-Events ein, zum Beispiel zum Presale. Abbestellen kannst du jederzeit über den Link in jeder Mail.",
     "einladungAdresse": "Deine Presale-Einladung gilt für diese Adresse.",
@@ -346,7 +347,16 @@
     "zahlenTitel": "Deine Zahlen",
     "keineZahlen": "Noch keine Zahlen. Sobald jemand deinen Link öffnet, steht es hier.",
     "hinweis": "Klicks sind Aufrufe, keine Personen: Wer zweimal öffnet, zählt zweimal. Tickets zählen, sobald sie bezahlt sind.",
-    "geheim": "Dieser Link ist nur für dich. Wer ihn hat, sieht deine Zahlen."
+    "geheim": "Dieser Link ist nur für dich. Wer ihn hat, sieht deine Zahlen.",
+    "deinCode": "Dein Code: {code}. Wer ihn in der Kasse eingibt, zählt für dich, auch ohne deinen Link.",
+    "staffelTitel": "Deine Staffel",
+    "staffelTickets": "Tickets für die Staffel",
+    "stichtag": "Gezählt bis {datum}",
+    "nochBis": "Noch {anzahl, plural, one {# Ticket} other {# Tickets}} bis: {belohnung}",
+    "alleErreicht": "Alle Stufen geschafft. Stark.",
+    "stufe": "{ab} Tickets",
+    "weg": "Davon über deinen Link: {link} · über deinen Code: {code} · Link und Code: {beides}",
+    "staffelHinweis": "Jede Stufe enthält alle vorherigen. Es zählen bezahlte, nicht stornierte Tickets bis zum Stichtag. Die Belohnungen gibt es nach dem Stichtag."
   },
   "werbung": {
     "titel": "Keine Einladungen mehr?",

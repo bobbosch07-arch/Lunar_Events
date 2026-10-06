@@ -686,7 +686,9 @@ export async function holePromoterListe(): Promise<PromoterZeile[]> {
       .order("name"),
     db
       .from("bestellungen")
-      .select("promoter_id, positionen:bestellpositionen(menge)")
+      // Tickets statt Positionen, ohne stornierte: dieselbe Zählung wie
+      // promoter_statistik (0040), damit Liste und Promoterseite übereinstimmen.
+      .select("promoter_id, tickets(status)")
       .eq("status", "bezahlt")
       .not("promoter_id", "is", null),
     // Zeilen statt Anzahl: PostgREST kann ohne eigene Funktion nicht
@@ -705,10 +707,9 @@ export async function holePromoterListe(): Promise<PromoterZeile[]> {
 
   const tickets = new Map<string, number>();
   for (const b of bestellungen ?? []) {
-    const menge = ((b.positionen ?? []) as Array<{ menge: number }>).reduce(
-      (s, p) => s + p.menge,
-      0,
-    );
+    const menge = ((b.tickets ?? []) as Array<{ status: string }>).filter(
+      (t) => t.status !== "storniert",
+    ).length;
     const id = b.promoter_id as string;
     tickets.set(id, (tickets.get(id) ?? 0) + menge);
   }

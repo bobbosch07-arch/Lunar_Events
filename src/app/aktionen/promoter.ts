@@ -4,6 +4,7 @@ import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { serverClient } from "@/lib/supabase/server";
 import { KUERZEL_MUSTER } from "@/lib/promoter";
+import { berlinNachUtc } from "@/lib/zeit";
 
 /**
  * Promoter pflegen. Wie bei den Rabattcodes entscheidet die Zugriffsregel
@@ -92,5 +93,76 @@ export async function loeschePromoter(id: string): Promise<Ergebnis> {
   if (!data || data.length === 0) return { ok: false, fehler: NUR_ADMINS };
 
   revalidatePath("/backoffice/promoter");
+  return { ok: true };
+}
+
+/* ------------------------------------------------------------------ */
+/* Staffel je Event (0040)                                             */
+/* ------------------------------------------------------------------ */
+
+export type StaffelEingabe = {
+  eventId: string;
+  /** Ortszeit Berlin aus dem Formular ("2026-11-11T23:59") oder leer. */
+  stichtag: string;
+  stufen: Array<{ ab: number; belohnung: string }>;
+};
+
+/**
+ * Speichert Stichtag und Stufen eines Events. Die Stufen werden als Ganzes
+ * ersetzt: Ein Formular mit vier Zeilen ist einfacher richtig zu halten als
+ * Einzeländerungen. Bestellungen hängen nicht an den Stufen, es geht also
+ * nichts verloren.
+ */
+export async function speichereStaffel(eingabe: StaffelEingabe): Promise<Ergebnis> {
+  const db = await serverClient();
+  const { data: istAdmin } = await db.rpc("ist_mitarbeiter", { mindestens: "admin" });
+  if (istAdmin !== true) return { ok: false, fehler: "Die Staffel dürfen nur Admins ändern." };
+
+  const stufen = eingabe.stufen
+    .map((s) => ({ ab: Math.round(s.ab), belohnung: s.belohnung.trim() }))
+    .filter((s) => s.belohnung !== "" || Number.isFinite(s.ab));
+  if (stufen.length > 12) return { ok: false, fehler: "Höchstens 12 Stufen." };
+  for (const s of stufen) {
+    if (!Number.isInteger(s.ab) || s.ab < 1 || s.ab > 1000) {
+      return { ok: false, fehler: "Jede Stufe braucht eine Ticketzahl zwischen 1 und 1000." };
+    }
+    if (s.belohnung.length < 1 || s.belohnung.length > 200) {
+      return { ok: false, fehler: `Stufe ${s.ab}: Die Belohnung fehlt oder ist länger als 200 Zeichen.` };
+    }
+  }
+  if (new Set(stufen.map((s) => s.ab)).size !== stufen.length) {
+    return { ok: false, fehler: "Zwei Stufen haben dieselbe Ticketzahl." };
+  }
+
+  let stichtag: string | null = null;
+  if (eingabe.stichtag.trim()) {
+    try {
+      // "23:59" heißt: bis zum Ende dieser Minute. Das Formular kennt keine
+      // Sekunden, ein Kauf um 23:59:30 soll trotzdem noch zählen.
+      stichtag = new Date(new Date(berlinNachUtc(eingabe.stichtag.trim())).getTime() + 59_999).toISOString();
+    } catch {
+      return { ok: false, fehler: "Der Stichtag ist kein gültiges Datum." };
+    }
+  }
+
+  const { data: event, error: eventFehler } = await db
+    .from("events")
+    .update({ promo_stichtag: stichtag })
+    .eq("id", eingabe.eventId)
+    .select("slug")
+    .maybeSingle();
+  if (eventFehler) return { ok: false, fehler: eventFehler.message };
+  if (!event) return { ok: false, fehler: "Event nicht gefunden." };
+
+  const { error: weg } = await db.from("promoter_stufen").delete().eq("event_id", eingabe.eventId);
+  if (weg) return { ok: false, fehler: weg.message };
+  if (stufen.length > 0) {
+    const { error: neu } = await db.from("promoter_stufen").insert(
+      stufen.map((s) => ({ event_id: eingabe.eventId, ab_tickets: s.ab, belohnung: s.belohnung })),
+    );
+    if (neu) return { ok: false, fehler: neu.message };
+  }
+
+  revalidatePath(`/backoffice/events/${event.slug}`);
   return { ok: true };
 }

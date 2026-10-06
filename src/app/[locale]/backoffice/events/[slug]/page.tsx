@@ -10,6 +10,8 @@ import { holeOrte } from "@/app/aktionen/event-speichern";
 import { dienstClient, serverClient } from "@/lib/supabase/server";
 import { PresaleEinladungen, type EinladungStand } from "@/components/PresaleEinladungen";
 import { WartelisteUebersicht } from "@/components/WartelisteUebersicht";
+import { PromoterStaffelFormular } from "@/components/PromoterStaffelFormular";
+import { PromoterRangliste } from "@/components/PromoterRangliste";
 import { darfCodesAendern } from "@/lib/backoffice";
 import { verkaufsstartKommt } from "@/lib/typen";
 import { utcNachBerlinFeld } from "@/lib/zeit";
@@ -52,7 +54,8 @@ async function Inhalt({ slug }: { slug: string }) {
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
        garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
-       streichpreis_cent,
+       streichpreis_cent, promo_stichtag,
+       promoter_stufen(ab_tickets, belohnung),
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft,
               leistungen, beschreibung, position, aktiv, abendkasse)`,
     )
@@ -62,6 +65,10 @@ async function Inhalt({ slug }: { slug: string }) {
   if (!event) notFound();
 
   const orte = await holeOrte();
+
+  const stufen = ((event.promoter_stufen ?? []) as Array<{ ab_tickets: number; belohnung: string }>)
+    .map((x) => ({ ab: x.ab_tickets, belohnung: x.belohnung }))
+    .sort((a, b) => a.ab - b.ab);
 
   const phasen = ((event.phasen ?? []) as Array<Record<string, unknown>>)
     .sort((a, b) => (a.position as number) - (b.position as number))
@@ -150,6 +157,16 @@ async function Inhalt({ slug }: { slug: string }) {
         </div>
       ) : null}
       <WartelisteUebersicht eventId={event.id as string} />
+      <PromoterStaffelFormular
+        eventId={event.id as string}
+        stichtag={event.promo_stichtag ? utcNachBerlinFeld(event.promo_stichtag as string) : ""}
+        stufen={stufen}
+      />
+      <PromoterRangliste
+        eventId={event.id as string}
+        stufen={stufen}
+        stichtag={(event.promo_stichtag as string | null) ?? null}
+      />
     </>
   );
 }

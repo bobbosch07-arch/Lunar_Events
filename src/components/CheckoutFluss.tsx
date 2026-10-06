@@ -583,9 +583,13 @@ export function CheckoutFluss(props: Props) {
                     <strong>{code.code}</strong> ·{" "}
                     {code.rabatt_cent === 0 && code.oeffnet_presale
                       ? t("presaleZugang")
-                      : `− ${preisText(code.rabatt_cent, locale)}`}
+                      : code.wert === 0
+                        ? // Promoter-Code ohne Rabatt (0040): zählt nur, wer
+                          // den Gast geschickt hat. "− 0 €" sähe nach Fehler aus.
+                          t("code.zugeordnet")
+                        : `− ${preisText(code.rabatt_cent, locale)}`}
                   </span>
-                  {code.tickets < code.tickets_gesamt ? (
+                  {code.wert > 0 && code.tickets < code.tickets_gesamt ? (
                     <span className={css.codeZusatz}>
                       {t("code.teilweise", {
                         anzahl: code.tickets,

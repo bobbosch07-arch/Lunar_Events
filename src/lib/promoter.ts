@@ -7,7 +7,7 @@
  * Einwilligungsdialog auszukommen. Wer das in einen Cookie oder den
  * Browserspeicher legt, braucht vorher einen Banner.
  */
-import type { Promoter, PromoterStatistik } from "./typen";
+import type { Promoter, PromoterStatistik, PromoterStufe } from "./typen";
 
 /** Dieselbe Regel wie promoter_kuerzel_form in der Datenbank. */
 export const KUERZEL_MUSTER = /^[a-z0-9][a-z0-9-]{1,31}$/;
@@ -94,7 +94,15 @@ export function teilLinks(
   statistik: PromoterStatistik,
   adresse: string,
   locale = "de",
-): Array<{ eventId: string; titel: string; datum: string; link: string; code: string | null }> {
+): Array<{
+  eventId: string;
+  titel: string;
+  datum: string;
+  link: string;
+  code: string | null;
+  /** false: Code ohne Rabatt, nur zur Zuordnung (0040). */
+  mitRabatt: boolean;
+}> {
   const datum = new Intl.DateTimeFormat(locale, {
     day: "2-digit",
     month: "long",
@@ -104,16 +112,52 @@ export function teilLinks(
     .filter((e) => e.kommend)
     .sort((a, b) => a.beginn.localeCompare(b.beginn))
     .map((e) => {
-      const code =
-        statistik.codes.find((c) => c.event_id === e.id)?.code ??
-        statistik.codes.find((c) => c.event_id === null)?.code ??
+      const c =
+        statistik.codes.find((x) => x.event_id === e.id) ??
+        statistik.codes.find((x) => x.event_id === null) ??
         null;
+      // Ein Code ohne Rabatt reist nicht im Link mit: Sonst sähe jeder Kauf
+      // über den Link aus wie „Link und Code“, und der Abgleich, wer den
+      // Code wirklich genannt hat, ginge verloren.
+      const mitRabatt = Boolean(c && c.wert > 0);
       return {
         eventId: e.id,
         titel: e.titel,
         datum: datum.format(new Date(e.beginn)),
-        link: promoterLink(adresse, e.slug, statistik.kuerzel, code),
-        code,
+        link: promoterLink(adresse, e.slug, statistik.kuerzel, mitRabatt ? c!.code : null),
+        code: c?.code ?? null,
+        mitRabatt,
       };
     });
+}
+
+/* ------------------------------------------------------------------ */
+/* Staffel (0040)                                                      */
+/* ------------------------------------------------------------------ */
+
+export type StaffelStand = {
+  /** Erreichte Stufen, aufsteigend. Sie stapeln sich: alle gelten. */
+  erreicht: PromoterStufe[];
+  naechste: PromoterStufe | null;
+  /** Tickets bis zur nächsten Stufe, 0 wenn alle erreicht. */
+  fehlen: number;
+  /** Fortschritt auf der ganzen Staffel, 0 bis 100. */
+  anteil: number;
+};
+
+/**
+ * Wo ein Promoter in der Staffel steht. Eine Rechnung für Promoterseite
+ * und Backoffice, damit beide dieselbe Stufe zeigen.
+ */
+export function staffelStand(tickets: number, stufen: PromoterStufe[]): StaffelStand {
+  const sortiert = [...stufen].sort((a, b) => a.ab - b.ab);
+  const erreicht = sortiert.filter((s) => tickets >= s.ab);
+  const naechste = sortiert.find((s) => tickets < s.ab) ?? null;
+  const ziel = sortiert.at(-1)?.ab ?? 0;
+  return {
+    erreicht,
+    naechste,
+    fehlen: naechste ? naechste.ab - tickets : 0,
+    anteil: ziel > 0 ? Math.min(100, (tickets / ziel) * 100) : 0,
+  };
 }

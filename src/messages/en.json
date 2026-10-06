@@ -173,8 +173,8 @@
     "reserviertNoch": "Held for {minuten}:{sekunden}",
     "bestellnummer": "Order number",
     "code": {
-      "frage": "Discount code?",
-      "feld": "Discount code",
+      "frage": "Promo or discount code?",
+      "feld": "Code",
       "einloesen": "Apply",
       "entfernen": "Remove",
       "zeile": "Discount",
@@ -188,7 +188,8 @@
       "schon_genutzt": "You’ve already used this code.",
       "herausgenommen": "{grund} We've removed it. Just tap Continue again.",
       "kostenlosText": "With your discount code this order is free. No payment needed.",
-      "kostenlosKnopf": "Order for free"
+      "kostenlosKnopf": "Order for free",
+      "zugeordnet": "Code added"
     },
     "werbehinweis": "We’ll invite you by email to upcoming Lunar events, for example to presales. You can unsubscribe any time via the link in every email.",
     "einladungAdresse": "Your presale invitation is valid for this address.",
@@ -346,7 +347,16 @@
     "zahlenTitel": "Your numbers",
     "keineZahlen": "No numbers yet. As soon as someone opens your link, you’ll see it here.",
     "hinweis": "Clicks are page views, not people: opening twice counts twice. Tickets count once they’re paid.",
-    "geheim": "This link is just for you. Anyone who has it can see your numbers."
+    "geheim": "This link is just for you. Anyone who has it can see your numbers.",
+    "deinCode": "Your code: {code}. Anyone who enters it at checkout counts for you, even without your link.",
+    "staffelTitel": "Your levels",
+    "staffelTickets": "Tickets for your levels",
+    "stichtag": "Counted until {datum}",
+    "nochBis": "{anzahl, plural, one {# ticket} other {# tickets}} to go for: {belohnung}",
+    "alleErreicht": "Every level done. Nice.",
+    "stufe": "{ab} tickets",
+    "weg": "Via your link: {link} · via your code: {code} · link and code: {beides}",
+    "staffelHinweis": "Each level includes all the ones before. Paid, non-cancelled tickets count until the cut-off. Rewards are handed out after the cut-off."
   },
   "werbung": {
     "titel": "No more invitations?",

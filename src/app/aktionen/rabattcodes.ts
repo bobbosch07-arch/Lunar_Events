@@ -49,9 +49,14 @@ export async function speichereRabattcode(
   if (!Number.isInteger(eingabe.wert) || eingabe.wert < 0) {
     return { ok: false, fehler: "Der Rabatt ist keine gültige Zahl." };
   }
-  // Ein Code ohne Rabatt täte nichts — außer er öffnet den Presale.
-  if (eingabe.wert === 0 && !eingabe.oeffnet_presale) {
-    return { ok: false, fehler: "Der Rabatt muss größer als 0 sein — oder der Code öffnet den Presale." };
+  // Ein Code ohne Rabatt täte nichts — außer er öffnet den Presale oder
+  // gehört einem Promoter: Dann zählt er nur, wer den Gast geschickt hat
+  // (0040, Promo-Konzept).
+  if (eingabe.wert === 0 && !eingabe.oeffnet_presale && !eingabe.promoter_id) {
+    return {
+      ok: false,
+      fehler: "Ein Code ohne Rabatt braucht einen Promoter (dann zählt er nur für ihn) oder öffnet den Presale.",
+    };
   }
   if (eingabe.art === "prozent" && eingabe.wert > 100) {
     return { ok: false, fehler: "Mehr als 100 % geht nicht." };
