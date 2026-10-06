@@ -45,7 +45,7 @@ export async function speichereRabattcode(
     return {
       ok: false,
       fehler:
-        "Der Code braucht 3 bis 32 Zeichen: Buchstaben ohne Umlaute, Ziffern, Bindestrich oder Unterstrich.",
+        "Der Code braucht 3 bis 32 Zeichen: Buchstaben ohne Umlaute, Ziffern, Punkt, Bindestrich oder Unterstrich. Vorn steht ein Buchstabe oder eine Ziffer.",
     };
   }
   // Ein Promoter-Code gibt nie Rabatt und gehört immer jemandem (0042).

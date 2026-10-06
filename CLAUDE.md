@@ -502,6 +502,10 @@ Grundlage ist das Promo-Konzept für THE OPENING (persönlicher Link plus
   nebeneinander existieren. Deshalb mussten `reserviere()` und die Kasse
   nicht angefasst werden; nur `pruefe_rabattcode` und `promoter_statistik`
   liefern zusätzlich `anzeige`. Angezeigt wird überall `codeAnzeige()`.
+  **Erlaubte Zeichen** (0043): Buchstaben ohne Umlaute, Ziffern, Punkt,
+  Bindestrich, Unterstrich, vorn ein Buchstabe oder eine Ziffer, 3 bis 32
+  Zeichen. Dieselbe Regel als `CODE_MUSTER` in `src/lib/rabatt.ts` und als
+  `rabattcodes_code_form`/`rabattcodes_anzeige` in der Datenbank.
 - **Weg je Bestellung** (`bestellungen.promoter_weg`): `link`, `code` oder
   `beides`, gesetzt von `ordne_promoter_zu` zusammen mit der Zuordnung.
   **Gezählt wird weiter je Bestellung mit ihren Tickets, nie doppelt**: Link

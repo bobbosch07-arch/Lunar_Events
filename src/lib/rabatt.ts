@@ -10,7 +10,7 @@ import { utcNachBerlinFeld } from "./zeit";
 import type { Rabattcode, RabattArt } from "./typen";
 
 /** Dieselbe Regel wie rabattcodes_code_form in der Datenbank. */
-export const CODE_MUSTER = /^[A-Z0-9][A-Z0-9_-]{2,31}$/;
+export const CODE_MUSTER = /^[A-Z0-9][A-Z0-9._-]{2,31}$/;
 
 /**
  * Verglichen wird immer in Großbuchstaben: Wer „niklas“ tippt, trifft
