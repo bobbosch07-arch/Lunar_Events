@@ -62,9 +62,9 @@ export function RabattcodeFormular({
     setFehler(null);
     setErfolg(null);
 
-    // Leer heißt 0 — erlaubt, wenn der Code nur den Presale öffnet oder
-    // einem Promoter gehört (dann zählt er nur, 0040).
-    const wertText = stand.wertText.trim() === "" ? "0" : stand.wertText;
+    // Leer heißt 0 — erlaubt, wenn der Code nur den Presale öffnet. Ein
+    // Promoter-Code hat nie Rabatt (0042).
+    const wertText = stand.art === "promoter" || stand.wertText.trim() === "" ? "0" : stand.wertText;
     const wert = stand.art === "prozent" ? Number(wertText.trim()) : centAus(wertText);
     if (!Number.isFinite(wert)) {
       setFehler("Der Rabatt ist keine Zahl.");
@@ -142,7 +142,7 @@ export function RabattcodeFormular({
                 <input
                   id="code"
                   className={css.eingabe}
-                  style={{ flex: 1, textTransform: "uppercase", letterSpacing: "0.06em" }}
+                  style={{ flex: 1, letterSpacing: "0.06em" }}
                   value={stand.code}
                   onChange={(e) => setze("code", e.target.value)}
                   autoComplete="off"
@@ -154,9 +154,10 @@ export function RabattcodeFormular({
                 </Knopf>
               </div>
               <span className={css.hinweis}>
-                Groß- und Kleinschreibung ist egal. Kurze Wörter wie „VIP“ lassen
-                sich erraten — für Rabatte, die nicht jeder haben soll, lieber
-                „Zufällig“.
+                Schreib ihn so, wie er auf Flyer und Story stehen soll („Niklas“).
+                Beim Eingeben in der Kasse ist Groß- und Kleinschreibung egal.
+                Kurze Wörter wie „VIP“ lassen sich erraten — für Rabatte, die nicht
+                jeder haben soll, lieber „Zufällig“.
               </span>
             </div>
             <div className={css.feld}>
@@ -191,9 +192,9 @@ export function RabattcodeFormular({
             </select>
             <span className={css.hinweis}>
               Käufe mit diesem Code zählen dann für den Promoter — auch wenn der
-              Gast über einen anderen Link kam. Mit Rabatt 0 ist es ein reiner
-              Zuordnungs-Code (etwa „NIKLAS“ für Story und Flyer): Er gibt keinen
-              Rabatt, zählt aber für die Staffel und steht nicht im Link.
+              Gast über einen anderen Link kam. Soll er nur zählen, ohne Rabatt,
+              wähle unten die Art „Promoter“ (etwa „Niklas“ für Story und Flyer):
+              Er zählt für die Staffel und steht nicht im Link.
             </span>
           </div>
           <label className={css.schalter}>
@@ -230,26 +231,45 @@ export function RabattcodeFormular({
                 />
                 Fester Betrag je Ticket
               </label>
-            </div>
-            <div className={css.feld}>
-              <label className={css.beschriftung} htmlFor="wert">
-                {stand.art === "prozent" ? "Rabatt in %" : "Rabatt in € je Ticket"}
+              <label className={css.schalter}>
+                <input
+                  type="radio"
+                  name="art"
+                  checked={stand.art === "promoter"}
+                  onChange={() => setze("art", "promoter")}
+                />
+                Promoter: kein Rabatt, zählt nur
               </label>
-              <input
-                id="wert"
-                className={css.eingabe}
-                inputMode={stand.art === "prozent" ? "numeric" : "decimal"}
-                placeholder={stand.art === "prozent" ? "20" : "5,00"}
-                value={stand.wertText}
-                onChange={(e) => setze("wertText", e.target.value)}
-              />
             </div>
+            {stand.art === "promoter" ? null : (
+              <div className={css.feld}>
+                <label className={css.beschriftung} htmlFor="wert">
+                  {stand.art === "prozent" ? "Rabatt in %" : "Rabatt in € je Ticket"}
+                </label>
+                <input
+                  id="wert"
+                  className={css.eingabe}
+                  inputMode={stand.art === "prozent" ? "numeric" : "decimal"}
+                  placeholder={stand.art === "prozent" ? "20" : "5,00"}
+                  value={stand.wertText}
+                  onChange={(e) => setze("wertText", e.target.value)}
+                />
+              </div>
+            )}
           </div>
-          <span className={css.hinweis}>
-            Wirkt nur auf den Ticketpreis. Servicegebühr und Fast Lane zahlt der
-            Gast voll. Ein Betrag über dem Ticketpreis macht das Ticket kostenlos,
-            nie negativ.
-          </span>
+          {stand.art === "promoter" ? (
+            <span className={stand.promoterId ? css.hinweis : css.stoerung}>
+              {stand.promoterId
+                ? "Der Gast zahlt den vollen Preis. Jeder Kauf mit diesem Code zählt für den Promoter oben, auch ohne seinen Link, und geht in seine Staffel ein."
+                : "Wähle oben unter „Gehört zu Promoter“, für wen der Code zählen soll."}
+            </span>
+          ) : (
+            <span className={css.hinweis}>
+              Wirkt nur auf den Ticketpreis. Servicegebühr und Fast Lane zahlt der
+              Gast voll. Ein Betrag über dem Ticketpreis macht das Ticket kostenlos,
+              nie negativ.
+            </span>
+          )}
           <label className={css.schalter}>
             <input
               type="checkbox"

@@ -53,8 +53,9 @@ export default async function PromoterSeite({ params }: Props) {
     .sort((a, b) => a.beginn.localeCompare(b.beginn));
 
   const rabattFuer = (code: string) => {
-    const c = statistik.codes.find((x) => x.code === code);
-    if (!c) return null;
+    // Der Link zeigt die Schreibweise („Niklas“), gespeichert ist NIKLAS.
+    const c = statistik.codes.find((x) => x.code === code.toUpperCase());
+    if (!c || c.art === "promoter") return null;
     return c.art === "prozent" ? `${c.wert} %` : preisText(c.wert, locale);
   };
 

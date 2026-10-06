@@ -66,24 +66,34 @@ try {
   const { data: b } = await db.from("promoter").insert({ name: "Test B", kuerzel: `stb-${K}` }).select("id, token, kuerzel").single();
   angelegt.promoter.push(a.id, b.id);
 
-  console.log("— Code ohne Rabatt —");
+  console.log("— Promoter-Code (Art promoter, eigene Schreibweise) —");
   const code = `STA${K}`.toUpperCase().slice(0, 20);
-  const { data: c, error: cF } = await db.from("rabattcodes").insert({ code, art: "betrag", wert: 0, promoter_id: a.id }).select("id").single();
-  pruefe(!cF, "Code mit 0 € für einen Promoter wird angenommen", cF?.message ?? "");
+  // So, wie jemand ihn anlegt: „Sta…“ mit Kleinbuchstaben (0042).
+  const anzeige = code.charAt(0) + code.slice(1).toLowerCase();
+  const { data: c, error: cF } = await db
+    .from("rabattcodes")
+    .insert({ code, code_anzeige: anzeige, art: "promoter", wert: 0, promoter_id: a.id })
+    .select("id")
+    .single();
+  pruefe(!cF, "Promoter-Code mit eigener Schreibweise wird angenommen", cF?.message ?? "");
   angelegt.code = c?.id;
-  const { error: ohneP } = await db.from("rabattcodes").insert({ code: `X${code}`.slice(0, 20), art: "betrag", wert: 0 });
-  pruefe(Boolean(ohneP), "…ohne Promoter weiter abgelehnt", ohneP?.message?.slice(0, 50) ?? "durchgelassen");
+  const { error: ohneP } = await db.from("rabattcodes").insert({ code: `X${code}`.slice(0, 20), art: "promoter", wert: 0 });
+  pruefe(Boolean(ohneP), "…ohne Promoter abgelehnt", ohneP?.message?.slice(0, 50) ?? "durchgelassen");
+  const { error: betrag0 } = await db.from("rabattcodes").insert({ code: `Y${code}`.slice(0, 20), art: "betrag", wert: 0, promoter_id: a.id });
+  pruefe(Boolean(betrag0), "Betrag 0 € ohne Presale abgelehnt (dafür gibt es die Art promoter)", betrag0?.message?.slice(0, 50) ?? "durchgelassen");
 
   await db.from("events").update({ status: "veroeffentlicht" }).eq("id", ev.id);
-  const vorschau = await db.rpc("pruefe_rabattcode", { p_code: code, p_event_id: ev.id, p_auswahl: [{ phase_id: ph.id, menge: 2 }] });
-  pruefe(vorschau.data?.ergebnis === "ok" && vorschau.data?.rabatt_cent === 0 && vorschau.data?.wert === 0,
-    "Kasse erkennt ihn: ok, 0 € Rabatt", JSON.stringify(vorschau.data));
+  // Klein getippt, wie ein Gast es tun würde.
+  const vorschau = await db.rpc("pruefe_rabattcode", { p_code: code.toLowerCase(), p_event_id: ev.id, p_auswahl: [{ phase_id: ph.id, menge: 2 }] });
+  pruefe(vorschau.data?.ergebnis === "ok" && vorschau.data?.rabatt_cent === 0 && vorschau.data?.art === "promoter" && vorschau.data?.anzeige === anzeige,
+    "Kasse erkennt ihn klein getippt: ok, 0 €, mit Schreibweise", JSON.stringify(vorschau.data));
 
   const kauf = async (n, { kuerzel = null, mitCode = false }) => {
     const { data: bid, error } = await db.rpc("reserviere", {
       p_event_id: ev.id, p_auswahl: [{ phase_id: ph.id, menge: 2 }],
       p_email: `staffeltest-${n}-${K}@example.invalid`, p_vorname: "Staffel", p_nachname: `Test${n}`,
-      p_code: mitCode ? code : null,
+      // Mal klein, mal wie angelegt: Die Schreibweise darf nichts ändern.
+      p_code: mitCode ? (n % 2 ? code.toLowerCase() : anzeige) : null,
     });
     if (error) throw new Error(`Reservierung ${n}: ${error.message}`);
     await db.rpc("ordne_promoter_zu", { p_bestellung_id: bid, p_kuerzel: kuerzel });

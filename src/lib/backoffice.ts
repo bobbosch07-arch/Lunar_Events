@@ -518,7 +518,7 @@ export type EventWahl = {
   phasen: Array<{ id: string; name: string }>;
 };
 
-const CODE_SPALTEN = `id, code, art, wert, event_id, phasen_ids, gueltig_ab, gueltig_bis,
+const CODE_SPALTEN = `id, code, code_anzeige, art, wert, event_id, phasen_ids, gueltig_ab, gueltig_bis,
   max_tickets, eingeloest, einmal_pro_person, aktiv, notiz, erstellt_am, promoter_id,
   oeffnet_presale,
   event:events(titel, slug), promoter:promoter(name)`;
@@ -533,6 +533,7 @@ function alsCodeZeile(
   return {
     id: z.id as string,
     code: z.code as string,
+    code_anzeige: (z.code_anzeige as string | null) ?? null,
     art: z.art as Rabattcode["art"],
     wert: z.wert as number,
     event_id: (z.event_id as string | null) ?? null,
@@ -682,7 +683,7 @@ export async function holePromoterListe(): Promise<PromoterZeile[]> {
   const [{ data: promoter, error }, { data: bestellungen }, { data: klicks }] = await Promise.all([
     db
       .from("promoter")
-      .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code)")
+      .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code, code_anzeige)")
       .order("name"),
     db
       .from("bestellungen")
@@ -727,7 +728,7 @@ export async function holePromoterListe(): Promise<PromoterZeile[]> {
     aktiv: Boolean(p.aktiv),
     notiz: (p.notiz as string | null) ?? null,
     erstellt_am: p.erstellt_am as string,
-    codes: (p.codes ?? []) as Array<{ id: string; code: string }>,
+    codes: (p.codes ?? []) as Array<{ id: string; code: string; code_anzeige: string | null }>,
     tickets: tickets.get(p.id as string) ?? 0,
     klicks: aufrufe.get(p.id as string) ?? 0,
   }));
@@ -741,7 +742,7 @@ export async function holePromoter(id: string): Promise<{
   const db = await serverClient();
   const { data: p } = await db
     .from("promoter")
-    .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code, event_id, aktiv)")
+    .select("id, name, kuerzel, token, aktiv, notiz, erstellt_am, codes:rabattcodes(id, code, code_anzeige, event_id, aktiv)")
     .eq("id", id)
     .maybeSingle();
   if (!p) return null;
@@ -763,7 +764,13 @@ export async function holePromoter(id: string): Promise<{
       notiz: (p.notiz as string | null) ?? null,
       erstellt_am: p.erstellt_am as string,
     },
-    codes: (p.codes ?? []) as Array<{ id: string; code: string; event_id: string | null; aktiv: boolean }>,
+    codes: (p.codes ?? []) as Array<{
+      id: string;
+      code: string;
+      code_anzeige: string | null;
+      event_id: string | null;
+      aktiv: boolean;
+    }>,
     statistik: (statistik as PromoterStatistik | null) ?? null,
   };
 }

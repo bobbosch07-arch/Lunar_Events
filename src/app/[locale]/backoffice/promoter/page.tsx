@@ -6,6 +6,7 @@ import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Knopf } from "@/components/Knopf";
 import { Link } from "@/i18n/navigation";
 import { holePromoterListe } from "@/lib/backoffice";
+import { codeAnzeige } from "@/lib/rabatt";
 import css from "../backoffice.module.css";
 
 export const metadata: Metadata = {
@@ -73,7 +74,7 @@ async function Inhalt() {
                     ) : (
                       p.codes.map((c) => (
                         <div key={c.id}>
-                          <Link href={`/backoffice/rabattcodes/${c.id}`}>{c.code}</Link>
+                          <Link href={`/backoffice/rabattcodes/${c.id}`}>{codeAnzeige(c)}</Link>
                         </div>
                       ))
                     )}

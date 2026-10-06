@@ -70,10 +70,15 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
           {/* "je Ticket" steht in der kleinen Zeile — in der großen Schrift
               bräche der Betrag sonst um. */}
           <span className={css.kachelWert}>
-            {code.art === "prozent" ? `${code.wert} %` : preisText(code.wert, locale)}
+            {code.art === "promoter"
+              ? "Keiner"
+              : code.art === "prozent"
+                ? `${code.wert} %`
+                : preisText(code.wert, locale)}
           </span>
           <span className={css.kachelZusatz}>
             {code.art === "betrag" ? "je Ticket · " : ""}
+            {code.art === "promoter" ? "zählt nur für den Promoter · " : ""}
             {code.eventTitel ?? "Alle Events"}
           </span>
         </div>

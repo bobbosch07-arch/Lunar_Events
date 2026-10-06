@@ -38,7 +38,9 @@ const NUR_ADMINS = "Rabattcodes dürfen nur Admins anlegen, ändern oder lösche
 export async function speichereRabattcode(
   eingabe: RabattcodeEingabe,
 ): Promise<CodeSpeicherErgebnis> {
-  const code = normalisiereCode(eingabe.code);
+  // Verglichen wird in Großbuchstaben, angezeigt wie getippt (0042).
+  const anzeige = eingabe.code.trim();
+  const code = normalisiereCode(anzeige);
   if (!CODE_MUSTER.test(code)) {
     return {
       ok: false,
@@ -46,16 +48,23 @@ export async function speichereRabattcode(
         "Der Code braucht 3 bis 32 Zeichen: Buchstaben ohne Umlaute, Ziffern, Bindestrich oder Unterstrich.",
     };
   }
+  // Ein Promoter-Code gibt nie Rabatt und gehört immer jemandem (0042).
+  if (eingabe.art === "promoter") {
+    if (!eingabe.promoter_id) {
+      return { ok: false, fehler: "Ein Promoter-Code braucht einen Promoter, für den er zählt." };
+    }
+    eingabe = { ...eingabe, wert: 0 };
+  }
   if (!Number.isInteger(eingabe.wert) || eingabe.wert < 0) {
     return { ok: false, fehler: "Der Rabatt ist keine gültige Zahl." };
   }
-  // Ein Code ohne Rabatt täte nichts — außer er öffnet den Presale oder
-  // gehört einem Promoter: Dann zählt er nur, wer den Gast geschickt hat
-  // (0040, Promo-Konzept).
-  if (eingabe.wert === 0 && !eingabe.oeffnet_presale && !eingabe.promoter_id) {
+  // Ein Code ohne Rabatt täte nichts — außer er öffnet den Presale. Einer,
+  // der nur zählen soll, ist ein Promoter-Code.
+  if (eingabe.wert === 0 && !eingabe.oeffnet_presale && eingabe.art !== "promoter") {
     return {
       ok: false,
-      fehler: "Ein Code ohne Rabatt braucht einen Promoter (dann zählt er nur für ihn) oder öffnet den Presale.",
+      fehler:
+        "Der Rabatt muss größer als 0 sein. Soll der Code nur für einen Promoter zählen, wähle die Art „Promoter“.",
     };
   }
   if (eingabe.art === "prozent" && eingabe.wert > 100) {
@@ -76,6 +85,8 @@ export async function speichereRabattcode(
 
   const zeile = {
     code,
+    // Nur speichern, wenn die Schreibweise etwas sagt; sonst reicht code.
+    code_anzeige: anzeige === code ? null : anzeige,
     art: eingabe.art,
     wert: eingabe.wert,
     event_id: eingabe.event_id,
@@ -98,7 +109,12 @@ export async function speichereRabattcode(
     : await db.from("rabattcodes").insert(zeile).select("id").maybeSingle();
 
   if (error) {
-    if (error.code === "23505") return { ok: false, fehler: `Den Code „${code}“ gibt es schon.` };
+    if (error.code === "23505") {
+      return {
+        ok: false,
+        fehler: `Den Code „${anzeige}“ gibt es schon. Groß- und Kleinschreibung zählt dabei nicht.`,
+      };
+    }
     if (error.message.includes("rabattcodes_grenze")) {
       return {
         ok: false,

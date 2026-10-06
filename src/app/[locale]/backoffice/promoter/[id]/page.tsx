@@ -8,6 +8,7 @@ import { PromoterFormular } from "@/components/PromoterFormular";
 import { Link } from "@/i18n/navigation";
 import { darfCodesAendern, holePromoter } from "@/lib/backoffice";
 import { promoterStandAus, teilLinks } from "@/lib/promoter";
+import { codeAnzeige } from "@/lib/rabatt";
 import { eigeneAdresse } from "@/lib/stripe";
 import css from "../../backoffice.module.css";
 
@@ -71,7 +72,7 @@ async function Inhalt({ id, locale }: { id: string; locale: string }) {
               : codes.map((c, i) => (
                   <span key={c.id}>
                     {i > 0 ? ", " : ""}
-                    <Link href={`/backoffice/rabattcodes/${c.id}`}>{c.code}</Link>
+                    <Link href={`/backoffice/rabattcodes/${c.id}`}>{codeAnzeige(c)}</Link>
                     {c.aktiv ? "" : " (pausiert)"}
                   </span>
                 ))}

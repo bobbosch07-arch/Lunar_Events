@@ -485,13 +485,23 @@ tauscht den Token — der alte liefert sofort 404.
 Grundlage ist das Promo-Konzept für THE OPENING (persönlicher Link plus
 „Sicherheitscode“, Staffel 5/10/15/20, Wettbewerb um den Tisch).
 
-- **Code ohne Rabatt:** Gehört ein Code einem Promoter, darf er 0 € haben
-  (`rabattcodes_wert`). Er gibt keinen Rabatt und zählt nur, wer den Gast
-  geschickt hat. Die Kasse zeigt „Code hinzugefügt“ statt „− 0 €“, der
-  Hinweis heißt jetzt „Promo- oder Rabattcode?“. **Ein solcher Code steht
-  nicht im Teil-Link** (`teilLinks`, `mitRabatt`): Sonst sähe jeder Kauf über
-  den Link aus wie „Link und Code“, und der Abgleich ginge verloren. Codes
-  mit Rabatt reisen weiter im Link mit.
+- **Promoter-Code: eigene Rabattart `promoter`** (0041/0042, ersetzt den
+  0-€-Betrag aus 0040): kein Rabatt, zählt nur, wer den Gast geschickt hat.
+  Die Datenbank sichert ab, dass so ein Code immer 0 € hat und einem Promoter
+  gehört (`rabattcodes_wert`); ein Betrag von 0 € ohne Presale geht nicht
+  mehr. `code_rabatt()` rechnet ihn unverändert (Zweig für Beträge, mit 0).
+  Die Kasse zeigt „Code hinzugefügt“ statt „− 0 €“, der Hinweis heißt
+  „Promo- oder Rabattcode?“. **Ein solcher Code steht nicht im Teil-Link**
+  (`teilLinks`, `mitRabatt`): Sonst sähe jeder Kauf über den Link aus wie
+  „Link und Code“, und der Abgleich ginge verloren. Codes mit Rabatt reisen
+  weiter im Link mit.
+- **Codes in eigener Schreibweise** (0042): `code_anzeige` hält „Niklas“,
+  `code` bleibt NIKLAS. **Verglichen wird immer über `code`**, alle
+  Funktionen machen aus der Eingabe Großbuchstaben: „niklas“, „NIKLAS“ und
+  „Niklas“ treffen denselben Code, und „Niklas“ und „NIKLAS“ können nicht
+  nebeneinander existieren. Deshalb mussten `reserviere()` und die Kasse
+  nicht angefasst werden; nur `pruefe_rabattcode` und `promoter_statistik`
+  liefern zusätzlich `anzeige`. Angezeigt wird überall `codeAnzeige()`.
 - **Weg je Bestellung** (`bestellungen.promoter_weg`): `link`, `code` oder
   `beides`, gesetzt von `ordne_promoter_zu` zusammen mit der Zuordnung.
   **Gezählt wird weiter je Bestellung mit ihren Tickets, nie doppelt**: Link

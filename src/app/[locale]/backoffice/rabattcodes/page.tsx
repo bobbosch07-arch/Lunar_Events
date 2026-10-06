@@ -7,7 +7,7 @@ import { Knopf } from "@/components/Knopf";
 import { Link } from "@/i18n/navigation";
 import { holeRabattcodes } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
-import { codeZustand, rabattText, type CodeZustand } from "@/lib/rabatt";
+import { codeAnzeige, codeZustand, rabattText, type CodeZustand } from "@/lib/rabatt";
 import css from "../backoffice.module.css";
 
 export const metadata: Metadata = {
@@ -80,7 +80,7 @@ async function Inhalt({ locale }: { locale: string }) {
                 return (
                   <tr key={c.id}>
                     <td className={css.haupt}>
-                      <Link href={`/backoffice/rabattcodes/${c.id}`}>{c.code}</Link>
+                      <Link href={`/backoffice/rabattcodes/${c.id}`}>{codeAnzeige(c)}</Link>
                       {c.promoterName ? (
                         <div className={css.nebensache}>Promoter: {c.promoterName}</div>
                       ) : null}

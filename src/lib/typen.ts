@@ -34,7 +34,8 @@ export const ANFRAGE_STATUS = ["neu", "in_bearbeitung", "angebot", "bestaetigt",
 export type AnfrageStatus = (typeof ANFRAGE_STATUS)[number];
 
 /** Rabattcodes wirken je Ticket und nur auf den Ticketpreis (0016). */
-export const RABATT_ART = ["prozent", "betrag"] as const;
+/** "promoter" (0041/0042): kein Rabatt, zählt nur für den Promoter. */
+export const RABATT_ART = ["prozent", "betrag", "promoter"] as const;
 export type RabattArt = (typeof RABATT_ART)[number];
 
 /* ------------------------------------------------------------------ */
@@ -301,8 +302,10 @@ export type Ticket = {
 
 export type Rabattcode = {
   id: string;
-  /** Immer in Großbuchstaben. */
+  /** Immer in Großbuchstaben; darüber wird verglichen. */
   code: string;
+  /** So, wie der Code angelegt wurde („Niklas“); null = wie code (0042). */
+  code_anzeige: string | null;
   art: RabattArt;
   /** Prozent 1–100 oder Cent je Ticket. */
   wert: number;
@@ -363,7 +366,7 @@ export type PromoterStatistik = {
     weg: { link: number; code: number; beides: number; frueher: number } | null;
     stufen: PromoterStufe[];
   }>;
-  codes: Array<{ code: string; art: RabattArt; wert: number; event_id: string | null }>;
+  codes: Array<{ code: string; anzeige?: string; art: RabattArt; wert: number; event_id: string | null }>;
 };
 
 /** Eine Stufe der Promoter-Staffel (0040). Stufen stapeln sich. */
@@ -377,6 +380,8 @@ export type CodeVorschau =
   | {
       ergebnis: "ok";
       code: string;
+      /** Schreibweise zum Anzeigen (0042); fehlt bei älteren Antworten. */
+      anzeige?: string;
       art: RabattArt;
       wert: number;
       rabatt_cent: number;

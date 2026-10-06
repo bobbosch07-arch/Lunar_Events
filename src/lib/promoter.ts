@@ -119,13 +119,13 @@ export function teilLinks(
       // Ein Code ohne Rabatt reist nicht im Link mit: Sonst sähe jeder Kauf
       // über den Link aus wie „Link und Code“, und der Abgleich, wer den
       // Code wirklich genannt hat, ginge verloren.
-      const mitRabatt = Boolean(c && c.wert > 0);
+      const mitRabatt = Boolean(c && c.art !== "promoter" && c.wert > 0);
       return {
         eventId: e.id,
         titel: e.titel,
         datum: datum.format(new Date(e.beginn)),
         link: promoterLink(adresse, e.slug, statistik.kuerzel, mitRabatt ? c!.code : null),
-        code: c?.code ?? null,
+        code: c ? (c.anzeige ?? c.code) : null,
         mitRabatt,
       };
     });

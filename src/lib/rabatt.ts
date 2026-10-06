@@ -12,12 +12,22 @@ import type { Rabattcode, RabattArt } from "./typen";
 /** Dieselbe Regel wie rabattcodes_code_form in der Datenbank. */
 export const CODE_MUSTER = /^[A-Z0-9][A-Z0-9_-]{2,31}$/;
 
+/**
+ * Verglichen wird immer in Großbuchstaben: Wer „niklas“ tippt, trifft
+ * „Niklas“. Die Schreibweise zum Anzeigen steht in `code_anzeige` (0042).
+ */
 export function normalisiereCode(roh: string): string {
   return roh.trim().toUpperCase();
 }
 
+/** Ein Code zum Anzeigen: wie angelegt, sonst in Großbuchstaben. */
+export function codeAnzeige(code: { code: string; code_anzeige?: string | null }): string {
+  return code.code_anzeige || code.code;
+}
+
 /** "20 %" oder "5 € je Ticket" */
 export function rabattText(art: RabattArt, wert: number, locale = "de"): string {
+  if (art === "promoter") return locale === "en" ? "tracking only" : "nur Zählung";
   if (wert === 0) return locale === "en" ? "presale only" : "nur Presale";
   if (art === "prozent") return `${wert} %`;
   return `${preisText(wert, locale)} ${locale === "en" ? "per ticket" : "je Ticket"}`;
@@ -149,10 +159,14 @@ export const LEERER_CODE: RabattcodeStand = {
 export function codeStandAus(code: Rabattcode): RabattcodeStand {
   return {
     id: code.id,
-    code: code.code,
+    code: codeAnzeige(code),
     art: code.art,
     wertText:
-      code.art === "prozent" ? String(code.wert) : (code.wert / 100).toFixed(2).replace(".", ","),
+      code.art === "promoter"
+        ? ""
+        : code.art === "prozent"
+          ? String(code.wert)
+          : (code.wert / 100).toFixed(2).replace(".", ","),
     eventId: code.event_id ?? "",
     phasenIds: code.phasen_ids ?? [],
     gueltigAb: code.gueltig_ab ? utcNachBerlinFeld(code.gueltig_ab) : "",
