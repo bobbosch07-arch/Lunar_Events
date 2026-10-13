@@ -915,6 +915,15 @@ danach `bedieneWarteliste`):
   gewordener Platz einer geschlossenen Phase wird angezeigt und lässt sich
   verschieben.
 - `phase_oeffnen`, `phasen_belegung` (bezahlt und reserviert je Phase).
+- **Zähler abgleichen** (0045): `verkauft` ist ein Zähler und wird bei
+  Erstattung (Ticket storniert) und bei von Hand gelöschten Bestellungen
+  **nicht** zurückgezählt. `phasen_zaehlerstand` rechnet das Soll (offene
+  Bestellungen plus nicht stornierte Tickets bezahlter Bestellungen); weicht
+  es ab, warnt die Übersicht, und „Zähler abgleichen“ (`phasen_abgleichen`)
+  setzt es, außer bei Überbuchung. Bei THE OPENING stand Early Bird am
+  13.10. auf 29 bei 28 bezahlten (vermutlich der erstattete Live-Testkauf
+  vom 19.09., später gelöscht); beim Schließen ging deshalb 1 statt 2 nach
+  Phase 2.
 - Name, Preis, Leistungen einer Phase und neue Phasen (hinten angehängt):
   `speicherePhase`. Kontingent, Verkauf und offen/zu fasst das nie an.
 

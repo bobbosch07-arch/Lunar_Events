@@ -104,6 +104,23 @@ try {
   const ebBel = (bel ?? []).find((z) => z.phase_id === eb);
   pruefe(!belF && ebBel?.bezahlt === 15 && ebBel?.reserviert === 3, "Early Bird: 15 bezahlt, 3 reserviert", JSON.stringify(ebBel ?? belF?.message));
 
+  console.log("\n— Zähler abgleichen (0045) —");
+  // Wie nach einer gelöschten Bestellung: Zähler eins zu hoch.
+  await dienst.from("phasen").update({ verkauft: 19 }).eq("id", eb);
+  const { data: zs } = await admin.rpc("phasen_zaehlerstand", { p_event_id: ev.id });
+  const ebZ = (zs ?? []).find((z) => z.phase_id === eb);
+  pruefe(ebZ?.ist === 19 && ebZ?.soll === 18, "Zählerstand erkennt: Zähler 19, Soll 18", JSON.stringify(ebZ));
+  // Ein storniertes Ticket (Erstattung) gibt seinen Platz frei.
+  const { data: einT } = await dienst.from("tickets").select("id").eq("phase_id", eb).eq("status", "gueltig").limit(1).single();
+  await dienst.from("tickets").update({ status: "storniert" }).eq("id", einT.id);
+  const ab = await admin.rpc("phasen_abgleichen", { p_event_id: ev.id });
+  pruefe(!ab.error && (await phase(eb)).verkauft === 17, "Abgleich: 19 → 17 (gelöschte Bestellung und storniertes Ticket)", JSON.stringify(ab.data ?? ab.error?.message));
+  await dienst.from("tickets").update({ status: "gueltig" }).eq("id", einT.id);
+  await admin.rpc("phasen_abgleichen", { p_event_id: ev.id });
+  const gastAb = await createClient(URL_, OEFFENTLICH, { auth: { persistSession: false } }).rpc("phasen_abgleichen", { p_event_id: ev.id });
+  pruefe(Boolean(gastAb.error), "Gast darf nicht abgleichen", gastAb.error?.message?.slice(0, 40) ?? "durchgelassen");
+  pruefe((await phase(eb)).verkauft === 18, "…und zurück auf 18 für die weiteren Prüfungen");
+
   console.log("\n— Kontingent setzen —");
   const unter = await admin.rpc("phase_kontingent_setzen", { p_phase: eb, p_kontingent: 10 });
   pruefe(unter.error?.message?.startsWith("UNTER_VERKAUFT:18"), "Nicht unter die 18 belegten", unter.error?.message ?? "durchgelassen");

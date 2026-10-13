@@ -152,3 +152,32 @@ export async function speicherePhase(d: PhasenDetails): Promise<Ergebnis> {
   await danach(d.eventId);
   return { ok: true };
 }
+
+/**
+ * Setzt die Zähler „verkauft“ aller Phasen eines Events auf das, was sich
+ * aus Bestellungen und Tickets ergibt (0045). Für Fälle, in denen der Zähler
+ * nicht zurückgezählt wurde: erstattete Tickets, von Hand gelöschte
+ * Bestellungen.
+ */
+export async function gleicheZaehlerAb(eventId: string): Promise<Ergebnis & { text?: string }> {
+  const db = await serverClient();
+  const { data, error } = await db.rpc("phasen_abgleichen", { p_event_id: eventId });
+  if (error) {
+    const ueber = error.message.match(/UEBERBUCHT:(.+):(\d+):(\d+)/);
+    if (ueber) {
+      return {
+        ok: false,
+        fehler: `„${ueber[1]}“ hat ${ueber[2]} Tickets bei einem Kontingent von ${ueber[3]}. Das bitte erst ansehen, abgeglichen wurde nichts.`,
+      };
+    }
+    return { ok: false, fehler: deute(error.message) };
+  }
+  const geaendert = ((data as { geaendert?: Array<{ phase: string; vorher: number; nachher: number }> } | null)?.geaendert ?? []);
+  await danach(eventId);
+  return {
+    ok: true,
+    text: geaendert.length
+      ? geaendert.map((g) => `${g.phase}: ${g.vorher} → ${g.nachher}`).join(", ")
+      : "Alles stimmte schon.",
+  };
+}

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import {
+  gleicheZaehlerAb,
   oeffnePhase,
   schliessePhase,
   setzeKontingent,
@@ -26,6 +27,8 @@ export type PhaseZeile = {
   verkauft: number;
   bezahlt: number;
   reserviert: number;
+  /** Was sich aus Bestellungen und Tickets ergibt (0045); weicht es von verkauft ab, warnt die Übersicht. */
+  soll: number;
   aktiv: boolean;
   abendkasse: boolean;
   leistungen: string[];
@@ -96,6 +99,7 @@ export function PhasenUebersicht({ eventId, phasen }: { eventId: string; phasen:
   const reserviert = mitKontingent.reduce((s, p) => s + p.reserviert, 0);
   const belegt = mitKontingent.reduce((s, p) => s + p.verkauft, 0);
   const unbegrenzt = phasen.filter((p) => p.art === "standard" && p.kontingent === null);
+  const abweichend = phasen.filter((p) => p.soll !== p.verkauft);
 
   function oeffne(p: Panel) {
     setMeldung(null);
@@ -154,6 +158,41 @@ export function PhasenUebersicht({ eventId, phasen }: { eventId: string; phasen:
           {unbegrenzt.length > 0 ? ` · dazu ${unbegrenzt.map((p) => p.name).join(", ")} ohne Kontingent` : ""}
         </p>
       </div>
+
+      {/* Zähler und Bestellungen laufen auseinander, wenn eine Bestellung
+          erstattet oder von Hand gelöscht wurde (0045). */}
+      {abweichend.length > 0 ? (
+        <div className={fo.stoerung} role="alert" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <span>
+            <strong>Ein Zähler stimmt nicht mit den Bestellungen überein.</strong>{" "}
+            {abweichend
+              .map((p) => `${p.name}: Zähler ${p.verkauft}, aus den Bestellungen ${p.soll}`)
+              .join(" · ")}
+            . Das passiert, wenn eine Bestellung erstattet oder von Hand gelöscht wurde. Solange
+            der Zähler zu hoch steht, gelten diese Plätze als belegt.
+          </span>
+          <div>
+            <Knopf
+              groesse="klein"
+              disabled={laeuft}
+              onClick={() => {
+                if (!window.confirm("Zähler auf den Stand der Bestellungen setzen?")) return;
+                starte(async () => {
+                  const antwort = await gleicheZaehlerAb(eventId);
+                  setMeldung(
+                    antwort.ok
+                      ? { text: `Abgeglichen: ${antwort.text}`, fehler: false }
+                      : { text: antwort.fehler, fehler: true },
+                  );
+                  if (antwort.ok) router.refresh();
+                });
+              }}
+            >
+              Zähler abgleichen
+            </Knopf>
+          </div>
+        </div>
+      ) : null}
 
       {meldung ? (
         <p className={meldung.fehler ? fo.stoerung : fo.erfolg} role="status">

@@ -147,9 +147,15 @@ async function Inhalt({ slug }: { slug: string }) {
     : [null, false];
 
   // ---------- Phasen mit Belegung ----------
-  const { data: belegung } = await db.rpc("phasen_belegung", { p_event_id: event.id });
+  const [{ data: belegung }, { data: zaehler }] = await Promise.all([
+    db.rpc("phasen_belegung", { p_event_id: event.id }),
+    db.rpc("phasen_zaehlerstand", { p_event_id: event.id }),
+  ]);
   const beleg = new Map(
     ((belegung ?? []) as Array<{ phase_id: string; bezahlt: number; reserviert: number }>).map((z) => [z.phase_id, z]),
+  );
+  const soll = new Map(
+    ((zaehler ?? []) as Array<{ phase_id: string; ist: number; soll: number }>).map((z) => [z.phase_id, z.soll]),
   );
   const rohPhasen = ((event.phasen ?? []) as Array<Record<string, unknown>>)
     .map((p) => ({ ...p, event_id: event.id }) as unknown as Phase)
@@ -186,6 +192,8 @@ async function Inhalt({ slug }: { slug: string }) {
       verkauft: p.verkauft,
       bezahlt: beleg.get(p.id)?.bezahlt ?? 0,
       reserviert: beleg.get(p.id)?.reserviert ?? 0,
+      // Ohne Antwort (keine Rechte, Fehler) keine Warnung: dann gilt der Zähler.
+      soll: soll.get(p.id) ?? p.verkauft,
       aktiv: p.aktiv,
       abendkasse: p.abendkasse,
       leistungen: p.leistungen ?? [],
