@@ -882,6 +882,48 @@ eigene Datenbankfunktion nicht. `holeEventZeilen({ abJetzt, grenze })`
 lädt für die Übersicht nur die sechs kommenden Events statt der
 gesamten Historie.
 
+### Event-Übersicht und Kontingente (Migration 0044, 13.10.2026)
+
+**Ein Klick auf ein Event öffnet eine Übersicht, kein Formular**
+(`/backoffice/events/[slug]`). Oben „Tickets und Kontingente“
+(`PhasenUebersicht`): eine Gesamtleiste über alle Standardphasen mit
+Kontingent und je Phase eine Leiste, jeweils **bezahlt** (voll),
+**reserviert** (gestreift: offene Kasse oder Überweisung) und frei, dazu der
+Stand, den Gäste sehen (läuft, folgt, ausverkauft, geschlossen, nur
+Abendkasse). Darunter die Abschnitte als Karten (`EventAbschnitte`), jeder
+mit eigenem „Bearbeiten“; immer nur einer ist offen.
+
+**Jede Änderung schreibt nur ihren Teil.** Ein Abschnitt speichert über
+`speichereEventTeil` nur seine Spalten (`ABSCHNITT_SPALTEN`, gebaut mit
+derselben `eventZeile()` wie das Anlegen). **`speichereEvent` schreibt bei
+bestehenden Events keine Phasen mehr**: Das große Formular schrieb früher
+alle Phasen mit dem Stand beim Öffnen zurück und überschrieb still, was in
+der Zwischenzeit verkauft oder verschoben wurde. Beim Anlegen (`/neu`) bleibt
+das ganze Formular mit Phasen.
+
+**Kontingente laufen über eigene Schritte in der Datenbank**, jeder unter
+Sperre der betroffenen Phasen, alle nur für Admins (`aktionen/kontingente.ts`,
+danach `bedieneWarteliste`):
+- `phase_kontingent_setzen`: nie unter `verkauft` (das zählt Reservierungen mit).
+- `phase_tickets_verschieben`: höchstens die freien, nur zwischen Phasen mit Kontingent.
+- `phase_schliessen(phase, verteilung)`: Die Phase wird **inaktiv** und ihr
+  Kontingent sinkt auf das Belegte; die freien Tickets gehen laut Verteilung
+  in andere Phasen, der Rest fällt weg. Ganz oder gar nicht. **Inaktiv statt
+  nur gekürzt**, weil die Phasen der Reihe nach laufen (`reserviere`, 0010):
+  Hätte man nur gekürzt, ginge die Phase wieder auf, sobald dort eine
+  Reservierung verfällt. So geht sofort die nächste auf; ein später frei
+  gewordener Platz einer geschlossenen Phase wird angezeigt und lässt sich
+  verschieben.
+- `phase_oeffnen`, `phasen_belegung` (bezahlt und reserviert je Phase).
+- Name, Preis, Leistungen einer Phase und neue Phasen (hinten angehängt):
+  `speicherePhase`. Kontingent, Verkauf und offen/zu fasst das nie an.
+
+Prüfen: `node scripts/kontingente-testen.mjs` (echte Admin-Sitzung, eigenes
+Test-Event). Die Oberfläche lässt sich im verdeckten Browserfenster nicht
+bedienen (React 19 blendet Suspense-Inhalte erst im nächsten
+Animationsbild ein); getestet wurde sie über ein unsichtbares Chrome mit dem
+DevTools-Protokoll (Wegwerf-Admin, „Später“-Cookie `lunar_2fa_spaeter`).
+
 ### Rollen und zweiter Faktor (Migration 0022)
 
 **Rollen sind Aufgaben, keine Rechtestufen:** `admin`, `kasse`, `einlass`,

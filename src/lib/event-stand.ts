@@ -91,3 +91,34 @@ export const LEERE_PHASE: PhasenStand = {
   abendkasse: false,
   verkauft: 0,
 };
+
+/* ------------------------------------------------------------------ */
+/* Abschnitte der Event-Übersicht (13.10.2026)                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Ein bestehendes Event wird abschnittweise bearbeitet: Jeder Abschnitt
+ * speichert nur seine eigenen Felder (speichereEventTeil), Phasen und
+ * Kontingente laufen über eigene Schritte. So kann eine Änderung am Text
+ * nicht nebenbei einen Verkaufsstand zurückschreiben.
+ */
+export type EventAbschnitt =
+  | "grunddaten"
+  | "wannwo"
+  | "bild"
+  | "einlass"
+  | "fastlane"
+  | "garderobe"
+  | "verkauf"
+  | "status";
+
+export const EVENT_ABSCHNITTE: Array<{ id: EventAbschnitt; titel: string }> = [
+  { id: "status", titel: "Status" },
+  { id: "grunddaten", titel: "Grunddaten" },
+  { id: "wannwo", titel: "Wann und wo" },
+  { id: "verkauf", titel: "Verkaufsstart und Presale" },
+  { id: "einlass", titel: "Einlass" },
+  { id: "fastlane", titel: "Fast Lane" },
+  { id: "garderobe", titel: "Garderobe" },
+  { id: "bild", titel: "Bild" },
+];

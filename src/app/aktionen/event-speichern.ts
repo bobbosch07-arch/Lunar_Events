@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { serverClient } from "@/lib/supabase/server";
 import { berlinNachUtc } from "@/lib/zeit";
 import { bedieneWarteliste } from "@/lib/warteliste";
+import type { EventAbschnitt } from "@/lib/event-stand";
 
 export type PhasenEingabe = {
   id?: string;
@@ -112,7 +113,58 @@ export async function speichereEvent(
   }
   if (!ortId) return { ok: false, fehler: "Es fehlt der Ort." };
 
-  const zeile = {
+  const zeile = eventZeile(eingabe, slug, ortId);
+
+  const { data: event, error } = eingabe.id
+    ? await db.from("events").update(zeile).eq("id", eingabe.id).select("id, slug").single()
+    : await db.from("events").insert(zeile).select("id, slug").single();
+
+  if (error) return { ok: false, fehler: deuteEventFehler(error, slug) };
+
+  // --- Phasen ---
+  // Nur beim Anlegen. Bei einem bestehenden Event schrieb dieses Formular
+  // früher alle Phasen mit dem Stand beim Öffnen zurück; wer in der
+  // Zwischenzeit verkauft oder Kontingente verschoben hatte, wurde still
+  // überschrieben. Seit 13.10.2026 laufen Phasen bestehender Events über die
+  // Übersicht (aktionen/kontingente.ts), jede Änderung für sich.
+  if (!eingabe.id) {
+    for (const phase of eingabe.phasen) {
+      const { error: pf } = await db.from("phasen").insert({
+        event_id: event.id,
+        name: phase.name.trim(),
+        art: phase.art,
+        preis_cent: phase.art === "vip" ? 0 : Math.max(0, phase.preis_cent),
+        gebuehr_cent: phase.art === "vip" ? 0 : Math.max(0, phase.gebuehr_cent),
+        kontingent: phase.kontingent,
+        leistungen: phase.leistungen.filter((l) => l.trim()),
+        beschreibung: phase.beschreibung?.trim() || null,
+        position: phase.position,
+        aktiv: phase.aktiv,
+        abendkasse: phase.abendkasse,
+        verkauft: 0,
+      });
+      if (pf) return { ok: false, fehler: `Phase „${phase.name}": ${pf.message}` };
+    }
+  }
+
+  // Mehr Kontingent heißt: Wer auf der Warteliste steht, ist zuerst dran —
+  // jetzt gleich, nicht erst beim nächsten Takt. Sonst kaufte in den Minuten
+  // dazwischen jemand, der nie gewartet hat.
+  await bedieneWarteliste(event.id as string);
+
+  revalidatePath("/backoffice/events");
+  revalidatePath("/events");
+  revalidatePath(`/events/${event.slug}`);
+  revalidatePath("/");
+
+  return { ok: true, slug: event.slug as string };
+}
+
+/** Die Datenbankzeile eines Events aus der Formulareingabe. */
+function eventZeile(eingabe: EventEingabe, slug: string, ortId: string) {
+  const presaleAb = eingabe.presale_ab ? berlinNachUtc(eingabe.presale_ab) : null;
+  const verkaufAb = eingabe.verkauf_ab ? berlinNachUtc(eingabe.verkauf_ab) : null;
+  return {
     slug,
     titel: eingabe.titel.trim(),
     untertitel: eingabe.untertitel?.trim() || null,
@@ -149,80 +201,106 @@ export async function speichereEvent(
     veranstalter: "Lunar Events",
     geaendert_am: new Date().toISOString(),
   };
+}
 
-  const { data: event, error } = eingabe.id
-    ? await db.from("events").update(zeile).eq("id", eingabe.id).select("id, slug").single()
-    : await db.from("events").insert(zeile).select("id, slug").single();
+function deuteEventFehler(error: { message: string; code?: string }, slug: string): string {
+  // Die Regel in der Tabelle lässt kein Kontingent unter die schon
+  // verkauften Plätze sinken.
+  if (error.message.includes("events_fastlane_gueltig")) {
+    return "Das Fast-Lane-Kontingent ist kleiner als die schon verkauften Plätze.";
+  }
+  if (error.message.includes("events_garderobe_gueltig")) {
+    return "Garderobe: Der Preis muss mindestens 0,50 € sein, und es darf nicht weniger Plätze geben als schon gebucht sind.";
+  }
+  if (error.message.includes("events_presale_gueltig")) {
+    return "Der Presale muss vor dem öffentlichen Verkauf beginnen, und der Verkaufsstart muss gesetzt sein.";
+  }
+  if (error.code === "23505") return `Die Adresse „${slug}" ist schon vergeben.`;
+  return error.message;
+}
 
-  if (error) {
-    // Die Regel in der Tabelle lässt kein Kontingent unter die schon
-    // verkauften Plätze sinken.
-    if (error.message.includes("events_fastlane_gueltig")) {
-      return {
-        ok: false,
-        fehler: "Das Fast-Lane-Kontingent ist kleiner als die schon verkauften Plätze.",
-      };
+/** Welche Spalten ein Abschnitt der Übersicht schreiben darf. */
+const ABSCHNITT_SPALTEN: Record<EventAbschnitt, string[]> = {
+  grunddaten: ["slug", "titel", "untertitel", "teaser", "beschreibung", "kategorie"],
+  wannwo: ["beginn", "einlass", "ende", "ort_id"],
+  bild: ["bild_pfad", "bild_alt", "bild_fokus", "poster_statt_bild"],
+  einlass: ["mindestalter", "dresscode", "lineup", "abendkasse", "abendkasse_hinweis", "streichpreis_cent"],
+  fastlane: ["fastlane_aktiv", "fastlane_preis_cent", "fastlane_kontingent", "fastlane_beschreibung"],
+  garderobe: ["garderobe_aktiv", "garderobe_preis_cent", "garderobe_kontingent"],
+  verkauf: ["presale_ab", "verkauf_ab"],
+  status: ["status", "featured"],
+};
+
+/**
+ * Speichert einen Abschnitt eines bestehenden Events (Übersicht im
+ * Backoffice, 13.10.2026). Gebaut wird dieselbe Zeile wie beim ganzen
+ * Formular, geschrieben werden nur die Spalten dieses Abschnitts. Phasen
+ * fasst diese Aktion nie an.
+ */
+export async function speichereEventTeil(
+  eingabe: EventEingabe,
+  teil: EventAbschnitt,
+): Promise<SpeicherErgebnis> {
+  if (!eingabe.id) return { ok: false, fehler: "Ein neues Event wird als Ganzes angelegt." };
+  const spalten = ABSCHNITT_SPALTEN[teil];
+  if (!spalten) return { ok: false, fehler: "Unbekannter Abschnitt." };
+  const db = await serverClient();
+
+  const slug = eingabe.slug
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  if (teil === "grunddaten") {
+    if (!slug) return { ok: false, fehler: "Die Adresse (Slug) fehlt." };
+    if (!eingabe.titel.trim()) return { ok: false, fehler: "Der Titel fehlt." };
+  }
+  if (teil === "wannwo" && !eingabe.beginn) return { ok: false, fehler: "Der Beginn fehlt." };
+  if (teil === "verkauf") {
+    const presaleAb = eingabe.presale_ab ? berlinNachUtc(eingabe.presale_ab) : null;
+    const verkaufAb = eingabe.verkauf_ab ? berlinNachUtc(eingabe.verkauf_ab) : null;
+    if (presaleAb && !verkaufAb) {
+      return { ok: false, fehler: "Für den Presale fehlt der öffentliche Verkaufsstart." };
     }
-    if (error.message.includes("events_garderobe_gueltig")) {
-      return {
-        ok: false,
-        fehler:
-          "Garderobe: Der Preis muss mindestens 0,50 € sein, und es darf nicht weniger Plätze geben als schon gebucht sind.",
-      };
+    if (presaleAb && verkaufAb && presaleAb >= verkaufAb) {
+      return { ok: false, fehler: "Der Presale muss vor dem öffentlichen Verkauf beginnen." };
     }
-    if (error.code === "23505") {
-      return { ok: false, fehler: `Die Adresse „${slug}" ist schon vergeben.` };
-    }
-    return { ok: false, fehler: error.message };
   }
 
-  // --- Phasen ---
-  const { data: vorhandene } = await db
-    .from("phasen")
-    .select("id, verkauft")
-    .eq("event_id", event.id);
-
-  const behalten = new Set(eingabe.phasen.map((p) => p.id).filter(Boolean));
-
-  // Phasen mit Verkäufen werden nie gelöscht, nur stillgelegt — sonst
-  // verlören bezahlte Tickets ihren Bezug.
-  for (const alt of vorhandene ?? []) {
-    if (behalten.has(alt.id as string)) continue;
-    if ((alt.verkauft as number) > 0) {
-      await db.from("phasen").update({ aktiv: false }).eq("id", alt.id);
-    } else {
-      await db.from("phasen").delete().eq("id", alt.id);
+  let ortId = eingabe.ort_id;
+  if (teil === "wannwo" && !ortId && eingabe.neuer_ort) {
+    const { name, stadt, strasse, plz } = eingabe.neuer_ort;
+    if (!name.trim() || !stadt.trim()) {
+      return { ok: false, fehler: "Für einen neuen Ort brauchen wir Name und Stadt." };
     }
+    const { data, error } = await db
+      .from("orte")
+      .insert({ name: name.trim(), stadt: stadt.trim(), strasse: strasse.trim() || null, plz: plz.trim() || null, land: "DE" })
+      .select("id")
+      .single();
+    if (error) return { ok: false, fehler: `Ort anlegen: ${error.message}` };
+    ortId = data.id;
   }
+  if (teil === "wannwo" && !ortId) return { ok: false, fehler: "Es fehlt der Ort." };
 
-  for (const phase of eingabe.phasen) {
-    const daten = {
-      event_id: event.id,
-      name: phase.name.trim(),
-      art: phase.art,
-      preis_cent: phase.art === "vip" ? 0 : Math.max(0, phase.preis_cent),
-      gebuehr_cent: phase.art === "vip" ? 0 : Math.max(0, phase.gebuehr_cent),
-      kontingent: phase.kontingent,
-      leistungen: phase.leistungen.filter((l) => l.trim()),
-      beschreibung: phase.beschreibung?.trim() || null,
-      position: phase.position,
-      aktiv: phase.aktiv,
-      abendkasse: phase.abendkasse,
-    };
+  // Die ganze Zeile bauen (dieselben Umrechnungen wie beim Anlegen), dann
+  // nur die Spalten dieses Abschnitts übernehmen.
+  const ganz = eventZeile({ ...eingabe, beginn: eingabe.beginn || new Date().toISOString().slice(0, 16) }, slug, ortId ?? "");
+  const zeile: Record<string, unknown> = { geaendert_am: ganz.geaendert_am };
+  for (const s of spalten) zeile[s] = (ganz as Record<string, unknown>)[s];
 
-    const { error: pf } = phase.id
-      ? await db.from("phasen").update(daten).eq("id", phase.id)
-      : await db.from("phasen").insert({ ...daten, verkauft: 0 });
-
-    if (pf) return { ok: false, fehler: `Phase „${phase.name}": ${pf.message}` };
-  }
-
-  // Mehr Kontingent heißt: Wer auf der Warteliste steht, ist zuerst dran —
-  // jetzt gleich, nicht erst beim nächsten Takt. Sonst kaufte in den Minuten
-  // dazwischen jemand, der nie gewartet hat.
-  await bedieneWarteliste(event.id as string);
+  const { data: event, error } = await db
+    .from("events")
+    .update(zeile)
+    .eq("id", eingabe.id)
+    .select("id, slug")
+    .maybeSingle();
+  if (error) return { ok: false, fehler: deuteEventFehler(error, slug) };
+  if (!event) return { ok: false, fehler: "Das dürfen nur Admins." };
 
   revalidatePath("/backoffice/events");
+  revalidatePath("/backoffice/events/[slug]", "page");
   revalidatePath("/events");
   revalidatePath(`/events/${event.slug}`);
   revalidatePath("/");

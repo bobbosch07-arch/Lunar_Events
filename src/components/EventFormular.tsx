@@ -4,7 +4,8 @@ import { useState, useTransition } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { Knopf } from "./Knopf";
 import { BildFeld } from "./BildFeld";
-import { speichereEvent, type EventEingabe } from "@/app/aktionen/event-speichern";
+import { speichereEvent, speichereEventTeil, type EventEingabe } from "@/app/aktionen/event-speichern";
+import type { EventAbschnitt } from "@/lib/event-stand";
 import css from "./EventFormular.module.css";
 import {
   LEERE_PHASE,
@@ -34,13 +35,23 @@ function slugAus(titel: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Das Event-Formular. Ohne `nur` das ganze Formular zum Anlegen, mit Phasen.
+ * Mit `nur` (Übersicht eines bestehenden Events, 13.10.2026) genau ein
+ * Abschnitt, der beim Speichern nur seine eigenen Felder schreibt.
+ */
 export function EventFormular({
   start,
   orte,
+  nur,
+  onFertig,
 }: {
   start: EventStand;
   orte: OrtWahl[];
+  nur?: EventAbschnitt;
+  onFertig?: () => void;
 }) {
+  const zeige = (a: EventAbschnitt) => !nur || nur === a;
   const router = useRouter();
   const [stand, setStand] = useState<EventStand>(start);
   const [neuerOrt, setNeuerOrt] = useState({ name: "", stadt: "", strasse: "", plz: "" });
@@ -118,12 +129,19 @@ export function EventFormular({
     };
 
     starte(async () => {
-      const antwort = await speichereEvent(eingabe);
+      const antwort = nur ? await speichereEventTeil(eingabe, nur) : await speichereEvent(eingabe);
       if (!antwort.ok) {
         setFehler(antwort.fehler);
         return;
       }
       setErfolg("Gespeichert.");
+      if (nur) {
+        // Neue Adresse: dorthin, sonst zeigt die alte nur noch 404.
+        if (antwort.slug !== start.slug) router.push(`/backoffice/events/${antwort.slug}`);
+        router.refresh();
+        onFertig?.();
+        return;
+      }
       router.push(`/backoffice/events/${antwort.slug}`);
       router.refresh();
     });
@@ -132,6 +150,7 @@ export function EventFormular({
   return (
     <div className={css.form}>
       {/* ---------- Grunddaten ---------- */}
+      {zeige("grunddaten") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Grunddaten</h2>
         <div className={css.raster}>
@@ -231,8 +250,10 @@ export function EventFormular({
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Zeit und Ort ---------- */}
+      {zeige("wannwo") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Wann und wo</h2>
         <div className={css.raster}>
@@ -343,8 +364,10 @@ export function EventFormular({
           ) : null}
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Bild ---------- */}
+      {zeige("bild") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Bild</h2>
         <BildFeld
@@ -370,8 +393,10 @@ export function EventFormular({
           gespeichert und kommt zurück, sobald das Häkchen wieder weg ist.
         </p>
       </section>
+      ) : null}
 
       {/* ---------- Einlassregeln ---------- */}
+      {zeige("einlass") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Einlass</h2>
         <div className={css.raster}>
@@ -461,8 +486,10 @@ export function EventFormular({
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Fast Lane ---------- */}
+      {zeige("fastlane") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Fast Lane</h2>
         <div className={css.raster}>
@@ -531,8 +558,10 @@ export function EventFormular({
           ) : null}
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Garderobe (0027) ---------- */}
+      {zeige("garderobe") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Garderobe</h2>
         <div className={css.raster}>
@@ -590,8 +619,10 @@ export function EventFormular({
           ) : null}
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Verkaufsstart und Presale ---------- */}
+      {zeige("verkauf") ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Verkaufsstart und Presale</h2>
         <div className={css.raster}>
@@ -629,8 +660,12 @@ export function EventFormular({
           </div>
         </div>
       </section>
+      ) : null}
 
       {/* ---------- Phasen ---------- */}
+      {/* Phasen bestehender Events laufen über die Übersicht: jede
+          Änderung für sich, unter Sperre (aktionen/kontingente.ts). */}
+      {!nur && !start.id ? (
       <section className={css.gruppe}>
         <h2 className={css.gruppenTitel}>Ticketphasen</h2>
 
@@ -803,11 +838,14 @@ export function EventFormular({
           Phase hinzufügen
         </Knopf>
       </section>
+      ) : null}
 
       {fehler ? <p className={css.stoerung}>{fehler}</p> : null}
       {erfolg ? <p className={css.erfolg}>{erfolg}</p> : null}
 
       <div className={css.fuss}>
+        {zeige("status") ? (
+        <>
         <div className={css.feld} style={{ minWidth: 180 }}>
           <label className={css.beschriftung} htmlFor="status">
             Status
@@ -833,9 +871,15 @@ export function EventFormular({
           />
           Auf der Startseite hervorheben
         </label>
+        </>
+        ) : null}
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 12 }}>
-          {stand.id ? (
+          {nur ? (
+            <Knopf stil="linie" groesse="klein" onClick={() => onFertig?.()}>
+              Abbrechen
+            </Knopf>
+          ) : stand.id ? (
             <Knopf href={`/events/${stand.slug}`} stil="linie" groesse="klein">
               Ansehen
             </Knopf>
