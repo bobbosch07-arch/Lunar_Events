@@ -543,13 +543,21 @@ export function phasenZustand(p: Phase, jetzt: Date = new Date()): PhasenZustand
  * Restmenge nur dann als Zahl zeigen, wenn sie wirklich knapp ist.
  * Kein erfundener Druck (Briefing 28/29) — aber echte Knappheit verschweigen
  * waere auch falsch.
+ *
+ * Knapp ist eine Phase, sobald das Erste von beidem eintritt (Bobbo,
+ * 13.10.2026): höchstens KNAPP_AB Tickets übrig, oder höchstens ein Drittel
+ * ihres Kontingents. Die feste Zahl trifft kleine Phasen früh (30 Early
+ * Birds von 420 Plätzen sind wenig), das Drittel große Phasen (Classic mit
+ * 200 ab 66 übrigen statt erst ab 25).
  */
 export const KNAPP_AB = 25;
+export const KNAPP_ANTEIL = 1 / 3;
 
-export function zeigeRest(z: PhasenZustand): number | null {
+export function zeigeRest(z: PhasenZustand, kontingent: number | null = null): number | null {
   if (z.art !== "kaufbar") return null;
   if (z.rest === null) return null;
-  return z.rest <= KNAPP_AB ? z.rest : null;
+  const grenze = Math.max(KNAPP_AB, kontingent ? Math.floor(kontingent * KNAPP_ANTEIL) : 0);
+  return z.rest <= grenze ? z.rest : null;
 }
 
 /** Reihenfolge der Phasen — dieselbe wie in `reserviere()` (0010). */

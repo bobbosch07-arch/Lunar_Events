@@ -294,9 +294,13 @@ Bezahlwege hängen an `zugestimmt`. Weitere Flaggen kommen als eigene `art` dazu
 
 **Die Verkaufsleiste zeigt nur echte Zahlen** (`verkaufsstand`): Anteil
 verkauft und Preis der nächsten Phase, erst ab 70 % (`LEISTE_AB`, bis
-30.09.2026 waren es 50 %), ab 80 % in Warnfarbe. Davor steht bei echter
-Knappheit (höchstens `KNAPP_AB` Tickets übrig) „Wenige Tickets verfügbar“
-statt der genauen Zahl — Wunsch Bobbo. „Wenige“ erscheint weiter nur, wo
+30.09.2026 waren es 50 %; am 13.10. bestätigt), ab 80 % in Warnfarbe.
+Davor steht bei echter Knappheit „Wenige Tickets verfügbar“ statt der
+genauen Zahl — Wunsch Bobbo. **Knapp ist, was zuerst eintritt**
+(`zeigeRest`, 13.10.2026): höchstens `KNAPP_AB` (25) Tickets übrig **oder**
+höchstens ein Drittel des Kontingents (`KNAPP_ANTEIL`). Kleine Phasen (30
+Early Birds von 420 Plätzen) sind damit nach 5 Verkäufen „wenige“, große
+früher als bisher (Classic 200 ab 134 statt 175 verkauft). „Wenige“ erscheint weiter nur, wo
 es stimmt; auf jeder Phase wäre es erfundene Knappheit (§ 5 UWG). Das Briefing erlaubt Dringlichkeit nur aus wahrheitsgemäßer
 Verfügbarkeit — nie erfundene Zahlen, keine Countdowns.
 

@@ -191,7 +191,7 @@ export function Ticketauswahl(props: Props) {
         {phasen.map((phase) => {
           const zustand = zustaende.get(phase.id)!;
           const menge = auswahl[phase.id] ?? 0;
-          const rest = zeigeRest(zustand);
+          const rest = zeigeRest(zustand, phase.kontingent);
           const gesperrt = zustand.art === "ausverkauft" || zustand.art === "vorbei";
           const folgt = zustand.art === "folgt";
           const stand = verkaufsstand(phase, phasen, zustaende);
@@ -211,7 +211,8 @@ export function Ticketauswahl(props: Props) {
               <div className={css.links}>
                 <div className={css.kopf}>
                   <span className={css.name}>{phase.name}</span>
-                  {/* Knapp heißt: höchstens KNAPP_AB Tickets übrig. Dann steht
+                  {/* Knapp heißt: höchstens KNAPP_AB Tickets oder ein Drittel
+                      übrig, was zuerst eintritt (zeigeRest). Dann steht
                       "Wenige Tickets verfügbar" statt der genauen Zahl
                       (30.09.2026) — bis die Verkaufsleiste ab 70 % übernimmt. */}
                   <span
