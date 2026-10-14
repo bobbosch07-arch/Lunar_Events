@@ -124,6 +124,14 @@ export default async function Datenschutz({
           (Art. 6 Abs. 1 lit. f DSGVO).
         </Absatz>
         <Absatz>
+          Partner der Veranstaltung: Für ein Event können wir unseren
+          Geschäftspartnern, etwa Mitveranstaltern oder dem Betreiber der
+          Location, einen geschützten Link geben. Dort sehen sie Vor- und
+          Nachnamen der Käufer und die Zahl der Tickets, keine Mailadressen und
+          keine Beträge. Rechtsgrundlage ist unser berechtigtes Interesse an
+          der gemeinsamen Planung des Abends (Art. 6 Abs. 1 lit. f DSGVO).
+        </Absatz>
+        <Absatz>
           Zahlung: Die Zahlung wickelt Stripe ab (Stripe Payments Europe Ltd.,
           Dublin, Irland). Kartendaten gibst du direkt in ein Formular von
           Stripe ein, sie erreichen unseren Server nie. Stripe prüft Zahlungen

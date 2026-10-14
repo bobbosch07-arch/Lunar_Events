@@ -14,6 +14,8 @@ import { PresaleEinladungen, type EinladungStand } from "@/components/PresaleEin
 import { WartelisteUebersicht } from "@/components/WartelisteUebersicht";
 import { PromoterStaffelFormular } from "@/components/PromoterStaffelFormular";
 import { PromoterRangliste } from "@/components/PromoterRangliste";
+import { PartnerLink } from "@/components/PartnerLink";
+import { eigeneAdresse } from "@/lib/stripe";
 import { darfCodesAendern } from "@/lib/backoffice";
 import { phasenZustaende, verkaufsstartKommt, type Phase } from "@/lib/typen";
 import bo from "../../backoffice.module.css";
@@ -67,7 +69,12 @@ async function Inhalt({ slug }: { slug: string }) {
 
   if (!event) notFound();
 
-  const orte = await holeOrte();
+  const [orte, { data: partner }] = await Promise.all([
+    holeOrte(),
+    // Nur Admins lesen die Tabelle (0047); sonst bleibt es bei "kein Link".
+    db.from("partner_links").select("token").eq("event_id", event.id).maybeSingle(),
+  ]);
+  const partnerLink = partner?.token ? `${eigeneAdresse()}/partner/${partner.token as string}` : null;
 
   const stufen = ((event.promoter_stufen ?? []) as Array<{ ab_tickets: number; belohnung: string }>)
     .map((x) => ({ ab: x.ab_tickets, belohnung: x.belohnung }))
@@ -293,6 +300,7 @@ async function Inhalt({ slug }: { slug: string }) {
         </div>
       ) : null}
       <WartelisteUebersicht eventId={event.id as string} />
+      <PartnerLink eventId={event.id as string} link={partnerLink} />
       <PromoterStaffelFormular
         eventId={event.id as string}
         stichtag={event.promo_stichtag ? utcNachBerlinFeld(event.promo_stichtag as string) : ""}

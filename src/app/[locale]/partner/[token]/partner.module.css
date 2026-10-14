@@ -1,0 +1,141 @@
+/* Die Seite hinter dem Partnerlink eines Events (0047). Aufgebaut wie die
+   Promoter-Seite: erst die zwei Zahlen, dann die Liste. */
+
+.rahmen {
+  min-height: 100vh;
+  color: var(--text-primary);
+}
+
+.kopf {
+  padding-block: var(--space-5);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.inhalt {
+  padding-block: var(--space-10) var(--space-16);
+  max-width: var(--breite-schmal);
+}
+
+.kopfzeile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+.titel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  letter-spacing: var(--ls-display);
+  text-transform: uppercase;
+}
+
+.wann {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+.intro {
+  margin-top: var(--space-2);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  color: var(--text-secondary);
+  max-width: 48ch;
+}
+
+.abgesagt {
+  margin-bottom: var(--space-8);
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  background: var(--error-weich);
+  color: var(--error);
+  font-size: var(--fs-body-s);
+}
+
+/* ---------- Summen ---------- */
+
+.summen {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-10);
+}
+
+.summe {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--grund-2);
+}
+
+.summeName {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.summeWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-display);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Liste ---------- */
+
+.leer {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}
+
+.zeilen {
+  list-style: none;
+  margin-bottom: var(--space-10);
+  border-top: 1px solid var(--border-light);
+}
+
+.zeile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 4.5rem;
+  gap: var(--space-3);
+  align-items: baseline;
+  padding-block: var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.zeileKopf {
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.name {
+  overflow-wrap: anywhere;
+}
+
+.ohneName {
+  color: var(--text-muted);
+}
+
+.zahl {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fussnote {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--fs-body-s);
+  color: var(--text-muted);
+  line-height: var(--lh-body);
+}

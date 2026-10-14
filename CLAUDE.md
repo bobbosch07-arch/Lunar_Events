@@ -43,6 +43,7 @@ node scripts/kasse-testen.mjs       # Abendkasse: bar, QR, Kontingent, Kassensta
 node scripts/garderobe-testen.mjs   # Garderobe: Kasse, Verfall, Nachbuchen, Tresen, Rechte
 node scripts/vip-testen.mjs         # VIP-Tickets: ausstellen, ändern, Einlass, stornieren
 node scripts/ticketnamen-testen.mjs # Namen je Ticket: Kasse, Ändern, Scanner (auch offline)
+node scripts/partnerlink-testen.mjs [http://localhost:3007] # Partnerlink: Rechte, mit Adresse auch die Seite
 ```
 
 `zahlung-testen.mjs` und `einlass-testen.mjs` sind älter und nehmen das
@@ -587,6 +588,30 @@ Grundlage ist das Promo-Konzept für THE OPENING (persönlicher Link plus
   also wessen letzte zählende Bestellung früher bezahlt wurde.
 - Prüfen: `node scripts/staffel-testen.mjs` (eigenes Test-Event), dazu
   `promoter-testen.mjs` für die alte Zuordnung.
+
+### Partnerlink je Event (Migration 0047, 14.10.2026)
+
+Geschäftspartner sehen die Bestellungen eines Events ohne Backoffice:
+`/partner/<token>` zeigt **Name des Käufers und Ticketanzahl** je bezahlter
+Online-Bestellung, oben Summe Tickets und Bestellungen. Keine Mailadressen,
+keine Beträge, **keine Abendkasse, Gästeliste oder VIP** (entschieden
+14.10.: „nur die Bestellungen“). Gezählt werden nicht stornierte Tickets;
+ganz erstattete Bestellungen fallen heraus, offene (auch Überweisung) sind
+nicht dabei. Neueste zuerst.
+
+- **Ein Link je Event**, den alle Partner teilen (entschieden 14.10.). Im
+  Backoffice auf der Event-Übersicht, Karte „Partnerlink“: erzeugen,
+  kopieren, „Neuen Link erzeugen“ (der alte liefert sofort 404),
+  „Abschalten“. Wer nicht mehr reinschauen soll, bekommt den neuen nicht.
+- **Der Schlüssel steht nicht in `events`**, sondern in `partner_links`:
+  `events` ist für alle lesbar, ein Token dort wäre über die Schnittstelle
+  abfragbar. `partner_links` lesen und schreiben nur Admins
+  (Zugriffsregel), `anon` hat gar keine Rechte; die Seite liest mit dem
+  Dienstschlüssel. Die Selbstprüfung von 0047 schlägt an, falls je eine
+  Token-Spalte in `events` auftaucht.
+- `/partner` gilt als interner Pfad (kein Banner, keine Messung) und als
+  geheimer Pfad (`bereinigeAdresse`), `referrer: no-referrer` wie beim
+  Promoter. Datenschutz (Abschnitt 4) nennt die Weitergabe an Partner.
 
 ### Presale (Migration 0019)
 
@@ -1376,6 +1401,7 @@ Fertig und geprüft:
 - Garderobe: in der Kasse und auf der Ticketseite, Marken mit QR, Tresen mit Bügelnummer (offline), Rolle garderobe
 - VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
 - Namen je Ticket (0046): Pflicht in der Kasse, ändern bis Beginn, Scanner mit Namen auch offline, Nachfrage für den Bestand
+- Partnerlink je Event (0047): Käufername und Ticketanzahl ohne Anmeldung, im Backoffice erzeugen, erneuern, abschalten
 
 Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live.
 Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):

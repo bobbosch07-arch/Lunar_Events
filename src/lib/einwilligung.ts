@@ -101,9 +101,10 @@ export function mussFragen(e: Einwilligung | null): boolean {
 
 /**
  * Werkzeuge des Personals: kein Banner, keine Messung. Dort arbeitet das
- * Team, Kundenverhalten gibt es da nicht zu sehen.
+ * Team, Kundenverhalten gibt es da nicht zu sehen. Dazu die Partnerseite
+ * (0047): Sie ist für Geschäftspartner, nicht für Gäste.
  */
-const INTERN = /^\/(?:en\/)?(?:backoffice|kasse|einlass|garderobe|plan|styleguide)(?:\/|$)/;
+const INTERN = /^\/(?:en\/)?(?:backoffice|kasse|einlass|garderobe|plan|styleguide|partner)(?:\/|$)/;
 
 export function istInternerPfad(pfad: string): boolean {
   return INTERN.test(pfad);
@@ -113,7 +114,7 @@ export function istInternerPfad(pfad: string): boolean {
  * Pfade, deren letzter Teil ein Zugang ist: Wer `/tickets/<token>` hat,
  * kommt rein. Solche Adressen dürfen nie zu Google oder Meta.
  */
-const GEHEIM = /^(\/(?:en\/)?(?:tickets|warteliste|promoter|kasse\/zahlen|newsletter\/bestaetigen|newsletter\/abmelden|werbung\/abmelden))\/[^/?#]+/;
+const GEHEIM = /^(\/(?:en\/)?(?:tickets|warteliste|promoter|partner|kasse\/zahlen|newsletter\/bestaetigen|newsletter\/abmelden|werbung\/abmelden))\/[^/?#]+/;
 
 /** Von den Parametern bleibt nur, was Kampagnen auswertbar macht. */
 const ERLAUBT = new Set(["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "promo"]);

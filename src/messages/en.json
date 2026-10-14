@@ -547,5 +547,17 @@
     "einstellungen": "Settings",
     "speichern": "Save choice",
     "aendern": "Cookie settings"
+  },
+  "partner": {
+    "eyebrow": "Partner",
+    "intro": "The paid online orders for this event: who bought and how many tickets. No email addresses, no amounts.",
+    "tickets": "Tickets",
+    "bestellungen": "Orders",
+    "name": "Name",
+    "ohneName": "No name",
+    "keine": "No paid orders yet.",
+    "abgesagt": "This event has been cancelled.",
+    "umfang": "Door sales, guest list and VIP are not included. Reload for the latest numbers.",
+    "geheim": "This link is confidential. Anyone who has it can see the names. Please do not share it."
   }
 }
