@@ -23,6 +23,7 @@ import { steuerhinweis } from "@/lib/steuer";
 import { merkeCode, normalisiereCode, vergissCode } from "@/lib/rabatt";
 import { bereinigeName, doppelteNamen, istTicketname, TICKETNAME_MAX } from "@/lib/ticketname";
 import {
+  holeLaufendeBestellung,
   pruefeRabattcode,
   reserviereBestellung,
   schliesseKostenlosAb,
@@ -220,15 +221,74 @@ export function CheckoutFluss(props: Props) {
     props.vorkasseMoeglich ? "vorkasse" : null,
   ].filter(Boolean);
 
-  // Einmal beim Betreten der Kasse. Erst nach dem ersten Zeichnen, weil
-  // showModal() ein fertiges Element braucht.
+  // Nach einem Neuladen weitermachen (14.10.2026): Handys laden die Seite
+  // gern neu, wenn man zur Freigabe in die Banking-App wechselt. Die Kasse
+  // begann dann leer, und Gäste legten eine zweite Bestellung an. Gemerkt wird
+  // im Tab (sessionStorage, wie der Rabattcode), ob die Reservierung noch
+  // gilt, sagt die Datenbank. Zustimmungen werden bewusst nicht gemerkt.
+  const merkSchluessel = `lunar.kasse.${props.eventId}.${props.posten.map((p) => `${p.phase_id}:${p.menge}`).join(",")}`;
   const angebotGezeigt = useRef(false);
   useEffect(() => {
-    if (angebot && !angebotGezeigt.current) {
-      angebotGezeigt.current = true;
-      setAngebotOffen(true);
+    let gemerkt: {
+      bestellung: NonNullable<typeof bestellung>;
+      formular: Formular;
+      namen: string[];
+      fastlane: boolean;
+      garderobe: number;
+      code: GueltigerCode | null;
+    } | null = null;
+    try {
+      gemerkt = JSON.parse(sessionStorage.getItem(merkSchluessel) ?? "null");
+    } catch {
+      gemerkt = null;
     }
-  }, [angebot]);
+    if (!gemerkt) return;
+    // Nicht vom Angebotsfenster überdecken lassen: Fast Lane ist gewählt oder nicht.
+    angebotGezeigt.current = true;
+    const g = gemerkt;
+    void holeLaufendeBestellung(g.bestellung.id).then((stand) => {
+      if (stand.stand === "bezahlt") {
+        router.replace(`/checkout/bestaetigung?b=${g.bestellung.id}`);
+        return;
+      }
+      if (stand.stand === "offen") {
+        setFormular(g.formular);
+        setNamen(g.namen);
+        setErsterEigen(true);
+        setFastlane(g.fastlane);
+        setGarderobe(g.garderobe);
+        setCode(g.code);
+        setBestellung({ ...g.bestellung, bis: stand.reserviertBis, codeRabattCent: stand.codeRabattCent });
+        setSchritt(3);
+      } else {
+        try {
+          sessionStorage.removeItem(merkSchluessel);
+        } catch {
+          // egal
+        }
+      }
+    });
+    // Nur beim Öffnen der Kasse.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Einmal beim Betreten der Kasse. Erst nach dem ersten Zeichnen, weil
+  // showModal() ein fertiges Element braucht.
+  useEffect(() => {
+    if (angebot && !angebotGezeigt.current) {
+      // Eine gemerkte Bestellung nimmt der Effekt oben wieder auf.
+      try {
+        if (sessionStorage.getItem(merkSchluessel)) return;
+      } catch {
+        // weiter wie ohne
+      }
+      const bild = requestAnimationFrame(() => {
+        angebotGezeigt.current = true;
+        setAngebotOffen(true);
+      });
+      return () => cancelAnimationFrame(bild);
+    }
+  }, [angebot, merkSchluessel]);
 
   function pruefe(): boolean {
     const neu: Partial<Record<keyof Formular, string>> = {};
@@ -438,12 +498,28 @@ export function CheckoutFluss(props: Props) {
       return;
     }
 
-    setBestellung({
+    const neu = {
       id: ergebnis.bestellung_id,
       nummer: ergebnis.nummer,
       bis: ergebnis.reserviert_bis,
       codeRabattCent: ergebnis.code_rabatt_cent,
-    });
+    };
+    setBestellung(neu);
+    try {
+      sessionStorage.setItem(
+        merkSchluessel,
+        JSON.stringify({
+          bestellung: neu,
+          formular,
+          namen: ticketNamen,
+          fastlane: fastlane && Boolean(angebot),
+          garderobe: garderobeAngebot ? garderobe : 0,
+          code,
+        }),
+      );
+    } catch {
+      // Ohne Speicher eben ohne Weitermachen nach dem Neuladen.
+    }
     // Zwischen Vorschau und Reservierung kann die Obergrenze erreicht
     // worden sein — dann gilt der Code für weniger Tickets als angezeigt.
     if (code && ergebnis.code_tickets !== code.tickets) {

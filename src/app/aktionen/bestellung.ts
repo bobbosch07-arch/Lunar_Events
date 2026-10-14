@@ -496,6 +496,47 @@ export async function bucheGarderobeNach(
 }
 
 /** Liest die Bestellung, deren Nachweis im Cookie liegt. */
+export type LaufendeBestellung =
+  | { stand: "offen"; nummer: string; reserviertBis: string; codeRabattCent: number }
+  | { stand: "bezahlt" }
+  | { stand: "weg" };
+
+/**
+ * Für die Kasse nach einem Neuladen (14.10.2026): Handys laden die Seite gern
+ * neu, wenn man zur Freigabe in die Banking-App wechselt, und die Kasse
+ * begann dann leer. Jetzt merkt sie sich die Bestellung im Tab und fragt
+ * hier, ob die Reservierung noch läuft. Nachweis ist das Bestell-Cookie,
+ * wie für die Bestätigungsseite. "bezahlt" nur, wenn es eben erst geschah:
+ * Wer später für dasselbe Event noch einmal kauft, soll nicht auf der alten
+ * Bestätigung landen.
+ */
+export async function holeLaufendeBestellung(bestellungId: string): Promise<LaufendeBestellung> {
+  if (typeof bestellungId !== "string" || !(await bestellCookieGilt(bestellungId))) {
+    return { stand: "weg" };
+  }
+  await stelleZahlungSicher(bestellungId);
+  const { data } = await dienstClient()
+    .from("bestellungen")
+    .select("status, vorkasse, nummer, reserviert_bis, bezahlt_am, code_rabatt_cent")
+    .eq("id", bestellungId)
+    .maybeSingle();
+  if (!data) return { stand: "weg" };
+  if (data.status === "bezahlt") {
+    const vor = Date.now() - new Date(data.bezahlt_am as string).getTime();
+    return vor < 30 * 60 * 1000 ? { stand: "bezahlt" } : { stand: "weg" };
+  }
+  const bis = data.reserviert_bis as string | null;
+  if (data.status !== "offen" || data.vorkasse || !bis || new Date(bis).getTime() <= Date.now()) {
+    return { stand: "weg" };
+  }
+  return {
+    stand: "offen",
+    nummer: data.nummer as string,
+    reserviertBis: bis,
+    codeRabattCent: (data.code_rabatt_cent as number | null) ?? 0,
+  };
+}
+
 export async function holeEigeneBestellung(bestellungId: string) {
   if (!(await bestellCookieGilt(bestellungId))) return null;
 

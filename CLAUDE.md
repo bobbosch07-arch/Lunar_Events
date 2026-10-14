@@ -778,6 +778,17 @@ Reservierungszeit und das Zahlformular für **dieselbe** Bestellung (ein
 Zahlvorgang je Bestellung, also nie doppelt), bei `processing` „wird
 geprüft“, nach Ablauf „Tickets neu wählen“. Gezählt wird dort nichts.
 
+**Die Kasse übersteht ein Neuladen** (14.10.2026). Handys laden die Seite
+gern neu, wenn man zur Freigabe in die Banking-App wechselt; die Kasse begann
+dann leer, und Gäste legten eine zweite Bestellung an. Nach der Reservierung
+merkt sie sich Bestellung, Daten, Namen, Fast Lane, Garderobe und Code im
+Tab (`sessionStorage`, Schlüssel je Event und Auswahl), beim Öffnen fragt
+`holeLaufendeBestellung` (Nachweis: Bestell-Cookie, vorher
+`stelleZahlungSicher`): läuft die Reservierung, geht es bei Schritt 3 mit
+derselben Bestellung weiter; ist sie in der letzten halben Stunde bezahlt
+worden, zur Bestätigung; sonst frisch. Zustimmungen werden nicht gemerkt.
+Das Fast-Lane-Fenster öffnet nicht, wenn eine gemerkte Bestellung da ist.
+
 **Der Betrag kommt immer aus der Datenbank**, nie aus dem Browser. Pro
 Bestellung entsteht nur ein Zahlungsvorgang, auch beim Neuladen —
 sonst stünden zwei offene Zahlungen für eine Bestellung in Stripe.
