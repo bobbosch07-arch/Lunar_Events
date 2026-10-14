@@ -217,7 +217,16 @@ function Formular({
 
   return (
     <form onSubmit={absenden} className={css.zahlform}>
-      <PaymentElement onReady={() => setBereit(true)} />
+      {/* Günstige Zahlarten zuerst (14.10.2026): PayPal kostet über Stripe
+          bei einem 5,99-€-Ticket 0,68 € (11 %), Karte 0,34 €; 18 von 30
+          Käufern nahmen PayPal, weil es oben stand. PayPal bleibt, steht
+          aber hinten. Nicht genannte Zahlarten hängt Stripe danach an. */}
+      <PaymentElement
+        onReady={() => setBereit(true)}
+        options={{
+          paymentMethodOrder: ["apple_pay", "google_pay", "card", "link", "sepa_debit", "klarna", "paypal"],
+        }}
+      />
 
       {fehler ? <p className={css.stoerung}>{fehler}</p> : null}
 

@@ -130,6 +130,12 @@ Runden davor in `docs/redesign-boards*.html`.
   Zahlarten-Liste ist ein Accordion und braucht eigene Regeln
   (`.AccordionItem`). Farben stehen als Literale, weil Stripe keine
   CSS-Variablen kennt — ändert sich ein Token, muss der Wert mit.
+  **Reihenfolge der Zahlarten** (`paymentMethodOrder`, 14.10.2026): Apple
+  Pay, Google Pay, Karte, Link, Lastschrift, Klarna, **PayPal zuletzt**.
+  Auswertung THE OPENING: 18 von 30 zahlten mit PayPal, über Stripe 0,68 €
+  bei 5,99 € (PayPal 0,57 € + Stripe 0,11 €), Karte 0,34 €; PayPal machte
+  14,05 € von 19,27 € Gebühren. Direkt über PayPal (schon gebaut, ohne
+  Zugangsdaten) spart nur die 0,11 € und lohnt den zweiten Anbieter nicht.
 - **Ticket** (`TicketKarte`): violetter Kopf mit angeschnittener Sichel
   (`--sichel-maske`), rosa Typ-Marke, gelbe Beschriftungen, harter rosa
   Schatten (VIP: gelb). Der QR-Code bleibt auf Weiß.
