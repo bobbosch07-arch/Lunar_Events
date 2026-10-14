@@ -76,7 +76,8 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
     .from("tickets")
     .select("code, phase_name, art, status, gast_name, platz, fastlane")
     .eq("bestellung_id", b)
-    .order("erstellt_am", { ascending: true });
+    .order("erstellt_am", { ascending: true })
+    .order("id", { ascending: true });
 
   const { data: rohMarken } = await db
     .from("garderobe_marken")

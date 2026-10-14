@@ -39,7 +39,7 @@ export default async function Datenschutz({
     <Textseite
       titel="Datenschutz"
       vorspann="Was wir speichern, warum, wo und wie lange."
-      stand="Stand: 3. Oktober 2026. Wir passen die Erklärung an, sobald sich Dienste oder Abläufe ändern."
+      stand="Stand: 14. Oktober 2026. Wir passen die Erklärung an, sobald sich Dienste oder Abläufe ändern."
     >
       <Block titel="1. Verantwortlich">
         <Absatz>
@@ -111,6 +111,17 @@ export default async function Datenschutz({
           eigenen Ticketseite. Deren Adresse enthält einen langen,
           zufälligen Schlüssel. Wer den Link hat, sieht die Tickets. Gib ihn
           deshalb nur an Menschen weiter, die mit dir kommen.
+        </Absatz>
+        <Absatz>
+          Namen auf den Tickets: Für jedes Ticket speichern wir Vor- und
+          Nachnamen der Person, die damit kommt, weil wir am Einlass Ausweise
+          kontrollieren. Kaufst du für andere, trag ihre Namen nur mit ihrem
+          Wissen ein. Das Personal am Einlass sieht den Namen beim Scannen.
+          Damit das auch ohne Netz geht, liegen die Namen eines Events während
+          des Einlasses auf den Geräten des Personals, ohne Mailadressen.
+          Rechtsgrundlage ist der Vertrag (Art. 6 Abs. 1 lit. b DSGVO) und
+          unser berechtigtes Interesse an einer sicheren Einlasskontrolle
+          (Art. 6 Abs. 1 lit. f DSGVO).
         </Absatz>
         <Absatz>
           Zahlung: Die Zahlung wickelt Stripe ab (Stripe Payments Europe Ltd.,
@@ -376,7 +387,8 @@ export default async function Datenschutz({
           Alle Verbindungen sind verschlüsselt (TLS). Zugriff auf
           Kundendaten haben nur Admins. Personal am
           Einlass, an der Bar oder an der Garderobe sieht keine Bestellungen,
-          Adressen oder Ticketcodes.
+          Adressen oder Ticketcodes. Am Einlass sieht es den Namen auf dem
+          Ticket (siehe 4.).
         </Absatz>
       </Block>
     </Textseite>

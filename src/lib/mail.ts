@@ -1037,6 +1037,8 @@ export type ErinnerungMail = {
   karte: string | null;
   dresscode: string | null;
   ticketLink: string;
+  /** Tickets dieser Bestellung ohne Namen (0046); 0, wenn alle einen haben. */
+  namenFehlen?: number;
 };
 
 /**
@@ -1047,6 +1049,11 @@ export type ErinnerungMail = {
 export async function sendeErinnerung(daten: ErinnerungMail): Promise<boolean> {
   const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
   const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+  const namenFehlen = daten.namenFehlen ?? 0;
+  const namenSatz =
+    namenFehlen === 1
+      ? "Auf einem Ticket fehlt noch der Name. Am Einlass kontrollieren wir Ausweise. Trag ihn bitte bis zum Beginn auf deiner Ticketseite ein."
+      : `Auf ${namenFehlen} Tickets fehlen noch die Namen. Am Einlass kontrollieren wir Ausweise. Trag sie bitte bis zum Beginn auf deiner Ticketseite ein.`;
 
   const anfahrt = daten.karte
     ? `${maskiere(daten.ort)}<br><a href="${daten.karte}" style="color:#ffe14a;">Route ansehen</a>`
@@ -1064,7 +1071,7 @@ ${kopfBalken("Morgen")}
 <tr><td style="padding:28px;font-size:15px;line-height:1.7;">
 <p style="margin:0 0 16px;">${anrede}</p>
 <p style="margin:0 0 20px;">morgen ist es so weit: <strong>${maskiere(daten.eventTitel)}</strong>. Hier noch einmal alles Wichtige und deine Tickets.</p>
-
+${namenFehlen ? `<p style="margin:0 0 20px;padding:14px 16px;border:1px solid #ff8fd6;border-radius:4px;">${namenSatz}</p>` : ""}
 ${ticketKarte({
   titel: maskiere(daten.eventTitel),
   etikett: "Tickets",
@@ -1081,7 +1088,7 @@ Auf der Ticketseite kannst du die Tickets auch in Apple Wallet oder Google Walle
   const text = `${anredeText}
 
 morgen ist es so weit: ${daten.eventTitel}. Hier noch einmal alles Wichtige und deine Tickets.
-
+${namenFehlen ? `\n${namenSatz}\n` : ""}
 Wann: ${daten.wann}${daten.einlass ? `\nEinlass: ${daten.einlass}` : ""}
 Wo: ${daten.ort}${daten.karte ? `\nRoute: ${daten.karte}` : ""}${daten.dresscode ? `\nDresscode: ${daten.dresscode}` : ""}
 
@@ -1094,6 +1101,74 @@ Lunar Events`;
   return versende({
     an: daten.an,
     betreff: `Morgen: ${daten.eventTitel}`,
+    html,
+    text,
+  });
+}
+
+export type NamenNachfrageMail = {
+  an: string;
+  vorname: string | null;
+  eventTitel: string;
+  /** Beginn, z. B. "Samstag, 14. November 2026, 22:00 Uhr" */
+  wann: string;
+  /** Tickets dieser Bestellung ohne Namen. */
+  fehlen: number;
+  /** Tickets der Bestellung insgesamt. */
+  tickets: number;
+  ticketLink: string;
+};
+
+/**
+ * Namen je Ticket (0046) für Bestellungen von davor: einmal je Bestellung,
+ * ausgelöst im Backoffice. Das erste Ticket trägt schon den Namen des
+ * Käufers; gefragt wird nach den übrigen.
+ */
+export async function sendeNamenNachfrage(daten: NamenNachfrageMail): Promise<Versandergebnis> {
+  const anredeText = daten.vorname ? `Hallo ${daten.vorname},` : "Hallo,";
+  const anrede = daten.vorname ? `Hallo ${maskiere(daten.vorname)},` : "Hallo,";
+  const fehlenText =
+    daten.fehlen === 1 ? "fehlt auf einem Ticket noch der Name" : `fehlen auf ${daten.fehlen} Tickets noch die Namen`;
+  const satz1 = `für ${daten.eventTitel} kontrollieren wir am Einlass Ausweise. Deshalb steht ab jetzt auf jedem Ticket der Name der Person, die damit kommt.`;
+  const satz2 = `In deiner Bestellung ${fehlenText}. Trag bitte für jedes Ticket Vor- und Nachnamen ein, wie im Ausweis. Das geht bis zum Beginn auf deiner Ticketseite.`;
+  const satz3 =
+    daten.tickets > daten.fehlen
+      ? "Auf dem ersten Ticket steht schon dein Name. Ist es nicht für dich, kannst du ihn dort ebenfalls ändern."
+      : "";
+
+  const html = huelle(`
+${kopfBalken("Namen fehlen")}
+<tr><td style="padding:28px;font-size:15px;line-height:1.7;">
+<p style="margin:0 0 16px;">${anrede}</p>
+<p style="margin:0 0 16px;">für <strong>${maskiere(daten.eventTitel)}</strong> kontrollieren wir am Einlass Ausweise. Deshalb steht ab jetzt auf jedem Ticket der Name der Person, die damit kommt.</p>
+<p style="margin:0 0 24px;">${satz2}</p>
+
+${ticketKarte({
+  titel: maskiere(daten.eventTitel),
+  etikett: daten.fehlen === 1 ? "1 Name fehlt" : `${daten.fehlen} Namen fehlen`,
+  felder: [
+    ["Wann", daten.wann],
+    ["Tickets", String(daten.tickets)],
+  ],
+  link: daten.ticketLink,
+  knopf: "Namen eintragen",
+})}
+${satz3 ? `<p style="margin:0;font-size:13px;line-height:1.7;color:#c4b9d5;">${satz3}</p>` : ""}
+</td></tr>`);
+
+  const text = `${anredeText}
+
+${satz1}
+
+${satz2}
+
+Namen eintragen: ${daten.ticketLink}
+${satz3 ? `\n${satz3}\n` : ""}
+Lunar Events`;
+
+  return versendeMitGrund({
+    an: daten.an,
+    betreff: `Namen für deine Tickets: ${daten.eventTitel}`,
     html,
     text,
   });

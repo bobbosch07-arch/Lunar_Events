@@ -225,7 +225,19 @@
     "ppBedingungen": "Please accept the terms first.",
     "ppNichtVorbereitet": "The payment could not be prepared.",
     "ppTicketsFehlen": "The payment went through, but the tickets are still missing. Please get in touch with your order number and we’ll issue them right away.",
-    "ppAbgebrochen": "PayPal cancelled. Please try again."
+    "ppAbgebrochen": "PayPal cancelled. Please try again.",
+    "pflichtfeld": "Please fill this in",
+    "namen": {
+      "titel": "{anzahl, plural, one {Name on the ticket} other {Names on the tickets}}",
+      "hinweis": "{anzahl, plural, one {We check ID at the door. The name on the ticket has to match the ID. You can change it on your ticket page until the event starts.} other {We check ID at the door, so enter the first and last name of the person using each ticket. You can change the names on your ticket page until the event starts.}}",
+      "einTicket": "First and last name",
+      "ticket": "Ticket {nr}",
+      "platzhalter": "First and last name",
+      "vonOben": "From your details. If the ticket is for someone else, enter their name here.",
+      "fehler": "Please enter first and last name as shown on the ID.",
+      "doppelt": "This name is already on another ticket. One ticket is for one person.",
+      "fuer": "{anzahl, plural, one {Ticket for} other {Tickets for}} {namen}"
+    }
   },
   "bestaetigung": {
     "titel": "YOU'RE IN.",
@@ -270,7 +282,23 @@
     "bestellnummer": "Order number {nummer}",
     "statusEingeloest": "Redeemed",
     "statusStorniert": "Cancelled",
-    "eventsAnsehen": "See events"
+    "eventsAnsehen": "See events",
+    "name": {
+      "hinweis": "We check ID at the door. The name on the ticket has to match the ID. You can change it until the event starts, right below the ticket.",
+      "fehlenBanner": "{anzahl, plural, one {One ticket still needs a name. We check ID at the door. Please add it right below the ticket.} other {# tickets still need names. We check ID at the door. Please add them right below each ticket.}}",
+      "fehlt": "Name missing",
+      "aendern": "Change name",
+      "eintragen": "Add name",
+      "feld": "First and last name on this ticket",
+      "speichern": "Save",
+      "abbrechen": "Cancel",
+      "gespeichert": "Saved.",
+      "fehler": "Please enter first and last name as shown on the ID.",
+      "doppelt": "This name is already on another ticket in this order.",
+      "zuSpaet": "The event has started. Names can no longer be changed.",
+      "nichtGueltig": "The name on this ticket can no longer be changed.",
+      "allgemein": "That didn’t work. Reload the page and try again."
+    }
   },
   "konto": {
     "titel": "Account",

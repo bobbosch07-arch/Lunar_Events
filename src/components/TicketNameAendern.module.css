@@ -1,0 +1,72 @@
+/* Unter der Ticketkarte (0046). Feld und Beschriftung kommen aus der Kasse,
+   damit Eingaben überall gleich aussehen. */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  /* Abstand zum harten Schatten der Ticketkarte darüber. */
+  padding-top: var(--space-2);
+}
+
+/* Untereinander: Neben dem Knopf blieb auf dem Handy für einen langen
+   Namen zu wenig Platz. */
+.reihe {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.reihe input {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Fehlt der Name, soll man es sehen, bevor man das Feld liest. */
+.fehlt {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--hl);
+  color: var(--tinte);
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+}
+
+.zeile {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.gespeichert {
+  font-size: var(--fs-body-s);
+  color: var(--success);
+}
+
+/* Sieht aus wie ein Textverweis, ist aber so hoch wie ein Knopf: Auf dem
+   Handy wird er mit dem Daumen getroffen. */
+.textknopf {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-on-dark-muted);
+  font-size: var(--fs-body-s);
+  text-decoration: underline;
+  text-decoration-color: var(--border-gold);
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+
+.textknopf:hover {
+  color: var(--text-primary);
+}

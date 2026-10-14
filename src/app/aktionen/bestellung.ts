@@ -5,6 +5,7 @@ import { stripe, stripeEingerichtet } from "@/lib/stripe";
 import { verschickeTickets } from "./ticketmail";
 import { CODE_MUSTER, normalisiereCode } from "@/lib/rabatt";
 import { holeWartelisteEintrag } from "@/lib/warteliste";
+import { bereinigeName, doppelteNamen, istTicketname } from "@/lib/ticketname";
 import type { CodeAblehnung, CodeVorschau, VerkaufsStand } from "@/lib/typen";
 import {
   darfAnschluss,
@@ -96,6 +97,18 @@ function deuteFehler(meldung: string): ReservierungErgebnis {
   return { ok: false, fehler: "unbekannt" };
 }
 
+/**
+ * Ein Name je Ticket (0046), bereinigt, gültig und keiner doppelt — sonst
+ * null. Die Kasse prüft dasselbe; hier noch einmal, weil sich die Aktion
+ * aus der Konsole mit beliebigen Werten aufrufen lässt.
+ */
+function pruefeNamen(roh: unknown, anzahl: number): string[] | null {
+  if (!Array.isArray(roh) || roh.length !== anzahl) return null;
+  const namen = roh.map((n) => bereinigeName(String(n ?? "")));
+  if (!namen.every(istTicketname) || doppelteNamen(namen).some(Boolean)) return null;
+  return namen;
+}
+
 export async function reserviereBestellung(eingabe: {
   eventId: string;
   auswahl: Auswahlposten[];
@@ -113,6 +126,8 @@ export async function reserviereBestellung(eingabe: {
   einladung?: string | null;
   /** Wie viele Stück Garderobe (0027). */
   garderobe?: number;
+  /** Ein Name je Ticket, in der Reihenfolge der Kasse (0046). */
+  namen: string[];
 }): Promise<ReservierungErgebnis> {
   if (!Array.isArray(eingabe.auswahl) || eingabe.auswahl.length === 0) {
     return { ok: false, fehler: "leer" };
@@ -130,6 +145,11 @@ export async function reserviereBestellung(eingabe: {
   }
   const email = String(eingabe.email ?? "").trim().toLowerCase();
   if (!EMAIL_MUSTER.test(email) || email.length > 200) return { ok: false, fehler: "email" };
+  const namen = pruefeNamen(
+    eingabe.namen,
+    mengen.reduce((a, b) => a + b, 0),
+  );
+  if (!namen) return { ok: false, fehler: "namen" };
 
   const db = dienstClient();
 
@@ -168,11 +188,14 @@ export async function reserviereBestellung(eingabe: {
   // (§ 7 Abs. 3 UWG). Nur Bestellungen mit diesem Vermerk dürfen später eine
   // Presale-Einladung bekommen. Wer die Kasse ändert und den Hinweis
   // entfernt, muss auch diese Zeile entfernen.
+  // Dazu die Namen (0046): Die Tickets entstehen erst mit der Zahlung,
+  // bestaetige_zahlung übernimmt sie von hier. Scheitert das, fehlen sie
+  // nur: Die Ticketseite fragt dann danach.
   const { error: hinweis } = await db
     .from("bestellungen")
-    .update({ werbehinweis: true })
+    .update({ werbehinweis: true, ticket_namen: namen })
     .eq("id", bestellungId);
-  if (hinweis) console.error("[bestellung] Werbehinweis nicht vermerkt:", hinweis.message);
+  if (hinweis) console.error("[bestellung] Werbehinweis/Namen nicht vermerkt:", hinweis.message);
 
   // Promoter zuordnen — über seinen Code oder sein Kürzel. Scheitert das,
   // geht der Kauf trotzdem weiter: Die Zählung ist Beiwerk.
@@ -213,6 +236,8 @@ export async function uebernimmAngebot(eingabe: {
   vorname: string;
   nachname: string;
   telefon?: string;
+  /** Ein Name je Ticket (0046). */
+  namen: string[];
 }): Promise<ReservierungErgebnis> {
   const angebot = await holeWartelisteEintrag(eingabe.token);
   if (!angebot || angebot.zustand !== "angeboten" || !angebot.bestellung) {
@@ -220,6 +245,16 @@ export async function uebernimmAngebot(eingabe: {
   }
 
   const db = dienstClient();
+  // Gezählt an der Reservierung selbst, nicht am Wunsch auf der Warteliste.
+  const { data: positionen } = await db
+    .from("bestellpositionen")
+    .select("menge")
+    .eq("bestellung_id", angebot.bestellung.id);
+  const namen = pruefeNamen(
+    eingabe.namen,
+    (positionen ?? []).reduce((s, p) => s + (p.menge as number), 0),
+  );
+  if (!namen) return { ok: false, fehler: "namen" };
   const { error: kunde } = await db
     .from("kunden")
     .update({
@@ -233,9 +268,9 @@ export async function uebernimmAngebot(eingabe: {
   // Dieselbe Kasse, derselbe Hinweis (§ 7 Abs. 3 UWG) — siehe oben.
   const { error: hinweis } = await db
     .from("bestellungen")
-    .update({ werbehinweis: true })
+    .update({ werbehinweis: true, ticket_namen: namen })
     .eq("id", angebot.bestellung.id);
-  if (hinweis) console.error("[bestellung] Werbehinweis nicht vermerkt:", hinweis.message);
+  if (hinweis) console.error("[bestellung] Werbehinweis/Namen nicht vermerkt:", hinweis.message);
 
   await setzeBestellCookie(angebot.bestellung.id);
 

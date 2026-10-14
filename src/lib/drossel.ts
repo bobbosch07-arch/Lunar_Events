@@ -26,6 +26,8 @@ export const GRENZEN = {
   mailAdresse: { fenster: 60 * 60, grenze: 3 },
   /** Passwort-Anmeldungen je Anschluss. */
   passwort: { fenster: 15 * 60, grenze: 10 },
+  /** Namen auf Tickets ändern je Anschluss (0046). */
+  ticketnamen: { fenster: 15 * 60, grenze: 60 },
 } as const;
 
 type Grenze = { fenster: number; grenze: number };

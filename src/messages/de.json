@@ -225,7 +225,19 @@
     "ppBedingungen": "Bitte zuerst die Bedingungen bestätigen.",
     "ppNichtVorbereitet": "Die Zahlung konnte nicht vorbereitet werden.",
     "ppTicketsFehlen": "Die Zahlung ist durch, aber die Tickets fehlen noch. Melde dich bitte mit deiner Bestellnummer, dann stellen wir sie sofort aus.",
-    "ppAbgebrochen": "PayPal hat abgebrochen. Versuch es bitte noch einmal."
+    "ppAbgebrochen": "PayPal hat abgebrochen. Versuch es bitte noch einmal.",
+    "pflichtfeld": "Bitte ausfüllen",
+    "namen": {
+      "titel": "{anzahl, plural, one {Name auf dem Ticket} other {Namen auf den Tickets}}",
+      "hinweis": "{anzahl, plural, one {Am Einlass kontrollieren wir Ausweise. Der Name auf dem Ticket muss zum Ausweis passen. Ändern kannst du ihn bis zum Eventbeginn auf deiner Ticketseite.} other {Am Einlass kontrollieren wir Ausweise. Trag deshalb für jedes Ticket den Vor- und Nachnamen der Person ein, die damit kommt. Ändern kannst du die Namen bis zum Eventbeginn auf deiner Ticketseite.}}",
+      "einTicket": "Vor- und Nachname",
+      "ticket": "Ticket {nr}",
+      "platzhalter": "Vor- und Nachname",
+      "vonOben": "Aus deinen Daten. Ist das Ticket für jemand anderen, trag hier dessen Namen ein.",
+      "fehler": "Bitte Vor- und Nachnamen eintragen, wie im Ausweis.",
+      "doppelt": "Dieser Name steht schon auf einem anderen Ticket. Ein Ticket gilt für eine Person.",
+      "fuer": "{anzahl, plural, one {Ticket für} other {Tickets für}} {namen}"
+    }
   },
   "bestaetigung": {
     "titel": "DU BIST DABEI.",
@@ -270,7 +282,23 @@
     "bestellnummer": "Bestellnummer {nummer}",
     "statusEingeloest": "Eingelöst",
     "statusStorniert": "Storniert",
-    "eventsAnsehen": "Events ansehen"
+    "eventsAnsehen": "Events ansehen",
+    "name": {
+      "hinweis": "Am Einlass kontrollieren wir Ausweise. Der Name auf dem Ticket muss zum Ausweis passen. Ändern kannst du ihn bis zum Eventbeginn, hier unter dem Ticket.",
+      "fehlenBanner": "{anzahl, plural, one {Für ein Ticket fehlt noch der Name. Am Einlass kontrollieren wir Ausweise. Trag ihn bitte direkt unter dem Ticket ein.} other {Für # Tickets fehlen noch die Namen. Am Einlass kontrollieren wir Ausweise. Trag sie bitte direkt unter dem jeweiligen Ticket ein.}}",
+      "fehlt": "Name fehlt noch",
+      "aendern": "Name ändern",
+      "eintragen": "Name eintragen",
+      "feld": "Vor- und Nachname auf diesem Ticket",
+      "speichern": "Speichern",
+      "abbrechen": "Abbrechen",
+      "gespeichert": "Gespeichert.",
+      "fehler": "Bitte Vor- und Nachnamen eintragen, wie im Ausweis.",
+      "doppelt": "Dieser Name steht schon auf einem anderen Ticket dieser Bestellung.",
+      "zuSpaet": "Das Event hat begonnen. Namen lassen sich jetzt nicht mehr ändern.",
+      "nichtGueltig": "Für dieses Ticket lässt sich der Name nicht mehr ändern.",
+      "allgemein": "Das hat nicht geklappt. Lade die Seite neu und versuch es noch einmal."
+    }
   },
   "konto": {
     "titel": "Account",

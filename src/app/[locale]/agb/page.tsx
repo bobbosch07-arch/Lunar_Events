@@ -26,7 +26,7 @@ export default async function AGB({
     <Textseite
       titel="Allgemeine Geschäftsbedingungen"
       vorspann="Für den Kauf von Tickets über diese Seite und für den Besuch unserer Events."
-      stand="Stand: 19. September 2026."
+      stand="Stand: 14. Oktober 2026."
     >
       <Block titel="1. Wer verkauft und veranstaltet">
         <Absatz>
@@ -91,6 +91,7 @@ export default async function AGB({
         <Liste
           punkte={[
             "Jedes Ticket trägt einen Code, der genau einmal eingelöst werden kann. Wer zuerst scannt, kommt rein. Schütze deine Tickets wie Bargeld.",
+            "Jedes online gekaufte Ticket trägt Vor- und Nachnamen der Person, die es nutzt. Am Einlass gleichen wir ihn mit dem Ausweis ab. Ändern kannst du den Namen bis zum Beginn des Events auf deiner Ticketseite, etwa wenn du das Ticket weitergibst.",
             "Geht ein Ticket verloren, schicken wir es dir erneut. Wurde es schon von jemand anderem eingelöst, können wir es nicht ersetzen.",
             "Private Weitergabe an Freunde ist erlaubt. Gewerblicher Weiterverkauf und Verkauf über dem Kaufpreis sind nicht erlaubt. Tickets aus solchen Verkäufen können wir sperren.",
             "Mit dem ersten Scan ist das Ticket entwertet. Wer das Event verlässt, hat keinen Anspruch auf Wiedereinlass.",

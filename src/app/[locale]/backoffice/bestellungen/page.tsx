@@ -6,6 +6,8 @@ import { BackofficeSkelett } from "@/components/BackofficeSkelett";
 import { Aufraeumknopf } from "@/components/Aufraeumknopf";
 import { VorkasseEingang } from "@/components/VorkasseEingang";
 import { FehlendeTicketMails, TicketMailNachsenden } from "@/components/TicketMailNachsenden";
+import { NamenNachfragen } from "@/components/NamenNachfragen";
+import { zaehleFehlendeNamen } from "@/app/aktionen/namen";
 import { holeBestellungen } from "@/lib/backoffice";
 import { preisText } from "@/lib/format";
 import css from "../backoffice.module.css";
@@ -43,9 +45,11 @@ export default async function Bestellungen({
 }
 
 async function Inhalt({ locale }: { locale: string }) {
-  const [bestellungen, f] = await Promise.all([
+  const [bestellungen, f, ohneNamen] = await Promise.all([
     holeBestellungen(150),
     getFormatter(),
+    // Über alle Bestellungen kommender Events, nicht nur die 150 hier.
+    zaehleFehlendeNamen(),
   ]);
 
   const ohneMail = bestellungen.filter((b) => b.status === "bezahlt" && !b.mailGesendetAm).length;
@@ -53,6 +57,7 @@ async function Inhalt({ locale }: { locale: string }) {
   return (
     <>
       {ohneMail > 0 ? <FehlendeTicketMails anzahl={ohneMail} /> : null}
+      {ohneNamen > 0 ? <NamenNachfragen anzahl={ohneNamen} /> : null}
       <div className={css.tabellenfeld}>
         <table className={css.tabelle}>
           <thead>
@@ -87,6 +92,25 @@ async function Inhalt({ locale }: { locale: string }) {
                   </td>
                   <td className={css.zahl}>
                     {b.nachbuchung ? "—" : b.tickets}
+                    {/* Namen je Ticket (0046), damit Rückfragen am Telefon
+                        ohne Ticketlink beantwortbar sind. */}
+                    {b.namen.map((name, i) => (
+                      <div key={i} className={css.nebensache}>
+                        {name}
+                      </div>
+                    ))}
+                    {b.status === "bezahlt" && b.namenFehlen > 0 ? (
+                      <div style={{ marginTop: 4 }}>
+                        <span className={`${css.marke_} ${css.warte}`}>
+                          {b.namenFehlen === 1 ? "1 Name fehlt" : `${b.namenFehlen} Namen fehlen`}
+                        </span>
+                        {b.namenMailAm ? (
+                          <div className={css.nebensache}>
+                            angefragt {f.dateTime(new Date(b.namenMailAm), "kurz")}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                     {b.garderobe > 0 ? (
                       <div className={css.nebensache}>
                         {b.nachbuchung ? "nachgebucht: " : "+ "}

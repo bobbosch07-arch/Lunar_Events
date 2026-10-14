@@ -113,6 +113,26 @@
   color: var(--text-on-dark-muted);
 }
 
+/* Namen je Ticket (0046): fehlt einer, rosa umrandet wie die Marke
+   "Name fehlt noch" unter dem Ticket. Sonst ein ruhiger Satz. */
+.namenBand {
+  padding: var(--space-4) var(--space-5);
+  border: 1px solid var(--hl);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-6);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-primary);
+}
+
+.namenHinweis {
+  max-width: 62ch;
+  margin-bottom: var(--space-6);
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
+  color: var(--text-on-dark-muted);
+}
+
 .fuss {
   display: flex;
   flex-direction: column;

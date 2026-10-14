@@ -221,6 +221,12 @@ export type BestellZeile = {
   erstattungFaellig: boolean;
   /** Wann die Ticket-Mail rausging; null = nie (oder vom Anbieter abgelehnt). */
   mailGesendetAm: string | null;
+  /** Namen auf den nicht stornierten Tickets (0046), leere ausgelassen. */
+  namen: string[];
+  /** Gültige Tickets ohne Namen; an der Abendkasse immer 0. */
+  namenFehlen: number;
+  /** Wann nach den fehlenden Namen gefragt wurde. */
+  namenMailAm: string | null;
 };
 
 export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
@@ -231,10 +237,10 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
     .select(
       `id, nummer, status, gesamt_cent, zahlungsart, zahlung_ref, erstellt_am, vorkasse, reserviert_bis,
        rabattcode, code_rabatt_cent, garderobe_menge, nachbuchung_zu, erstattung_faellig,
-       mail_gesendet_am,
+       mail_gesendet_am, abendkasse, namen_mail_am,
        kunde:kunden(vorname, nachname, email),
        event:events(titel),
-       tickets(id)`,
+       tickets(id, status, gast_name, erstellt_am)`,
     )
     .order("erstellt_am", { ascending: false })
     .limit(grenze);
@@ -251,6 +257,13 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       email: string;
     } | null;
     const event = b.event as unknown as { titel: string } | null;
+    const tickets = ((b.tickets ?? []) as Array<{
+      status: string;
+      gast_name: string | null;
+      erstellt_am: string;
+    }>)
+      .slice()
+      .sort((x, y) => x.erstellt_am.localeCompare(y.erstellt_am));
 
     return {
       id: b.id as string,
@@ -273,6 +286,13 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
       erstattungFaellig: Boolean(b.erstattung_faellig),
       nachbuchung: Boolean(b.nachbuchung_zu),
       mailGesendetAm: (b.mail_gesendet_am as string | null) ?? null,
+      namen: tickets
+        .filter((t) => t.status !== "storniert" && t.gast_name)
+        .map((t) => t.gast_name as string),
+      namenFehlen: b.abendkasse
+        ? 0
+        : tickets.filter((t) => t.status === "gueltig" && !t.gast_name).length,
+      namenMailAm: (b.namen_mail_am as string | null) ?? null,
     };
   });
 }

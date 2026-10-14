@@ -7,6 +7,7 @@ import { Knopf } from "@/components/Knopf";
 import { TicketKarte, type TicketAnzeige } from "@/components/TicketKarte";
 import { GarderobenMarke, type MarkeAnzeige } from "@/components/GarderobenMarke";
 import { GarderobeNachbuchen } from "@/components/GarderobeNachbuchen";
+import { TicketNameAendern } from "@/components/TicketNameAendern";
 import { KopierFeld } from "@/components/KopierFeld";
 import { UeberweisungsDaten } from "@/components/UeberweisungsDaten";
 import { stelleZahlungSicher } from "@/app/aktionen/bestellung";
@@ -52,7 +53,7 @@ export default async function TicketAnsicht({ params }: Props) {
     .from("bestellungen")
     .select(
       `id, nummer, status, vorkasse, rabatt_cent, gesamt_cent, reserviert_bis, nachbuchung_zu,
-       garderobe_menge,
+       garderobe_menge, abendkasse,
        kunde:kunden(vorname, nachname),
        event:events(titel, beginn, einlass, ende, status, garderobe_aktiv, garderobe_preis_cent,
                     garderobe_kontingent, garderobe_verkauft,
@@ -99,12 +100,19 @@ export default async function TicketAnsicht({ params }: Props) {
     .from("tickets")
     .select("code, phase_name, art, status, gast_name, platz, fastlane")
     .eq("bestellung_id", bestellung.id)
-    .order("erstellt_am", { ascending: true });
+    .order("erstellt_am", { ascending: true })
+    // Vor 0046 hatten alle Tickets einer Zahlung denselben Zeitstempel; die
+    // ID entscheidet dann, wie beim Nachtragen des Käufernamens in 0046.
+    .order("id", { ascending: true });
 
   const wallet = { apple: appleEingerichtet(), google: googleEingerichtet() };
   const wann = f.dateTime(new Date(event.beginn), "mitZeit");
   const ort = `${event.ort.name}, ${event.ort.stadt}`;
   const name = [kunde?.vorname, kunde?.nachname].filter(Boolean).join(" ") || null;
+  // Namen je Ticket (0046) sind Pflicht, außer an der Abendkasse: Dort steht
+  // die Person selbst da. Ein fehlender Name wird nicht mehr durch den des
+  // Käufers ersetzt; bei vier Tickets stünde er sonst viermal da.
+  const mitNamen = !bestellung.abendkasse;
 
   const tickets: TicketAnzeige[] = (rohTickets ?? []).map((z) => ({
     code: z.code as string,
@@ -116,7 +124,7 @@ export default async function TicketAnsicht({ params }: Props) {
         : z.status === "storniert"
           ? "storniert"
           : "gueltig",
-    gast_name: (z.gast_name as string | null) ?? name,
+    gast_name: (z.gast_name as string | null) ?? (mitNamen ? null : name),
     platz: (z.platz as string | null) ?? null,
     fastlane: Boolean(z.fastlane),
     event_titel: event.titel,
@@ -161,7 +169,14 @@ export default async function TicketAnsicht({ params }: Props) {
 
   // Vorbei ist ein Event erst an seinem Ende, nicht bei Beginn: Um halb zwölf
   // steht der Gast noch in der Schlange und bucht vielleicht Garderobe nach.
-  const vorbei = eventEnde(event).getTime() < Date.now();
+  const jetzt = Date.now();
+  const vorbei = eventEnde(event).getTime() < jetzt;
+  // Namen ändern geht bis Eventbeginn (aendere_ticketname prüft dasselbe).
+  const namenAenderbar =
+    mitNamen && event.status !== "abgesagt" && jetzt < new Date(event.beginn).getTime();
+  const namenFehlen = namenAenderbar
+    ? tickets.filter((x) => x.status === "gueltig" && !x.gast_name).length
+    : 0;
   const garderobe = await holeGarderobe({
     bestellungId: bestellung.id as string,
     eigeneMenge: (bestellung.garderobe_menge as number) ?? 0,
@@ -208,10 +223,23 @@ export default async function TicketAnsicht({ params }: Props) {
             <p className={css.hinweisBand}>{t("vorbeiBand")}</p>
           ) : null}
 
+          {namenFehlen > 0 ? (
+            <p className={css.namenBand}>{t("name.fehlenBanner", { anzahl: namenFehlen })}</p>
+          ) : namenAenderbar ? (
+            <p className={css.namenHinweis}>{t("name.hinweis")}</p>
+          ) : null}
+
           <div className={css.raster}>
-            {tickets.map((ticket) => (
-              <TicketKarte key={ticket.code} ticket={ticket} />
-            ))}
+            {tickets.map((ticket) =>
+              namenAenderbar && ticket.status === "gueltig" ? (
+                <div key={ticket.code} className={css.eintrag}>
+                  <TicketKarte ticket={ticket} />
+                  <TicketNameAendern token={token} code={ticket.code} name={ticket.gast_name} />
+                </div>
+              ) : (
+                <TicketKarte key={ticket.code} ticket={ticket} />
+              ),
+            )}
           </div>
 
           {garderobe.marken.length > 0 || garderobe.nachbuchbar ? (

@@ -22,7 +22,8 @@ const FRAGEN: Array<[string, string[]]> = [
   [
     "Kann ich mein Ticket weitergeben?",
     [
-      "Ja. Wer den Code zuerst am Einlass vorzeigt, kommt rein, denn der Code lässt sich genau einmal einlösen. Gib ihn deshalb nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich.",
+      "Ja. Auf jedem Ticket steht der Name der Person, die damit kommt, und am Einlass kontrollieren wir Ausweise. Ändere deshalb vorher den Namen: Das geht bis zum Eventbeginn auf deiner Ticketseite, direkt unter dem Ticket.",
+      "Gib den Link nur an Leute weiter, denen du vertraust, und poste ihn nirgends öffentlich. Der Code lässt sich genau einmal einlösen.",
     ],
   ],
   [

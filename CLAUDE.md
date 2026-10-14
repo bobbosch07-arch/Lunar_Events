@@ -42,6 +42,7 @@ node scripts/schichtplan-testen.mjs # Schichtplan: einteilen, sehen, ein- und au
 node scripts/kasse-testen.mjs       # Abendkasse: bar, QR, Kontingent, Kassenstand, Rechte
 node scripts/garderobe-testen.mjs   # Garderobe: Kasse, Verfall, Nachbuchen, Tresen, Rechte
 node scripts/vip-testen.mjs         # VIP-Tickets: ausstellen, ändern, Einlass, stornieren
+node scripts/ticketnamen-testen.mjs # Namen je Ticket: Kasse, Ändern, Scanner (auch offline)
 ```
 
 `zahlung-testen.mjs` und `einlass-testen.mjs` sind älter und nehmen das
@@ -291,6 +292,53 @@ ihm widersprechen könnte). Eventseite: ruhige Zeile mit Goldlinie über der
 Ticketauswahl. Kasse: dieselbe Zeile in Schritt 1 und ein **Pflicht-Häkchen**
 in Schritt 3 („ohne gültigen Ausweis kein Einlass und keine Erstattung“) — alle
 Bezahlwege hängen an `zugestimmt`. Weitere Flaggen kommen als eigene `art` dazu.
+
+### Namen je Ticket (Migration 0046, 14.10.2026)
+
+Am Einlass werden Ausweise kontrolliert, deshalb trägt **jedes online
+gekaufte Ticket Vor- und Nachnamen der Person, die damit kommt** (Wunsch
+Bobbo). Entschieden am 14.10.: Ändern geht bis Eventbeginn auf der
+Ticketseite, der Scanner zeigt den Namen auch ohne Netz, der Bestand wurde
+nachgefragt. Abendkasse, Gästeliste und VIP sind ausgenommen: An der Tür
+steht die Person selbst da, die beiden anderen hatten schon Namen.
+
+- **Kasse, Schritt 2:** unter „Deine Daten“ ein Feld je Ticket. Ticket 1
+  zeigt den Namen des Käufers, bis der Gast dort selbst etwas einträgt.
+  Regel: mindestens zwei Teile mit Buchstaben, 3 bis 80 Zeichen, kein Name
+  doppelt in einer Bestellung (`src/lib/ticketname.ts`, dieselbe Regel als
+  `ist_ticketname()` in der Datenbank, dort ohne Buchstabenprüfung).
+  `reserviereBestellung`/`uebernimmAngebot` prüfen sie noch einmal.
+- **Gespeichert wird an der Bestellung** (`bestellungen.ticket_namen`), weil
+  Tickets erst mit der Zahlung entstehen. `bestaetige_zahlung` gibt Ticket *i*
+  den Namen *i*. Fehlt das Feld (vor 0046 reserviert), bekommt Ticket 1 den
+  Käufer. **Tickets entstehen seither mit `clock_timestamp()`**: Mit `now()`
+  hatten alle Tickets einer Zahlung denselben Zeitstempel und die Reihenfolge
+  fiel auf die zufällige ID (die Selbstprüfung von 0046 ist genau daran
+  gescheitert, wie 0029 bei VIP). Listen sortieren nach `erstellt_am, id`.
+- **Ändern** über `aendere_ticketname(token, code, name)`, nur
+  `service_role`, Nachweis ist der Ticketlink: bis Eventbeginn, nur gültige
+  Tickets, nicht doppelt. Antwortet mit einer Kennung (`ok`, `name`,
+  `doppelt`, `zu_spaet`, `nicht_gueltig`, `unbekannt`). Auf der Ticketseite
+  `TicketNameAendern` unter jeder Karte; fehlt ein Name, steht das Feld offen
+  und oben ein rosa Band. Ein fehlender Name wird dort **nicht** mehr durch den
+  Käufer ersetzt (bei vier Tickets stünde er sonst viermal da).
+- **Scanner:** `entwerte_ticket` liefert `gast` auch bei „schon drin“ und
+  `name_fehlt` für gekaufte Tickets ohne Namen („Kein Name hinterlegt“). Der
+  Name steht groß unter dem Urteil. **Ohne Netz** lädt das Gerät
+  `einlass_namen(event)`: Name je Prüfsumme (nicht je Code, wie in 0031),
+  ohne Mailadressen, im `localStorage`. Prüfsummen und Namen werden alle fünf
+  Minuten neu geholt, solange Netz da ist (vorher nur beim Öffnen).
+- **Bestand:** 0046 hat bei bezahlten Bestellungen kommender Events ohne
+  einen Namen das erste Ticket auf den Käufer gesetzt (THE OPENING: 27
+  Tickets, 7 blieben offen in 4 Bestellungen). Backoffice → Bestellungen
+  zeigt die Namen je Bestellung, „N Namen fehlen“, und ein Banner **„Namen
+  anfragen“** (`frageNamenNach`, einmal je Bestellung über
+  `namen_mail_am`, Mail `sendeNamenNachfrage`). Die Erinnerungsmail am
+  Vortag nennt fehlende Namen zusätzlich.
+- **Wallet:** Ein Apple-Pass aus der Ticketmail behält den Namen vom Zeitpunkt
+  der Mail; maßgeblich am Einlass ist, was der Scanner zeigt.
+- Prüfen: `node scripts/ticketnamen-testen.mjs` (eigenes Test-Event, echte
+  Einlass-Sitzung, räumt auf).
 
 **Die Verkaufsleiste zeigt nur echte Zahlen** (`verkaufsstand`): Anteil
 verkauft und Preis der nächsten Phase, erst ab 70 % (`LEISTE_AB`, bis
@@ -1327,6 +1375,7 @@ Fertig und geprüft:
 - Abendkasse: eigene Türphase, bar oder QR am Gasthandy, sofort einlassen, Kassenstand
 - Garderobe: in der Kasse und auf der Ticketseite, Marken mit QR, Tresen mit Bügelnummer (offline), Rolle garderobe
 - VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
+- Namen je Ticket (0046): Pflicht in der Kasse, ändern bis Beginn, Scanner mit Namen auch offline, Nachfrage für den Bestand
 
 Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live.
 Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):
@@ -1391,7 +1440,9 @@ Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):
 
 **E. Nach dem ersten Event**
 13. Rechtstexte anwaltlich prüfen; Datenschutz um Presale, Warteliste,
-    Gästeliste, Schichtplan, Garderobe und VIP ergänzen.
+    Gästeliste, Schichtplan, Garderobe und VIP ergänzen. Namen je Ticket
+    stehen seit 14.10. in AGB (5.) und Datenschutz (4., 15.); offen ist, ob
+    ein falscher Name ausdrücklich ein Grund für verweigerten Einlass ist.
 14. Neu bewerten: Tap to Pay/Kartenterminal, Getränkemarken, Galerie.
 
 **Beim Kunden:** Eventfotos, Social-Kanäle, Vorkasse-Konto in Vercel,

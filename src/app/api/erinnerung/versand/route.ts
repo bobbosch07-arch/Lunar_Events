@@ -77,7 +77,8 @@ export async function POST(anfrage: Request) {
   const { data: bestellungen, error } = await db
     .from("bestellungen")
     .select(
-      `id, zugangstoken,
+      `id, zugangstoken, abendkasse,
+       tickets(status, gast_name),
        kunde:kunden(email, vorname),
        event:events!inner(titel, beginn, einlass, dresscode, status,
          ort:orte(name, strasse, plz, stadt))`,
@@ -109,6 +110,13 @@ export async function POST(anfrage: Request) {
       ohneAdresse++;
       continue;
     }
+    // Namen je Ticket (0046): Wer bis hierher keine eingetragen hat, liest
+    // es spätestens hier noch einmal.
+    const namenFehlen = b.abendkasse
+      ? 0
+      : ((b.tickets ?? []) as Array<{ status: string; gast_name: string | null }>).filter(
+          (t) => t.status === "gueltig" && !t.gast_name,
+        ).length;
 
     const ok = await sendeErinnerung({
       an: kunde.email,
@@ -120,6 +128,7 @@ export async function POST(anfrage: Request) {
       karte: event.ort ? karteAus(event.ort) : null,
       dresscode: event.dresscode,
       ticketLink: `${eigeneAdresse()}/tickets/${b.zugangstoken}`,
+      namenFehlen,
     });
 
     if (ok) {

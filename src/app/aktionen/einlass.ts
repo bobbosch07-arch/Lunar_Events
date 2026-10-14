@@ -14,7 +14,10 @@ export type EinlassErgebnis = {
   art?: string;
   /** Darf an der normalen Schlange vorbei. */
   fastlane?: boolean;
+  /** Name auf dem Ticket, für den Abgleich mit dem Ausweis (0046). */
   gast?: string | null;
+  /** Gekauftes Ticket ohne Namen (Bestand von vor 0046). */
+  name_fehlt?: boolean;
   platz?: string | null;
   zeitpunkt?: string;
 };
@@ -50,19 +53,31 @@ export async function entwerte(code: string): Promise<EinlassErgebnis> {
  *
  * Gerechnet wird in der Datenbank (`einlass_pruefsummen`, 0031): Personal
  * darf die Tabelle `tickets` nicht lesen, die Codes verlassen sie also nie.
+ *
+ * Dazu die Namen je Prüfsumme (`einlass_namen`, 0046), damit der Ausweis
+ * auch ohne Netz abgeglichen werden kann. Fehlen sie, geht der Scanner
+ * trotzdem; er zeigt dann offline eben keinen Namen.
  */
 export async function holePruefsummen(
   eventId: string,
-): Promise<{ ok: boolean; summen: string[] }> {
+): Promise<{ ok: boolean; summen: string[]; namen: Record<string, string> }> {
   const db = await serverClient();
-  const { data, error } = await db.rpc("einlass_pruefsummen", { p_event_id: eventId });
+  const [summen, namen] = await Promise.all([
+    db.rpc("einlass_pruefsummen", { p_event_id: eventId }),
+    db.rpc("einlass_namen", { p_event_id: eventId }),
+  ]);
 
-  if (error || !data) {
-    console.error("[einlass] Prüfsummen laden fehlgeschlagen:", error?.message);
-    return { ok: false, summen: [] };
+  if (summen.error || !summen.data) {
+    console.error("[einlass] Prüfsummen laden fehlgeschlagen:", summen.error?.message);
+    return { ok: false, summen: [], namen: {} };
   }
+  if (namen.error) console.error("[einlass] Namen laden fehlgeschlagen:", namen.error.message);
 
-  return { ok: true, summen: data as string[] };
+  return {
+    ok: true,
+    summen: summen.data as string[],
+    namen: (namen.data as Record<string, string> | null) ?? {},
+  };
 }
 
 /* ------------------------------------------------------------------ */

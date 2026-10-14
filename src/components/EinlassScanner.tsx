@@ -19,6 +19,14 @@ const SPERRE_MS = 2500;
 
 const SPEICHER_PUFFER = "lunar.einlass.puffer";
 const SPEICHER_SUMMEN = "lunar.einlass.summen";
+/** Name je Prüfsumme (0046), für die Ausweiskontrolle ohne Netz. */
+const SPEICHER_NAMEN = "lunar.einlass.namen";
+/**
+ * So oft wird die Liste für den Betrieb ohne Netz neu geholt, solange Netz
+ * da ist: Namen lassen sich bis Beginn ändern, und wer kurz vorher kauft,
+ * fehlte sonst ohne Netz in der Liste.
+ */
+const AUFFRISCHEN_MS = 5 * 60 * 1000;
 
 type Gepuffert = { code: string; zeit: number };
 
@@ -67,6 +75,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
   const [gezaehlt, setGezaehlt] = useState(0);
   const [puffer, setPuffer] = useState<Gepuffert[]>([]);
   const [summen, setSummen] = useState<Set<string>>(new Set());
+  const [namen, setNamen] = useState<Record<string, string>>({});
   const [handeingabe, setHandeingabe] = useState(false);
   const [getippt, setGetippt] = useState("");
 
@@ -85,16 +94,26 @@ export function EinlassScanner({ events }: { events: Event[] }) {
   useEffect(() => {
     setPuffer(lies<Gepuffert[]>(SPEICHER_PUFFER, []));
     setSummen(new Set(lies<string[]>(SPEICHER_SUMMEN, [])));
+    setNamen(lies<Record<string, string>>(SPEICHER_NAMEN, {}));
   }, []);
 
-  // --- Prüfsummen für den Betrieb ohne Netz ---
+  // --- Prüfsummen und Namen für den Betrieb ohne Netz ---
   useEffect(() => {
     if (!eventId || !online) return;
-    holePruefsummen(eventId).then(({ ok, summen: neu }) => {
-      if (!ok) return;
-      setSummen(new Set(neu));
-      schreib(SPEICHER_SUMMEN, neu);
-    });
+    const holen = () =>
+      holePruefsummen(eventId)
+        .then(({ ok, summen: neu, namen: neueNamen }) => {
+          if (!ok) return;
+          setSummen(new Set(neu));
+          schreib(SPEICHER_SUMMEN, neu);
+          setNamen(neueNamen);
+          schreib(SPEICHER_NAMEN, neueNamen);
+        })
+        // Netz weg, obwohl das Gerät "online" meldet: Es bleibt die alte Liste.
+        .catch(() => {});
+    void holen();
+    const takt = setInterval(() => void holen(), AUFFRISCHEN_MS);
+    return () => clearInterval(takt);
   }, [eventId, online]);
 
   // --- Gepufferte Scans nachreichen ---
@@ -160,7 +179,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
         setZustand({
           art: "ergebnis",
           wert: bekannt
-            ? { ergebnis: "gueltig", gepuffert: true }
+            ? { ergebnis: "gueltig", gepuffert: true, gast: namen[summe] ?? null }
             : { ergebnis: "unbekannt" },
         });
         return;
@@ -174,7 +193,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
         setZustand({ art: "verbindung" });
       }
     },
-    [puffer, summen],
+    [puffer, summen, namen],
   );
 
   // --- Kamera ---
@@ -345,6 +364,13 @@ export function EinlassScanner({ events }: { events: Event[] }) {
                     einem Meter Abstand sehen, bevor er jemanden an der
                     Schlange vorbeiwinkt. Offline kennt der Scanner nur die
                     Prüfsumme — dann steht hier nichts. */}
+                {/* Der Name für den Ausweis (0046), ohne Netz aus der
+                    vorab geladenen Liste. */}
+                {zustand.wert.gast ? (
+                  <span className={css.gastname}>{zustand.wert.gast}</span>
+                ) : zustand.wert.name_fehlt ? (
+                  <span className={css.nameFehlt}>Kein Name hinterlegt</span>
+                ) : null}
                 {zustand.wert.fastlane ? (
                   <span className={css.fastlane}>Fast Lane</span>
                 ) : null}
@@ -352,8 +378,6 @@ export function EinlassScanner({ events }: { events: Event[] }) {
                   <span className={css.detail}>
                     {zustand.wert.typ}
                     {zustand.wert.platz ? ` · ${zustand.wert.platz}` : ""}
-                    {/* Gästeliste (0021): der Name steht auf dem Ticket. */}
-                    {zustand.wert.gast ? ` · ${zustand.wert.gast}` : ""}
                   </span>
                 ) : null}
                 {zustand.wert.event ? (

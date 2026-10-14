@@ -21,6 +21,7 @@ import {
 import { preisText } from "@/lib/format";
 import { steuerhinweis } from "@/lib/steuer";
 import { merkeCode, normalisiereCode, vergissCode } from "@/lib/rabatt";
+import { bereinigeName, doppelteNamen, istTicketname, TICKETNAME_MAX } from "@/lib/ticketname";
 import {
   pruefeRabattcode,
   reserviereBestellung,
@@ -115,6 +116,17 @@ export function CheckoutFluss(props: Props) {
         : LEER,
   );
   const [fehler, setFehler] = useState<Partial<Record<keyof Formular, string>>>({});
+  // Ein Name je Ticket (0046): Am Einlass werden Ausweise kontrolliert.
+  // Ticket 1 trägt den Namen aus "Deine Daten", bis der Gast dort selbst
+  // etwas einträgt — meist kauft man auch für sich.
+  const [namen, setNamen] = useState<string[]>(() =>
+    Array(props.posten.reduce((s, p) => s + p.menge, 0)).fill(""),
+  );
+  const [ersterEigen, setErsterEigen] = useState(false);
+  const [namenFehler, setNamenFehler] = useState<Record<number, string>>({});
+  const ticketNamen = namen.map((n, i) =>
+    i === 0 && !ersterEigen ? `${formular.vorname.trim()} ${formular.nachname.trim()}`.trim() : n,
+  );
   const [agb, setAgb] = useState(false);
   const [widerruf, setWiderruf] = useState(false);
   const [flaggenOk, setFlaggenOk] = useState(false);
@@ -220,18 +232,29 @@ export function CheckoutFluss(props: Props) {
 
   function pruefe(): boolean {
     const neu: Partial<Record<keyof Formular, string>> = {};
-    if (!formular.vorname.trim()) neu.vorname = t("schritt2");
-    if (!formular.nachname.trim()) neu.nachname = t("schritt2");
+    if (!formular.vorname.trim()) neu.vorname = t("pflichtfeld");
+    if (!formular.nachname.trim()) neu.nachname = t("pflichtfeld");
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(formular.email.trim())) {
-      neu.email = t("schritt2");
+      neu.email = t("pflichtfeld");
     }
     setFehler(neu);
 
-    if (Object.keys(neu).length > 0) {
-      const erstes = (["vorname", "nachname", "email"] as const).find(
-        (f) => f in neu,
-      );
-      if (erstes) document.getElementById(erstes)?.focus();
+    const doppelt = doppelteNamen(ticketNamen);
+    const namenNeu: Record<number, string> = {};
+    ticketNamen.forEach((roh, i) => {
+      // Ein leeres Ticket 1 liegt an leerem Vor- oder Nachnamen oben, dort
+      // steht der Fehler schon.
+      if (i === 0 && !ersterEigen && (neu.vorname || neu.nachname)) return;
+      if (!istTicketname(bereinigeName(roh))) namenNeu[i] = t("namen.fehler");
+      else if (doppelt[i]) namenNeu[i] = t("namen.doppelt");
+    });
+    setNamenFehler(namenNeu);
+
+    const erstes =
+      (["vorname", "nachname", "email"] as const).find((f) => f in neu) ??
+      (Object.keys(namenNeu).length > 0 ? `ticketname-${Object.keys(namenNeu)[0]}` : null);
+    if (erstes) {
+      document.getElementById(erstes)?.focus();
       return false;
     }
     return true;
@@ -314,12 +337,14 @@ export function CheckoutFluss(props: Props) {
     setLaeuft(true);
     setStoerung(null);
 
+    const namenFuerDb = ticketNamen.map(bereinigeName);
     const ergebnis: ReservierungErgebnis = props.warteliste
       ? await uebernimmAngebot({
           token: props.warteliste.token,
           vorname: formular.vorname,
           nachname: formular.nachname,
           telefon: formular.telefon,
+          namen: namenFuerDb,
         })
       : await reserviereBestellung({
           eventId: props.eventId,
@@ -333,12 +358,18 @@ export function CheckoutFluss(props: Props) {
           promo: props.promo,
           einladung: props.einladung?.token ?? null,
           garderobe: garderobeAngebot ? garderobe : 0,
+          namen: namenFuerDb,
         });
 
     setLaeuft(false);
 
     if (!ergebnis.ok && ergebnis.fehler === "angebot_vorbei") {
       setStoerung(t("wartelisteVorbei"));
+      return;
+    }
+
+    if (!ergebnis.ok && ergebnis.fehler === "namen") {
+      setStoerung(t("namen.fehler"));
       return;
     }
 
@@ -716,6 +747,44 @@ export function CheckoutFluss(props: Props) {
               </div>
             </div>
 
+            {/* Namen je Ticket (0046): Am Einlass werden Ausweise
+                kontrolliert. Gebraucht wird der Name erst mit der Zahlung,
+                bestaetige_zahlung schreibt ihn aufs Ticket. */}
+            <section className={css.namen} aria-labelledby="namen-titel">
+              <h2 id="namen-titel" className={css.namenTitel}>
+                {t("namen.titel", { anzahl })}
+              </h2>
+              <p className={css.namenHinweis}>{t("namen.hinweis", { anzahl })}</p>
+              <div className={css.felder}>
+                {ticketNamen.map((wert, i) => (
+                  <Feld
+                    key={i}
+                    name={`ticketname-${i}`}
+                    beschriftung={
+                      anzahl === 1 ? t("namen.einTicket") : t("namen.ticket", { nr: i + 1 })
+                    }
+                    wert={wert}
+                    fehler={namenFehler[i]}
+                    hinweis={i === 0 && !ersterEigen && wert ? t("namen.vonOben") : undefined}
+                    platzhalter={t("namen.platzhalter")}
+                    maxLaenge={TICKETNAME_MAX}
+                    grossschreibung="words"
+                    autoComplete={i === 0 ? "name" : "off"}
+                    aendern={(v) => {
+                      if (i === 0) setErsterEigen(true);
+                      setNamen((alt) => alt.map((n, j) => (j === i ? v : n)));
+                      // Die alte Meldung gilt für den alten Namen.
+                      setNamenFehler((alt) => {
+                        const rest = { ...alt };
+                        delete rest[i];
+                        return rest;
+                      });
+                    }}
+                  />
+                ))}
+              </div>
+            </section>
+
             {/* Pflicht für spätere Einladungen per Mail (§ 7 Abs. 3 UWG): Der
                 Hinweis muss beim Erheben der Adresse stehen. Der Server
                 vermerkt ihn an der Bestellung (werbehinweis) — wer ihn hier
@@ -958,6 +1027,12 @@ export function CheckoutFluss(props: Props) {
                   </span>
                 </div>
               ))}
+              {/* Vor dem Bezahlen noch einmal sehen, auf wen die Tickets laufen. */}
+              {schritt === 3 ? (
+                <span className={css.zfDetail}>
+                  {t("namen.fuer", { anzahl, namen: ticketNamen.map(bereinigeName).join(", ") })}
+                </span>
+              ) : null}
             </div>
 
             <div className={css.zfTrenner} />
@@ -1031,17 +1106,25 @@ function Feld({
   hinweis,
   autoComplete,
   nurLesen = false,
+  platzhalter,
+  maxLaenge,
+  grossschreibung,
 }: {
   name: string;
   beschriftung: string;
   wert: string;
   aendern: (v: string) => void;
   typ?: string;
+  /** Der Text, der unter dem Feld steht. */
   fehler?: string;
   hinweis?: string;
   autoComplete?: string;
   /** Vorgegeben, z. B. durch eine Presale-Einladung */
   nurLesen?: boolean;
+  platzhalter?: string;
+  maxLaenge?: number;
+  /** Namen: jedes Wort groß, statt nur am Satzanfang (Handytastatur). */
+  grossschreibung?: "words";
 }) {
   return (
     <div className={css.feld}>
@@ -1058,6 +1141,9 @@ function Feld({
         value={wert}
         readOnly={nurLesen}
         autoComplete={autoComplete}
+        placeholder={platzhalter}
+        maxLength={maxLaenge}
+        autoCapitalize={grossschreibung}
         aria-invalid={fehler ? true : undefined}
         aria-describedby={fehler ? `${name}-fehler` : hinweis ? `${name}-hinweis` : undefined}
         className={`${css.eingabe} ${fehler ? css.eingabeFehler : ""}`}
@@ -1065,7 +1151,7 @@ function Feld({
       />
       {fehler ? (
         <span id={`${name}-fehler`} className={css.fehlertext}>
-          Bitte ausfüllen
+          {fehler}
         </span>
       ) : hinweis ? (
         <span id={`${name}-hinweis`} className={css.hinweis}>

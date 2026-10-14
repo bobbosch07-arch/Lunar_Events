@@ -153,6 +153,24 @@
   line-height: var(--lh-eng);
 }
 
+/* Name auf dem Ticket (0046): Er wird mit dem Ausweis verglichen, also
+   gleich unter dem Urteil und fast so groß. */
+.gastname {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-eng);
+  overflow-wrap: anywhere;
+}
+
+.nameFehlt {
+  align-self: flex-start;
+  padding: 4px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-body);
+}
+
 .nebensache {
   font-size: var(--fs-body-s);
   color: rgba(255, 255, 255, 0.72);
