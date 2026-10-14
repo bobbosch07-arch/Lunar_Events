@@ -138,6 +138,10 @@
 .leer {
   background: var(--navy-900);
 }
+/* Nur prüfen (0048): blau statt grün, damit "gültig" nie wie "rein" aussieht. */
+.probe {
+  background: #1e3a8a;
+}
 
 .urteil {
   font-family: var(--font-display);
@@ -217,6 +221,39 @@
 }
 .offline {
   background: #fbbf24;
+}
+/* Netz gemeldet, aber zu langsam: das Gerät entscheidet aus der Liste. */
+.schwach {
+  background: #fb923c;
+}
+
+/* ---------- Bänder (0048) ---------- */
+
+.pruefenAktiv {
+  background: #1e3a8a;
+  color: #fff;
+}
+
+.pruefenBand {
+  padding: var(--space-2) var(--space-5);
+  background: #1e3a8a;
+  color: #fff;
+  font-size: var(--fs-body-s);
+  font-weight: var(--fw-medium);
+  text-align: center;
+}
+
+.warnBand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  background: #7c5308;
+  color: #fff;
+  font-size: var(--fs-body-s);
+  line-height: var(--lh-body);
 }
 
 .handeingabe {

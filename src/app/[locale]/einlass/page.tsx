@@ -70,8 +70,11 @@ export default async function Einlass({
     redirect("/auth/abmelden?weiter=/einlass");
   }
 
+  // Admins sehen auch Entwürfe: zum Testen mit einem Test-Event, das nicht
+  // öffentlich auf der Seite steht (0048).
+  const istAdmin = rolle === "admin";
   const [events, f] = await Promise.all([
-    holeEventsFuerDenAbend(),
+    holeEventsFuerDenAbend({ mitEntwuerfen: istAdmin }),
     getFormatter(),
   ]);
 
@@ -81,6 +84,7 @@ export default async function Einlass({
     id: e.id,
     titel: e.titel,
     wann: f.dateTime(new Date(e.beginn), "kurz"),
+    entwurf: e.status === "entwurf",
   }));
 
   if (auswahl.length === 0) {
@@ -98,5 +102,5 @@ export default async function Einlass({
     );
   }
 
-  return <EinlassScanner events={auswahl} />;
+  return <EinlassScanner events={auswahl} darfPruefen={istAdmin} />;
 }

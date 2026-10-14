@@ -234,7 +234,9 @@ export async function holeKommendeEvents(): Promise<Veranstaltung[]> {
  * nicht: Sie lässt ein Event fallen, sobald es begonnen hat, und hat den
  * Scanner damit zur Hauptzeit leer gemacht.
  */
-export async function holeEventsFuerDenAbend(): Promise<Veranstaltung[]> {
+export async function holeEventsFuerDenAbend(
+  { mitEntwuerfen = false }: { mitEntwuerfen?: boolean } = {},
+): Promise<Veranstaltung[]> {
   // Wer um 23 Uhr beginnt, ist bis in den Morgen in Betrieb.
   const seit = new Date(Date.now() - 18 * 3_600_000).toISOString();
 
@@ -242,10 +244,12 @@ export async function holeEventsFuerDenAbend(): Promise<Veranstaltung[]> {
     "holeEventsFuerDenAbend",
     async () => {
       const db = await serverClient();
+      // Entwürfe nur für den Scanner der Admins (0048), zum Testen. Lesen
+      // dürfen sie ohnehin nur Admins (Zugriffsregel).
       return db
         .from("events")
         .select(AUSWAHL)
-        .eq("status", "veroeffentlicht")
+        .in("status", mitEntwuerfen ? ["veroeffentlicht", "entwurf"] : ["veroeffentlicht"])
         .gt("beginn", seit)
         .order("beginn", { ascending: true });
     },

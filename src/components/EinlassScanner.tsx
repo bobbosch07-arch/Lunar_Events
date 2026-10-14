@@ -4,41 +4,43 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { Knopf } from "./Knopf";
 import { GaesteNamensliste } from "./GaesteNamensliste";
-import { entwerte, holePruefsummen, type EinlassErgebnis } from "@/app/aktionen/einlass";
+import { browserClient } from "@/lib/supabase/client";
+import {
+  holeListe,
+  pruefsumme,
+  scanne,
+  trageNach,
+  type EinlassErgebnis,
+} from "@/lib/einlass";
 import css from "./EinlassScanner.module.css";
 
-type Event = { id: string; titel: string; wann: string };
+type Event = { id: string; titel: string; wann: string; entwurf?: boolean };
 
 type Zustand =
   | { art: "leer" }
-  | { art: "ergebnis"; wert: EinlassErgebnis & { gepuffert?: boolean } }
+  | { art: "ergebnis"; wert: EinlassErgebnis }
+  /** Nur beim Prüfen ohne Einlass: Das geht nur mit Netz. */
   | { art: "verbindung" };
 
 /** Derselbe Code wird am Einlass gern zweimal hintereinander gescannt. */
 const SPERRE_MS = 2500;
-
-const SPEICHER_PUFFER = "lunar.einlass.puffer";
-const SPEICHER_SUMMEN = "lunar.einlass.summen";
-/** Name je Prüfsumme (0046), für die Ausweiskontrolle ohne Netz. */
-const SPEICHER_NAMEN = "lunar.einlass.namen";
 /**
  * So oft wird die Liste für den Betrieb ohne Netz neu geholt, solange Netz
- * da ist: Namen lassen sich bis Beginn ändern, und wer kurz vorher kauft,
- * fehlte sonst ohne Netz in der Liste.
+ * da ist: Namen lassen sich bis Beginn ändern, wer kurz vorher kauft, fehlte
+ * sonst, und was andere Geräte einlassen, steht dann als "drin" darin.
  */
 const AUFFRISCHEN_MS = 5 * 60 * 1000;
+/** So oft wird versucht, ohne Netz gesammelte Scans nachzutragen. */
+const NACHTRAGEN_MS = 20 * 1000;
 
-type Gepuffert = { code: string; zeit: number };
+// Gesammelte Scans gelten für alle Events (jeder trägt sein Event), Liste und
+// "drin" je Event: Wer nachts das Event wechselt, nimmt sonst die falsche Liste.
+const SPEICHER_PUFFER = "lunar.einlass.puffer";
+const speicherListe = (eventId: string) => `lunar.einlass.liste.${eventId}`;
+const speicherDrin = (eventId: string) => `lunar.einlass.drin.${eventId}`;
 
-/** Muss dasselbe liefern wie `einlass_pruefsumme()` in der Datenbank (0031). */
-async function pruefsumme(code: string): Promise<string> {
-  const daten = new TextEncoder().encode(code.trim().toUpperCase());
-  const digest = await crypto.subtle.digest("SHA-256", daten);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("")
-    .slice(0, 16);
-}
+/** Ein ohne Netz eingelassener Scan. Ohne eventId: aus der Zeit vor 0048. */
+type Gepuffert = { code: string; zeit: number; eventId?: string };
 
 function lies<T>(schluessel: string, standard: T): T {
   try {
@@ -57,7 +59,23 @@ function schreib(schluessel: string, wert: unknown) {
   }
 }
 
-export function EinlassScanner({ events }: { events: Event[] }) {
+/**
+ * Der Scanner am Einlass.
+ *
+ * Alles, was die Kamera-Schleife braucht, steht in Refs, nicht im Zustand:
+ * Die Schleife läuft vom Start der Kamera an mit derselben Funktion weiter.
+ * Bis 0048 las sie den Zustand vom Moment des Starts; ohne Netz überschrieb
+ * jeder Scan den vorigen im Puffer, und eine danach geladene Liste kam nie
+ * an (jedes Ticket "Unbekannt").
+ */
+export function EinlassScanner({
+  events,
+  darfPruefen = false,
+}: {
+  events: Event[];
+  /** Admins: Schalter "Nur prüfen" (nichts wird entwertet). */
+  darfPruefen?: boolean;
+}) {
   const video = useRef<HTMLVideoElement>(null);
   const leinwand = useRef<HTMLCanvasElement>(null);
   const strom = useRef<MediaStream | null>(null);
@@ -67,17 +85,44 @@ export function EinlassScanner({ events }: { events: Event[] }) {
   // Zurückwechseln), sucht aber keine Codes.
   const modusRef = useRef<"scan" | "liste">("scan");
   const [modus, setModus] = useState<"scan" | "liste">("scan");
+  const db = useRef<ReturnType<typeof browserClient> | null>(null);
+  const holeDb = () => (db.current ??= browserClient());
 
   const [eventId, setEventId] = useState(events[0]?.id ?? "");
+  const eventRef = useRef(eventId);
+  const [nurPruefen, setNurPruefen] = useState(false);
+  const pruefenRef = useRef(false);
+
   const [laeuft, setLaeuft] = useState(false);
   const [zustand, setZustand] = useState<Zustand>({ art: "leer" });
   const [online, setOnline] = useState(true);
+  // Die letzte Anfrage kam nicht rechtzeitig zurück, obwohl das Gerät Netz meldet.
+  const [schwach, setSchwach] = useState(false);
   const [gezaehlt, setGezaehlt] = useState(0);
-  const [puffer, setPuffer] = useState<Gepuffert[]>([]);
-  const [summen, setSummen] = useState<Set<string>>(new Set());
-  const [namen, setNamen] = useState<Record<string, string>>({});
   const [handeingabe, setHandeingabe] = useState(false);
   const [getippt, setGetippt] = useState("");
+  // Beim Nachtragen gefunden: Tickets, die ein anderes Konto vorher eingelassen hatte.
+  const [doppelt, setDoppelt] = useState<string[]>([]);
+  const [anmeldungWeg, setAnmeldungWeg] = useState(false);
+
+  const pufferRef = useRef<Gepuffert[]>([]);
+  const [pufferAnzahl, setPufferAnzahl] = useState(0);
+  const gueltigRef = useRef<Set<string>>(new Set());
+  const drinRef = useRef<Set<string>>(new Set());
+  const namenRef = useRef<Record<string, string>>({});
+  const [listeAnzahl, setListeAnzahl] = useState(0);
+  const nachtragenLaeuft = useRef(false);
+
+  function setzePuffer(neu: Gepuffert[]) {
+    pufferRef.current = neu;
+    setPufferAnzahl(neu.length);
+    schreib(SPEICHER_PUFFER, neu);
+  }
+
+  function merkeDrin(summe: string) {
+    drinRef.current.add(summe);
+    schreib(speicherDrin(eventRef.current), [...drinRef.current]);
+  }
 
   // --- Netzzustand ---
   useEffect(() => {
@@ -91,149 +136,169 @@ export function EinlassScanner({ events }: { events: Event[] }) {
     };
   }, []);
 
+  // --- Gesammelte Scans vom letzten Mal ---
   useEffect(() => {
-    setPuffer(lies<Gepuffert[]>(SPEICHER_PUFFER, []));
-    setSummen(new Set(lies<string[]>(SPEICHER_SUMMEN, [])));
-    setNamen(lies<Record<string, string>>(SPEICHER_NAMEN, {}));
+    const alt = lies<Gepuffert[]>(SPEICHER_PUFFER, []);
+    pufferRef.current = alt;
+    setPufferAnzahl(alt.length);
+    // Listen aus der Zeit vor 0048 (ein Satz für alle Events) wegräumen.
+    try {
+      localStorage.removeItem("lunar.einlass.summen");
+      localStorage.removeItem("lunar.einlass.namen");
+    } catch {
+      // egal
+    }
   }, []);
 
-  // --- Prüfsummen und Namen für den Betrieb ohne Netz ---
+  // --- Liste für den Betrieb ohne Netz, je Event ---
+  useEffect(() => {
+    eventRef.current = eventId;
+    if (!eventId) return;
+    const gespeichert = lies<{ gueltig: string[]; drin: string[]; namen: Record<string, string> } | null>(
+      speicherListe(eventId),
+      null,
+    );
+    gueltigRef.current = new Set(gespeichert?.gueltig ?? []);
+    drinRef.current = new Set([...(gespeichert?.drin ?? []), ...lies<string[]>(speicherDrin(eventId), [])]);
+    namenRef.current = gespeichert?.namen ?? {};
+    setListeAnzahl(gueltigRef.current.size);
+    setGezaehlt(0);
+    setZustand({ art: "leer" });
+  }, [eventId]);
+
   useEffect(() => {
     if (!eventId || !online) return;
-    const holen = () =>
-      holePruefsummen(eventId)
-        .then(({ ok, summen: neu, namen: neueNamen }) => {
-          if (!ok) return;
-          setSummen(new Set(neu));
-          schreib(SPEICHER_SUMMEN, neu);
-          setNamen(neueNamen);
-          schreib(SPEICHER_NAMEN, neueNamen);
-        })
-        // Netz weg, obwohl das Gerät "online" meldet: Es bleibt die alte Liste.
-        .catch(() => {});
+    let aktiv = true;
+    const holen = async () => {
+      const liste = await holeListe(holeDb(), eventId);
+      if (!liste || !aktiv || eventRef.current !== eventId) return;
+      setSchwach(false);
+      gueltigRef.current = new Set(liste.gueltig);
+      // Was dieses Gerät eingelassen hat und noch nachträgt, bleibt "drin".
+      drinRef.current = new Set([...liste.drin, ...lies<string[]>(speicherDrin(eventId), [])]);
+      namenRef.current = liste.namen;
+      setListeAnzahl(liste.gueltig.length);
+      schreib(speicherListe(eventId), liste);
+    };
     void holen();
     const takt = setInterval(() => void holen(), AUFFRISCHEN_MS);
-    return () => clearInterval(takt);
+    return () => {
+      aktiv = false;
+      clearInterval(takt);
+    };
   }, [eventId, online]);
 
-  // --- Gepufferte Scans nachreichen ---
-  const nachreichen = useCallback(async () => {
-    if (!online || puffer.length === 0) return;
-    const offen = [...puffer];
-    const uebrig: Gepuffert[] = [];
-
-    for (const eintrag of offen) {
-      try {
-        await entwerte(eintrag.code);
-      } catch {
-        uebrig.push(eintrag);
+  // --- Ohne Netz gesammelte Scans nachtragen ---
+  const nachtragen = useCallback(async () => {
+    if (nachtragenLaeuft.current || !navigator.onLine || pufferRef.current.length === 0) return;
+    nachtragenLaeuft.current = true;
+    try {
+      const offen = pufferRef.current.slice(0, 400);
+      const erledigt = new Set<Gepuffert>();
+      // Je Event ein Aufruf: Die Datenbank prüft gegen das Event des Scans.
+      const gruppen = new Map<string, Gepuffert[]>();
+      for (const g of offen) {
+        const k = g.eventId ?? "";
+        gruppen.set(k, [...(gruppen.get(k) ?? []), g]);
       }
+      for (const [ev, teil] of gruppen) {
+        const antwort = await trageNach(holeDb(), teil.map((g) => g.code), ev || null);
+        if (!antwort) break;
+        // Die Datenbank hat geantwortet: Das Netz trägt wieder.
+        setSchwach(false);
+        if (antwort.some((a) => a.ergebnis === "keine_berechtigung")) {
+          // Abgemeldet: Die Scans bleiben, bis wieder jemand angemeldet ist.
+          setAnmeldungWeg(true);
+          break;
+        }
+        teil.forEach((g) => erledigt.add(g));
+        const zweimal = antwort
+          .filter((a) => a.ergebnis === "schon_entwertet" && !a.eigenes)
+          .map((a) => a.gast ?? a.code);
+        if (zweimal.length > 0) setDoppelt((d) => [...d, ...zweimal]);
+      }
+      if (erledigt.size > 0) {
+        // Was während des Nachtragens dazukam, bleibt im Puffer.
+        setzePuffer(pufferRef.current.filter((g) => !erledigt.has(g)));
+      }
+    } finally {
+      nachtragenLaeuft.current = false;
     }
-
-    setPuffer(uebrig);
-    schreib(SPEICHER_PUFFER, uebrig);
-  }, [online, puffer]);
+  }, []);
 
   useEffect(() => {
-    void nachreichen();
-  }, [nachreichen]);
+    if (!online) return;
+    void nachtragen();
+    const takt = setInterval(() => void nachtragen(), NACHTRAGEN_MS);
+    return () => clearInterval(takt);
+  }, [online, nachtragen]);
 
   // --- Einen Code verarbeiten ---
-  const verarbeite = useCallback(
-    async (code: string) => {
-      const sauber = code.trim().toUpperCase();
-      const jetzt = Date.now();
+  const verarbeite = useCallback(async (roh: string) => {
+    const code = roh.trim().toUpperCase();
+    if (!code) return;
+    const jetzt = Date.now();
+    if (zuletzt.current && zuletzt.current.code === code && jetzt - zuletzt.current.zeit < SPERRE_MS) {
+      return;
+    }
+    zuletzt.current = { code, zeit: jetzt };
+    if (navigator.vibrate) navigator.vibrate(40);
 
-      if (
-        zuletzt.current &&
-        zuletzt.current.code === sauber &&
-        jetzt - zuletzt.current.zeit < SPERRE_MS
-      ) {
-        return;
-      }
-      zuletzt.current = { code: sauber, zeit: jetzt };
-
-      if (navigator.vibrate) navigator.vibrate(40);
-
-      // Garderobenmarken (0027) beginnen mit "G-" — das Ticketalphabet hat
-      // keinen Bindestrich. Statt "Unbekannt" sagen, was es ist.
-      if (sauber.startsWith("G-")) {
-        setZustand({
-          art: "ergebnis",
-          wert: { ergebnis: "unbekannt", event: "Das ist eine Garderobenmarke, kein Ticket." },
-        });
-        return;
-      }
-
-      if (!navigator.onLine) {
-        // Ohne Netz entscheidet die Prüfsummenliste, ob der Code zu
-        // diesem Event gehört. Die Entwertung wird nachgereicht.
-        const summe = await pruefsumme(sauber);
-        const bekannt = summen.has(summe);
-        const neu = [...puffer, { code: sauber, zeit: jetzt }];
-        if (bekannt) {
-          setPuffer(neu);
-          schreib(SPEICHER_PUFFER, neu);
-          setGezaehlt((z) => z + 1);
-        }
-        setZustand({
-          art: "ergebnis",
-          wert: bekannt
-            ? { ergebnis: "gueltig", gepuffert: true, gast: namen[summe] ?? null }
-            : { ergebnis: "unbekannt" },
-        });
-        return;
-      }
-
-      try {
-        const wert = await entwerte(sauber);
-        setZustand({ art: "ergebnis", wert });
-        if (wert.ergebnis === "gueltig") setGezaehlt((z) => z + 1);
-      } catch {
-        setZustand({ art: "verbindung" });
-      }
-    },
-    [puffer, summen, namen],
-  );
-
-  // --- Kamera ---
-  const suchen = useCallback(() => {
-    const v = video.current;
-    const c = leinwand.current;
-    if (!v || !c || v.readyState !== v.HAVE_ENOUGH_DATA) {
-      if (laufend.current) requestAnimationFrame(suchen);
+    // Garderobenmarken (0027) beginnen mit "G-" — das Ticketalphabet hat
+    // keinen Bindestrich. Statt "Unbekannt" sagen, was es ist.
+    if (code.startsWith("G-")) {
+      setZustand({
+        art: "ergebnis",
+        wert: { ergebnis: "unbekannt", event: "Das ist eine Garderobenmarke, kein Ticket." },
+      });
       return;
     }
 
-    // Nur die Bildmitte durchsuchen: schneller, und der Zielrahmen sagt
-    // dem Personal ohnehin, wo das Ticket hingehalten wird.
-    const kante = Math.min(v.videoWidth, v.videoHeight) * 0.7;
-    c.width = kante;
-    c.height = kante;
-    const ctx = c.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
+    const eventJetzt = eventRef.current;
+    const summe = await pruefsumme(code);
 
-    ctx.drawImage(
-      v,
-      (v.videoWidth - kante) / 2,
-      (v.videoHeight - kante) / 2,
-      kante,
-      kante,
-      0,
-      0,
-      kante,
-      kante,
-    );
+    // Nur prüfen: immer die Datenbank, nie etwas entwerten.
+    if (pruefenRef.current) {
+      const antwort = navigator.onLine ? await scanne(holeDb(), code, eventJetzt, true) : null;
+      setZustand(antwort ? { art: "ergebnis", wert: antwort } : { art: "verbindung" });
+      return;
+    }
 
-    const bild = ctx.getImageData(0, 0, kante, kante);
-    const treffer = jsQR(bild.data, bild.width, bild.height, {
-      inversionAttempts: "dontInvert",
-    });
+    if (navigator.onLine) {
+      const antwort = await scanne(holeDb(), code, eventJetzt, false);
+      if (antwort) {
+        setSchwach(false);
+        if (antwort.ergebnis === "keine_berechtigung") setAnmeldungWeg(true);
+        if (antwort.ergebnis === "gueltig") {
+          merkeDrin(summe);
+          setGezaehlt((z) => z + 1);
+        }
+        if (antwort.ergebnis === "schon_entwertet") merkeDrin(summe);
+        setZustand({ art: "ergebnis", wert: antwort });
+        return;
+      }
+      // Keine Antwort in der Zeit: wie ohne Netz weiter, der Gast wartet.
+      setSchwach(true);
+    }
 
-    if (treffer?.data && modusRef.current === "scan") void verarbeite(treffer.data);
-    if (laufend.current) requestAnimationFrame(suchen);
-  }, [verarbeite]);
+    // Ohne Netz entscheidet die Liste. "Drin" kennt das Gerät aus der Liste
+    // (andere Geräte bis zum letzten Abruf) und von sich selbst.
+    const gast = namenRef.current[summe] ?? null;
+    if (drinRef.current.has(summe)) {
+      setZustand({ art: "ergebnis", wert: { ergebnis: "schon_entwertet", gast, gepuffert: true } });
+      return;
+    }
+    if (gueltigRef.current.has(summe)) {
+      merkeDrin(summe);
+      setzePuffer([...pufferRef.current, { code, zeit: jetzt, eventId: eventJetzt }]);
+      setGezaehlt((z) => z + 1);
+      setZustand({ art: "ergebnis", wert: { ergebnis: "gueltig", gast, gepuffert: true } });
+      return;
+    }
+    setZustand({ art: "ergebnis", wert: { ergebnis: "unbekannt", gepuffert: true } });
+  }, []);
 
+  // --- Kamera ---
   async function starten() {
     try {
       const s = await navigator.mediaDevices.getUserMedia({
@@ -247,7 +312,39 @@ export function EinlassScanner({ events }: { events: Event[] }) {
       }
       setLaeuft(true);
       laufend.current = true;
-      requestAnimationFrame(suchen);
+
+      const schritt = () => {
+        const v = video.current;
+        const c = leinwand.current;
+        if (v && c && v.readyState === v.HAVE_ENOUGH_DATA) {
+          // Nur die Bildmitte durchsuchen: schneller, und der Zielrahmen sagt
+          // dem Personal ohnehin, wo das Ticket hingehalten wird.
+          const kante = Math.min(v.videoWidth, v.videoHeight) * 0.7;
+          c.width = kante;
+          c.height = kante;
+          const ctx = c.getContext("2d", { willReadFrequently: true });
+          if (ctx) {
+            ctx.drawImage(
+              v,
+              (v.videoWidth - kante) / 2,
+              (v.videoHeight - kante) / 2,
+              kante,
+              kante,
+              0,
+              0,
+              kante,
+              kante,
+            );
+            const bild = ctx.getImageData(0, 0, kante, kante);
+            const treffer = jsQR(bild.data, bild.width, bild.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (treffer?.data && modusRef.current === "scan") void verarbeite(treffer.data);
+          }
+        }
+        if (laufend.current) requestAnimationFrame(schritt);
+      };
+      requestAnimationFrame(schritt);
     } catch {
       setZustand({
         art: "ergebnis",
@@ -263,22 +360,41 @@ export function EinlassScanner({ events }: { events: Event[] }) {
     };
   }, []);
 
+  const datum = (iso?: string) =>
+    iso
+      ? new Date(iso).toLocaleString("de-DE", {
+          weekday: "short",
+          day: "2-digit",
+          month: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "";
+
   const urteil = (() => {
     if (zustand.art === "leer") return null;
-    if (zustand.art === "verbindung") return { klasse: "verbindung", text: "Keine Verbindung" };
-    switch (zustand.wert.ergebnis) {
+    if (zustand.art === "verbindung") {
+      return { klasse: "verbindung", text: "Keine Verbindung" };
+    }
+    const w = zustand.wert;
+    switch (w.ergebnis) {
       case "gueltig":
-        return { klasse: "gueltig", text: zustand.wert.gepuffert ? "Einlass (offline)" : "Einlass" };
+        if (w.probe) return { klasse: "probe", text: "Gültig" };
+        return { klasse: "gueltig", text: w.gepuffert ? "Einlass (offline)" : "Einlass" };
       case "schon_entwertet":
         return { klasse: "schon_entwertet", text: "Schon drin" };
       case "storniert":
         return { klasse: "storniert", text: "Storniert" };
+      case "anderes_event":
+        return { klasse: "storniert", text: "Anderes Event" };
       case "keine_berechtigung":
-        return { klasse: "keine_berechtigung", text: "Nicht berechtigt" };
+        return { klasse: "keine_berechtigung", text: "Neu anmelden" };
       default:
         return { klasse: "unbekannt", text: "Unbekannt" };
     }
   })();
+
+  const gewaehlt = events.find((e) => e.id === eventId);
 
   return (
     <div className={css.rahmen}>
@@ -291,6 +407,7 @@ export function EinlassScanner({ events }: { events: Event[] }) {
         >
           {events.map((e) => (
             <option key={e.id} value={e.id}>
+              {e.entwurf ? "Entwurf · " : ""}
               {e.titel} · {e.wann}
             </option>
           ))}
@@ -322,7 +439,54 @@ export function EinlassScanner({ events }: { events: Event[] }) {
             {name}
           </button>
         ))}
+        {darfPruefen ? (
+          <button
+            type="button"
+            aria-pressed={nurPruefen}
+            className={`${css.modusKnopf} ${nurPruefen ? css.pruefenAktiv : ""}`}
+            onClick={() => {
+              pruefenRef.current = !pruefenRef.current;
+              setNurPruefen(pruefenRef.current);
+              setZustand({ art: "leer" });
+            }}
+          >
+            Nur prüfen
+          </button>
+        ) : null}
       </div>
+
+      {/* Unübersehbar: Wer den Schalter vergisst, lässt niemanden ein. */}
+      {nurPruefen ? (
+        <p className={css.pruefenBand}>
+          Nur prüfen · Es wird niemand eingelassen und kein Ticket entwertet.
+        </p>
+      ) : null}
+
+      {anmeldungWeg ? (
+        <div className={css.warnBand}>
+          <span>
+            Anmeldung abgelaufen oder nicht mehr freigeschaltet. Das liegt nicht an den Tickets.
+            {pufferAnzahl > 0 ? ` ${pufferAnzahl} Scans warten aufs Nachtragen.` : ""}
+          </span>
+          <Knopf href="/auth/abmelden?weiter=/einlass" stil="hell" groesse="klein">
+            Neu anmelden
+          </Knopf>
+        </div>
+      ) : null}
+
+      {doppelt.length > 0 ? (
+        <div className={css.warnBand}>
+          <span>
+            {doppelt.length === 1
+              ? "Ein Ticket kam zweimal rein"
+              : `${doppelt.length} Tickets kamen zweimal rein`}{" "}
+            (ohne Netz gescannt, ein anderes Gerät war schneller): {doppelt.slice(-5).join(", ")}
+          </span>
+          <button type="button" className={css.handeingabe} onClick={() => setDoppelt([])}>
+            Gesehen
+          </button>
+        </div>
+      ) : null}
 
       {modus === "liste" ? (
         <GaesteNamensliste
@@ -362,25 +526,37 @@ export function EinlassScanner({ events }: { events: Event[] }) {
               <>
                 {/* Groß und eigenständig: Wer am Eingang steht, muss es aus
                     einem Meter Abstand sehen, bevor er jemanden an der
-                    Schlange vorbeiwinkt. Offline kennt der Scanner nur die
-                    Prüfsumme — dann steht hier nichts. */}
-                {/* Der Name für den Ausweis (0046), ohne Netz aus der
-                    vorab geladenen Liste. */}
-                {zustand.wert.gast ? (
-                  <span className={css.gastname}>{zustand.wert.gast}</span>
-                ) : zustand.wert.name_fehlt ? (
-                  <span className={css.nameFehlt}>Kein Name hinterlegt</span>
-                ) : null}
-                {zustand.wert.fastlane ? (
-                  <span className={css.fastlane}>Fast Lane</span>
-                ) : null}
-                {zustand.wert.typ ? (
+                    Schlange vorbeiwinkt. Der Name für den Ausweis (0046)
+                    kommt ohne Netz aus der vorab geladenen Liste. */}
+                {zustand.wert.ergebnis === "anderes_event" ? (
                   <span className={css.detail}>
-                    {zustand.wert.typ}
-                    {zustand.wert.platz ? ` · ${zustand.wert.platz}` : ""}
+                    Ticket für {zustand.wert.event}
+                    {zustand.wert.beginn ? `, ${datum(zustand.wert.beginn)}` : ""}. Gilt nicht für{" "}
+                    {gewaehlt?.titel ?? "dieses Event"}.
                   </span>
-                ) : null}
-                {zustand.wert.event ? (
+                ) : zustand.wert.ergebnis === "keine_berechtigung" ? (
+                  <span className={css.detail}>
+                    Das liegt nicht am Ticket. Oben auf „Neu anmelden“ tippen.
+                  </span>
+                ) : (
+                  <>
+                    {zustand.wert.gast ? (
+                      <span className={css.gastname}>{zustand.wert.gast}</span>
+                    ) : zustand.wert.name_fehlt ? (
+                      <span className={css.nameFehlt}>Kein Name hinterlegt</span>
+                    ) : null}
+                    {zustand.wert.fastlane ? (
+                      <span className={css.fastlane}>Fast Lane</span>
+                    ) : null}
+                    {zustand.wert.typ ? (
+                      <span className={css.detail}>
+                        {zustand.wert.typ}
+                        {zustand.wert.platz ? ` · ${zustand.wert.platz}` : ""}
+                      </span>
+                    ) : null}
+                  </>
+                )}
+                {zustand.wert.event && zustand.wert.ergebnis !== "anderes_event" ? (
                   <span className={css.nebensache}>{zustand.wert.event}</span>
                 ) : null}
                 {zustand.wert.zeitpunkt ? (
@@ -392,15 +568,22 @@ export function EinlassScanner({ events }: { events: Event[] }) {
                     })}
                   </span>
                 ) : null}
+                {zustand.wert.probe ? (
+                  <span className={css.nebensache}>Nur geprüft, nicht eingelöst.</span>
+                ) : null}
                 {zustand.wert.gepuffert ? (
                   <span className={css.nebensache}>
-                    Ohne Netz gescannt — wird nachgetragen, sobald Empfang da ist.
+                    {zustand.wert.ergebnis === "gueltig"
+                      ? "Ohne Netz entschieden. Wird nachgetragen, sobald Empfang da ist."
+                      : zustand.wert.ergebnis === "unbekannt"
+                        ? "Ohne Netz: nicht in der Liste dieses Events."
+                        : "Ohne Netz: dieses Ticket ist schon eingelassen."}
                   </span>
                 ) : null}
               </>
             ) : (
               <span className={css.nebensache}>
-                Der Scan wurde nicht gespeichert. Nochmal versuchen.
+                Nur prüfen braucht Netz. Nichts wurde eingelöst.
               </span>
             )}
           </>
@@ -418,6 +601,8 @@ export function EinlassScanner({ events }: { events: Event[] }) {
           onSubmit={(e) => {
             e.preventDefault();
             if (getippt.trim()) {
+              // Getippt heißt gewollt: auch derselbe Code gleich nochmal.
+              zuletzt.current = null;
               void verarbeite(getippt);
               setGetippt("");
             }
@@ -440,12 +625,15 @@ export function EinlassScanner({ events }: { events: Event[] }) {
 
       <footer className={css.fussleiste}>
         <span className={css.netz}>
-          <span className={`${css.punkt} ${online ? css.online : css.offline}`} />
-          {online
-            ? puffer.length > 0
-              ? `${puffer.length} werden nachgetragen`
-              : "Verbunden"
-            : `Ohne Netz · ${summen.size} Tickets bekannt`}
+          <span
+            className={`${css.punkt} ${!online ? css.offline : schwach ? css.schwach : css.online}`}
+          />
+          {!online
+            ? `Ohne Netz · ${listeAnzahl} Tickets in der Liste`
+            : schwach
+              ? "Schwaches Netz · entscheidet aus der Liste"
+              : "Verbunden"}
+          {pufferAnzahl > 0 ? ` · ${pufferAnzahl} zum Nachtragen` : ""}
         </span>
         <button
           type="button"

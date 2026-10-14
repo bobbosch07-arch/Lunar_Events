@@ -2,83 +2,9 @@
 
 import { serverClient } from "@/lib/supabase/server";
 
-export type EinlassErgebnis = {
-  ergebnis:
-    | "gueltig"
-    | "schon_entwertet"
-    | "storniert"
-    | "unbekannt"
-    | "keine_berechtigung";
-  event?: string;
-  typ?: string;
-  art?: string;
-  /** Darf an der normalen Schlange vorbei. */
-  fastlane?: boolean;
-  /** Name auf dem Ticket, für den Abgleich mit dem Ausweis (0046). */
-  gast?: string | null;
-  /** Gekauftes Ticket ohne Namen (Bestand von vor 0046). */
-  name_fehlt?: boolean;
-  platz?: string | null;
-  zeitpunkt?: string;
-};
-
-/**
- * Entwertet ein Ticket. Die eigentliche Prüfung macht die Datenbank —
- * hier wird nur durchgereicht, damit niemand am Gerät entscheidet, was
- * gültig ist.
- */
-export async function entwerte(code: string): Promise<EinlassErgebnis> {
-  const sauber = code.trim().toUpperCase();
-  if (!sauber) return { ergebnis: "unbekannt" };
-
-  const db = await serverClient();
-  const { data, error } = await db.rpc("entwerte_ticket", { p_code: sauber });
-
-  if (error) {
-    console.error("[einlass] Entwerten fehlgeschlagen:", error.message);
-    // Kein stilles "ungültig": am Eingang muss klar sein, dass die
-    // Verbindung das Problem ist und nicht das Ticket.
-    throw new Error("verbindung");
-  }
-
-  return data as EinlassErgebnis;
-}
-
-/**
- * Prüfsummen aller gültigen Tickets eines Events, für den Betrieb ohne Netz.
- *
- * Bewusst Prüfsummen statt der Codes selbst: Damit kann das Gerät sagen
- * „dieser Code gehört zu diesem Event", aber niemand kann aus einem
- * verlorenen Telefon Tickets herstellen.
- *
- * Gerechnet wird in der Datenbank (`einlass_pruefsummen`, 0031): Personal
- * darf die Tabelle `tickets` nicht lesen, die Codes verlassen sie also nie.
- *
- * Dazu die Namen je Prüfsumme (`einlass_namen`, 0046), damit der Ausweis
- * auch ohne Netz abgeglichen werden kann. Fehlen sie, geht der Scanner
- * trotzdem; er zeigt dann offline eben keinen Namen.
- */
-export async function holePruefsummen(
-  eventId: string,
-): Promise<{ ok: boolean; summen: string[]; namen: Record<string, string> }> {
-  const db = await serverClient();
-  const [summen, namen] = await Promise.all([
-    db.rpc("einlass_pruefsummen", { p_event_id: eventId }),
-    db.rpc("einlass_namen", { p_event_id: eventId }),
-  ]);
-
-  if (summen.error || !summen.data) {
-    console.error("[einlass] Prüfsummen laden fehlgeschlagen:", summen.error?.message);
-    return { ok: false, summen: [], namen: {} };
-  }
-  if (namen.error) console.error("[einlass] Namen laden fehlgeschlagen:", namen.error.message);
-
-  return {
-    ok: true,
-    summen: summen.data as string[],
-    namen: (namen.data as Record<string, string> | null) ?? {},
-  };
-}
+// Der Scanner spricht seit 0048 direkt mit der Datenbank (src/lib/einlass.ts):
+// Server-Aktionen laufen nacheinander, und ein Scan wartete hinter jedem
+// anderen Aufruf, beim Nachtragen nach einem Netzausfall bis zu einer Minute.
 
 /* ------------------------------------------------------------------ */
 /* Gästeliste (0021)                                                   */

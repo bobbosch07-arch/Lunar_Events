@@ -44,6 +44,8 @@ node scripts/garderobe-testen.mjs   # Garderobe: Kasse, Verfall, Nachbuchen, Tre
 node scripts/vip-testen.mjs         # VIP-Tickets: ausstellen, ändern, Einlass, stornieren
 node scripts/ticketnamen-testen.mjs # Namen je Ticket: Kasse, Ändern, Scanner (auch offline)
 node scripts/partnerlink-testen.mjs [http://localhost:3007] # Partnerlink: Rechte, mit Adresse auch die Seite
+node scripts/einlass-last.mjs [1000] [6]  # Lasttest Einlass: Tickets, Geräte, Sonderfälle, räumt auf
+node scripts/einlass-testbogen.mjs anlegen <datei.html> | weg  # QR-Bogen zum Scannen am Handy
 ```
 
 `zahlung-testen.mjs` und `einlass-testen.mjs` sind älter und nehmen das
@@ -781,6 +783,60 @@ sagen „dieser Code gehört zu diesem Event", aber aus einem verlorenen
 Telefon lassen sich keine Tickets herstellen. Entwertungen werden
 gepuffert und nachgereicht.
 
+### Einlass gehärtet (Migration 0048, 14.10.2026)
+
+Anlass: Audit vor dem ersten großen Abend, mit Lasttest
+(`scripts/einlass-last.mjs`: 1000 Tickets, 6 Einlass-Konten gleichzeitig).
+Die Datenbank hielt (94 Scans/s, p95 unter 160 ms, Wettlauf von drei Geräten
+um dasselbe Ticket immer genau ein „Einlass“), der Scanner nicht:
+
+- **Die Kamera-Schleife arbeitete mit dem Zustand vom Start der Kamera.**
+  Ohne Netz überschrieb jeder Scan den vorigen im Puffer (nur der letzte
+  wurde nachgetragen), und eine danach geladene Liste kam nie an (jedes
+  Ticket „Unbekannt“). Seither steht alles, was die Schleife braucht, in
+  **Refs**, und die Schleife ist eine lokale Funktion in `starten`. Wer am
+  Scanner etwas ändert: keine Zustandswerte in `verarbeite` lesen.
+- **Server-Aktionen laufen in Next nacheinander.** Ein Scan wartete hinter
+  jedem anderen Aufruf, nach einem Netzausfall hinter dem Nachtragen aller
+  Offline-Scans (bei 200 Stück etwa eine Minute), und ohne Zeitgrenze hing er
+  bei schwachem Netz. Der Scanner spricht deshalb **direkt mit Supabase**
+  (`src/lib/einlass.ts`, Browser-Client mit der Anmeldung des Personals),
+  mit **Zeitgrenze 3,5 s**: Kommt keine Antwort, entscheidet das Gerät aus
+  seiner Liste und trägt nach („Schwaches Netz“ unten).
+- **Tickets anderer Events wurden eingelassen** und für ihr Event entwertet.
+  `entwerte_ticket(code, event, nur_pruefen)` antwortet jetzt
+  `anderes_event` mit Titel und Beginn und ändert nichts (entschieden 14.10.).
+  Der Aufruf nur mit Code geht weiter (ohne Eventprüfung).
+- **Ohne Netz ließ dasselbe Gerät dasselbe Ticket zweimal ein.** Jetzt merkt
+  es sich je Event, was es eingelassen hat (`lunar.einlass.drin.<event>`),
+  und `einlass_liste` liefert zusätzlich die schon eingelassenen Tickets
+  anderer Geräte: ohne Netz „Schon drin“ statt „Unbekannt“.
+- **`einlass_pruefsummen` lieferte höchstens 1000 Zeilen** (Grenze der
+  Schnittstelle für Mengen-Antworten). `einlass_liste` und die neue
+  `einlass_pruefsummen` antworten mit **einem** Wert.
+- **Nachtragen in einem Aufruf** (`einlass_nachtragen`, höchstens 500):
+  meldet je Code, ob ein *anderes* Konto schneller war (Band „Ein Ticket kam
+  zweimal rein“); `eigenes` heißt, der langsame Scan kam doch an (kein Alarm).
+  Teilen sich mehrere Geräte ein Konto, sieht man doppelte Einlässe nicht.
+- **„Neu anmelden“ statt „Nicht berechtigt“**, wenn die Sitzung abläuft: Das
+  Personal hielt sonst gültige Tickets für ungültig.
+- **„Nur prüfen“** (Schalter nur für Admins, entschieden 14.10.): dieselbe
+  Antwort, nichts wird entwertet, Ergebnis **blau** statt grün, oben ein Band.
+  Ohne Eventvergleich, damit sich jedes Ticket erklären lässt. So lassen sich
+  echte Tickets testen, ohne sie zu verbrauchen.
+- Admins sehen im Scanner auch **Entwürfe** (für Test-Events, die öffentlich
+  nicht erscheinen).
+
+**Handy-Test über localhost:** Kamera braucht HTTPS. `tailscale serve 3007`
+im Vordergrund (nicht `--bg`, das Tailnet gehört Genesis und die Freigabe
+muss danach wieder weg; `tailscale serve status` muss „No serve config“
+zeigen) gibt `https://genesisserver-1.tailc8b67a.ts.net` mit gültigem
+Zertifikat, nur für Geräte im Tailnet. Server-Aktionen (Login) gehen dort
+durch, Next prüft die Herkunft gegen `x-forwarded-host`. Das Vorschaufenster
+lädt dort keine Skripte (blockiert), getestet wird am Handy. Den Bogen
+erzeugt `scripts/einlass-testbogen.mjs` (Entwurfs-Event „TESTBOGEN“ mit allen
+Sonderfällen).
+
 **Personal liest keine Tickets (Migration 0031).** Direkt aus `tickets` und
 `garderobe_marken` lesen nur Admins und der Kunde selbst. Vorher durfte
 jede Rolle mit Scan-Recht alle Tickets samt Codes lesen und die Garderobe
@@ -1407,6 +1463,7 @@ Fertig und geprüft:
 - VIP-Tickets auf Namen: Ausstellen im Backoffice, ein Link für alle und einer je Gast, Namensliste mit Tisch
 - Namen je Ticket (0046): Pflicht in der Kasse, ändern bis Beginn, Scanner mit Namen auch offline, Nachfrage für den Bestand
 - Partnerlink je Event (0047): Käufername und Ticketanzahl ohne Anmeldung, im Backoffice erzeugen, erneuern, abschalten
+- Einlass gehärtet (0048): direkt zur Datenbank mit Zeitgrenze, Offline ohne verlorene Scans, anderes Event abgewiesen, Nur prüfen, Lasttest 1000 Tickets
 
 Roadmap (Stand 19.09.2026, mit dem Kunden abgestimmt; Stripe ist live.
 Mail über Brevo **lief bis 01.10. nicht** — siehe „Mailversand“):
