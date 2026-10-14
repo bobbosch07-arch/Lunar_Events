@@ -599,7 +599,10 @@ keine Beträge, **keine Abendkasse, Gästeliste oder VIP** (entschieden
 ganz erstattete Bestellungen fallen heraus, offene (auch Überweisung) sind
 nicht dabei. Neueste zuerst. Unter dem Namen klein die **Ticketart**
 (Phasenname, bei mehreren Phasen in einer Bestellung mit Anzahl) und
-„Mit Fast Lane“, wenn gebucht (Wunsch 14.10.).
+„Mit Fast Lane“, wenn gebucht, dazu die **Namen auf den Tickets** (nur wenn
+dort jemand anderes als der Käufer steht, sonst wäre es doppelt) und in Rosa
+der **Promoter** der Bestellung (`bestellungen.promoter_id`), falls einer
+zugeordnet ist (Wünsche 14.10.).
 
 - **Ein Link je Event**, den alle Partner teilen (entschieden 14.10.). Im
   Backoffice auf der Event-Übersicht, Karte „Partnerlink“: erzeugen,

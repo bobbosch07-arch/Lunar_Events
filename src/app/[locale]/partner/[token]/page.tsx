@@ -50,7 +50,8 @@ export default async function PartnerSeite({ params }: Props) {
   const { data: roh } = await db
     .from("bestellungen")
     .select(
-      "id, bezahlt_am, kunde:kunden(vorname, nachname), tickets(status, phase_name, fastlane, erstellt_am)",
+      `id, bezahlt_am, kunde:kunden(vorname, nachname), promoter:promoter(name),
+       tickets(id, status, phase_name, fastlane, gast_name, erstellt_am)`,
     )
     .eq("event_id", event.id)
     .eq("status", "bezahlt")
@@ -64,17 +65,27 @@ export default async function PartnerSeite({ params }: Props) {
   const zeilen = (roh ?? []).flatMap((b) => {
     const gueltig = (
       (b.tickets ?? []) as Array<{
+        id: string;
         status: string;
         phase_name: string;
         fastlane: boolean;
+        gast_name: string | null;
         erstellt_am: string;
       }>
     )
       .filter((x) => x.status !== "storniert")
-      .sort((x, y) => x.erstellt_am.localeCompare(y.erstellt_am));
+      // Wie auf der Ticketseite: bei gleichem Zeitstempel (vor 0046) die ID.
+      .sort((x, y) => x.erstellt_am.localeCompare(y.erstellt_am) || x.id.localeCompare(y.id));
     if (gueltig.length === 0) return [];
     const kunde = b.kunde as unknown as { vorname: string | null; nachname: string | null } | null;
     const name = [kunde?.vorname, kunde?.nachname].filter(Boolean).join(" ");
+    // Namen auf den Tickets (0046), soweit eingetragen. Steht dort nur der
+    // Käufer selbst, sagt die Zeile nichts Neues und entfällt.
+    const namen = gueltig.map((x) => x.gast_name).filter((n): n is string => Boolean(n));
+    const zeigeNamen = namen.some(
+      (n) => n.toLocaleLowerCase("de") !== name.toLocaleLowerCase("de"),
+    );
+    const promoter = (b.promoter as unknown as { name: string } | null)?.name ?? null;
     // Welche Tickets: meist eine Phase ("Early Bird"); stecken mehrere in
     // einer Bestellung, mit Anzahl ("2× Early Bird, 1× Phase 2").
     const phasen = new Map<string, number>();
@@ -84,7 +95,17 @@ export default async function PartnerSeite({ params }: Props) {
         ? [...phasen.keys()][0]
         : [...phasen].map(([p, n]) => `${n}× ${p}`).join(", ");
     const fastlane = gueltig.some((x) => x.fastlane);
-    return [{ id: b.id as string, name, tickets: gueltig.length, art, fastlane }];
+    return [
+      {
+        id: b.id as string,
+        name,
+        tickets: gueltig.length,
+        art,
+        fastlane,
+        namen: zeigeNamen ? namen : [],
+        promoter,
+      },
+    ];
   });
   const summe = zeilen.reduce((s, z) => s + z.tickets, 0);
 
@@ -140,6 +161,12 @@ export default async function PartnerSeite({ params }: Props) {
                     {z.art}
                     {z.fastlane ? ` · ${t("fastlane")}` : ""}
                   </span>
+                  {z.namen.length > 0 ? (
+                    <span className={css.art}>{t("namen", { namen: z.namen.join(", ") })}</span>
+                  ) : null}
+                  {z.promoter ? (
+                    <span className={css.promoter}>{t("promoter", { name: z.promoter })}</span>
+                  ) : null}
                 </span>
                 <span className={css.zahl}>
                   <span className="nur-sr">{t("tickets")}: </span>

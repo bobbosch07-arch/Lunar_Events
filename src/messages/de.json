@@ -550,7 +550,7 @@
   },
   "partner": {
     "eyebrow": "Partner",
-    "intro": "Die bezahlten Online-Bestellungen für dieses Event: wer gekauft hat und wie viele Tickets. Ohne Mailadressen und Beträge.",
+    "intro": "Die bezahlten Bestellungen für dieses Event: wer gekauft hat, welche Tickets, für wen und über welchen Promoter. Ohne Mailadressen und Beträge.",
     "tickets": "Tickets",
     "bestellungen": "Bestellungen",
     "name": "Name",
@@ -559,6 +559,8 @@
     "abgesagt": "Dieses Event ist abgesagt.",
     "umfang": "Abendkasse, Gästeliste und VIP sind nicht enthalten. Neu laden zeigt den aktuellen Stand.",
     "geheim": "Dieser Link ist vertraulich. Wer ihn hat, sieht die Namen. Bitte nicht weitergeben.",
-    "fastlane": "Mit Fast Lane"
+    "fastlane": "Mit Fast Lane",
+    "namen": "Namen: {namen}",
+    "promoter": "Promoter: {name}"
   }
 }

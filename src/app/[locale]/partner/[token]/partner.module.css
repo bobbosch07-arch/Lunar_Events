@@ -136,6 +136,13 @@
   color: var(--text-secondary);
 }
 
+/* Rosa wie die Akzente der Seite: Beim Durchscrollen soll man die
+   Promoter-Käufe auf einen Blick finden. */
+.promoter {
+  font-size: var(--fs-body-s);
+  color: var(--hl);
+}
+
 .ohneName {
   color: var(--text-muted);
 }

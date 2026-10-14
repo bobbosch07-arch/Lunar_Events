@@ -72,6 +72,7 @@ async function aufraeumen() {
     await dienst.from("phasen").delete().eq("event_id", ev.id);
     await dienst.from("events").delete().eq("id", ev.id);
   }
+  await dienst.from("promoter").delete().eq("kuerzel", "partnertest-pia");
   await dienst.from("kunden").delete().like("email", "partnertest-%@example.invalid");
   const { data: konten } = await dienst.auth.admin.listUsers({ perPage: 1000 });
   for (const konto of konten.users.filter((u) => [ADMIN, KUNDE].includes(u.email))) {
@@ -89,24 +90,29 @@ async function durchspielen() {
   }).select("id").single();
   if (evF) throw new Error(`Event: ${evF.message}`);
   const { data: ph } = await dienst.from("phasen").insert({
-    event_id: ev.id, name: "Online", art: "standard", preis_cent: 2000, gebuehr_cent: 0,
+    event_id: ev.id, name: "Early Bird", art: "standard", preis_cent: 2000, gebuehr_cent: 0,
     kontingent: 50, verkauft: 0, aktiv: true, leistungen: [], position: 0,
   }).select("id").single();
 
-  const kauf = async (n, vorname, nachname, menge, bezahlen = true) => {
+  const kauf = async (n, vorname, nachname, menge, bezahlen = true, namen = null) => {
     const { data: id, error } = await dienst.rpc("reserviere", {
       p_event_id: ev.id, p_auswahl: [{ phase_id: ph.id, menge }],
       p_email: KAEUFER(n), p_vorname: vorname, p_nachname: nachname,
     });
     if (error) throw new Error(`reserviere ${n}: ${error.message}`);
+    if (namen) await dienst.from("bestellungen").update({ ticket_namen: namen }).eq("id", id);
     if (bezahlen) {
       await dienst.rpc("bestaetige_zahlung", { p_bestellung_id: id, p_zahlungsart: "frei", p_referenz: "partnertest" });
     }
     return id;
   };
-  const b1 = await kauf(1, "Anna", "Alpha", 2);
+  const b1 = await kauf(1, "Anna", "Alpha", 2, true, ["Anna Alpha", "Zoe Zweitname"]);
   await dienst.from("tickets").update({ fastlane: true }).eq("bestellung_id", b1);
   const b2 = await kauf(2, "Ben", "Beta", 3);
+  const { data: promo, error: pF } = await dienst
+    .from("promoter").insert({ name: "Pia Promo", kuerzel: "partnertest-pia" }).select("id").single();
+  if (pF) throw new Error(`Promoter: ${pF.message}`);
+  await dienst.from("bestellungen").update({ promoter_id: promo.id, promoter_weg: "link" }).eq("id", b2);
   await kauf(3, "Cem", "Offen", 1, false);
   const b4 = await kauf(4, "Dora", "Tuer", 1);
   const b5 = await kauf(5, "Emil", "Erstattet", 1);
@@ -153,9 +159,14 @@ async function durchspielen() {
     const sichtbar = html.replace(/<script[\s\S]*?<\/script>/g, "");
     const zeileAnna = sichtbar.match(/Anna Alpha[\s\S]*?<\/li>/)?.[0] ?? "";
     const zeileBen = sichtbar.match(/Ben Beta[\s\S]*?<\/li>/)?.[0] ?? "";
-    pruefe(zeileAnna.includes("Online") && zeileAnna.includes("Mit Fast Lane")
-      && zeileBen.includes("Online") && !zeileBen.includes("Fast Lane"),
+    pruefe(zeileAnna.includes("Early Bird") && zeileAnna.includes("Mit Fast Lane")
+      && zeileBen.includes("Early Bird") && !zeileBen.includes("Fast Lane"),
       "Ticketart je Bestellung, Fast Lane nur bei Anna");
+    pruefe(zeileAnna.includes("Zoe Zweitname"), "Namen auf den Tickets bei Anna");
+    pruefe(!zeileBen.includes("Namen:"), "Ben ohne eingetragene Namen: keine Namenszeile");
+    pruefe(zeileBen.includes("Pia Promo") && !zeileAnna.includes("Promoter"),
+      "Promoter nur bei Ben");
+    pruefe(!sichtbar.includes("Online"), "Kein \"Online\" mehr auf der Seite");
     // Summe 4 (2 + 2), 2 Bestellungen
     pruefe(/>4<\/span>/.test(html) && />2<\/span>/.test(html), "Summen 4 Tickets, 2 Bestellungen");
 

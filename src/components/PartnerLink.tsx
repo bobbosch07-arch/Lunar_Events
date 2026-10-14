@@ -29,8 +29,9 @@ export function PartnerLink({ eventId, link }: { eventId: string; link: string |
       <h2 className={css.gruppenTitel}>Partnerlink</h2>
       <span className={css.hinweis}>
         Für Geschäftspartner, ohne Anmeldung: Wer diesen Link hat, sieht die bezahlten
-        Online-Bestellungen dieses Events mit Namen und Ticketanzahl. Keine Mailadressen, keine
-        Beträge. Gib ihn nur an Partner weiter.
+        Online-Bestellungen dieses Events mit Käufer, Ticketanzahl und Ticketart, den Namen auf
+        den Tickets und dem Promoter. Keine Mailadressen, keine Beträge. Gib ihn nur an Partner
+        weiter.
       </span>
       {link ? (
         <>
