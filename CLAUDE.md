@@ -597,7 +597,9 @@ Online-Bestellung, oben Summe Tickets und Bestellungen. Keine Mailadressen,
 keine Beträge, **keine Abendkasse, Gästeliste oder VIP** (entschieden
 14.10.: „nur die Bestellungen“). Gezählt werden nicht stornierte Tickets;
 ganz erstattete Bestellungen fallen heraus, offene (auch Überweisung) sind
-nicht dabei. Neueste zuerst.
+nicht dabei. Neueste zuerst. Unter dem Namen klein die **Ticketart**
+(Phasenname, bei mehreren Phasen in einer Bestellung mit Anzahl) und
+„Mit Fast Lane“, wenn gebucht (Wunsch 14.10.).
 
 - **Ein Link je Event**, den alle Partner teilen (entschieden 14.10.). Im
   Backoffice auf der Event-Übersicht, Karte „Partnerlink“: erzeugen,

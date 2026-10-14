@@ -558,6 +558,7 @@
     "keine": "Noch keine bezahlten Bestellungen.",
     "abgesagt": "Dieses Event ist abgesagt.",
     "umfang": "Abendkasse, Gästeliste und VIP sind nicht enthalten. Neu laden zeigt den aktuellen Stand.",
-    "geheim": "Dieser Link ist vertraulich. Wer ihn hat, sieht die Namen. Bitte nicht weitergeben."
+    "geheim": "Dieser Link ist vertraulich. Wer ihn hat, sieht die Namen. Bitte nicht weitergeben.",
+    "fastlane": "Mit Fast Lane"
   }
 }

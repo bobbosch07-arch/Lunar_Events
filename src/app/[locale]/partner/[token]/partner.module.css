@@ -118,8 +118,22 @@
   color: var(--text-muted);
 }
 
+.wer {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
 .name {
   overflow-wrap: anywhere;
+}
+
+/* Ticketart und Fast Lane: ruhig unter dem Namen, nicht als eigene Spalte,
+   damit es auf dem Handy bei zwei Spalten bleibt. */
+.art {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
 }
 
 .ohneName {

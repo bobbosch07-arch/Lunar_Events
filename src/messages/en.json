@@ -558,6 +558,7 @@
     "keine": "No paid orders yet.",
     "abgesagt": "This event has been cancelled.",
     "umfang": "Door sales, guest list and VIP are not included. Reload for the latest numbers.",
-    "geheim": "This link is confidential. Anyone who has it can see the names. Please do not share it."
+    "geheim": "This link is confidential. Anyone who has it can see the names. Please do not share it.",
+    "fastlane": "With Fast Lane"
   }
 }

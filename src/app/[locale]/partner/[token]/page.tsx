@@ -49,7 +49,9 @@ export default async function PartnerSeite({ params }: Props) {
   // fällt damit heraus.
   const { data: roh } = await db
     .from("bestellungen")
-    .select("id, bezahlt_am, kunde:kunden(vorname, nachname), tickets(status)")
+    .select(
+      "id, bezahlt_am, kunde:kunden(vorname, nachname), tickets(status, phase_name, fastlane, erstellt_am)",
+    )
     .eq("event_id", event.id)
     .eq("status", "bezahlt")
     .eq("abendkasse", false)
@@ -60,13 +62,29 @@ export default async function PartnerSeite({ params }: Props) {
   const [t, f] = await Promise.all([getTranslations("partner"), getFormatter()]);
 
   const zeilen = (roh ?? []).flatMap((b) => {
-    const tickets = ((b.tickets ?? []) as Array<{ status: string }>).filter(
-      (x) => x.status !== "storniert",
-    ).length;
-    if (tickets === 0) return [];
+    const gueltig = (
+      (b.tickets ?? []) as Array<{
+        status: string;
+        phase_name: string;
+        fastlane: boolean;
+        erstellt_am: string;
+      }>
+    )
+      .filter((x) => x.status !== "storniert")
+      .sort((x, y) => x.erstellt_am.localeCompare(y.erstellt_am));
+    if (gueltig.length === 0) return [];
     const kunde = b.kunde as unknown as { vorname: string | null; nachname: string | null } | null;
     const name = [kunde?.vorname, kunde?.nachname].filter(Boolean).join(" ");
-    return [{ id: b.id as string, name, tickets }];
+    // Welche Tickets: meist eine Phase ("Early Bird"); stecken mehrere in
+    // einer Bestellung, mit Anzahl ("2× Early Bird, 1× Phase 2").
+    const phasen = new Map<string, number>();
+    for (const x of gueltig) phasen.set(x.phase_name, (phasen.get(x.phase_name) ?? 0) + 1);
+    const art =
+      phasen.size === 1
+        ? [...phasen.keys()][0]
+        : [...phasen].map(([p, n]) => `${n}× ${p}`).join(", ");
+    const fastlane = gueltig.some((x) => x.fastlane);
+    return [{ id: b.id as string, name, tickets: gueltig.length, art, fastlane }];
   });
   const summe = zeilen.reduce((s, z) => s + z.tickets, 0);
 
@@ -114,8 +132,14 @@ export default async function PartnerSeite({ params }: Props) {
             </li>
             {zeilen.map((z) => (
               <li key={z.id} className={css.zeile}>
-                <span className={z.name ? css.name : `${css.name} ${css.ohneName}`}>
-                  {z.name || t("ohneName")}
+                <span className={css.wer}>
+                  <span className={z.name ? css.name : `${css.name} ${css.ohneName}`}>
+                    {z.name || t("ohneName")}
+                  </span>
+                  <span className={css.art}>
+                    {z.art}
+                    {z.fastlane ? ` · ${t("fastlane")}` : ""}
+                  </span>
                 </span>
                 <span className={css.zahl}>
                   <span className="nur-sr">{t("tickets")}: </span>

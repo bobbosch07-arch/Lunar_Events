@@ -104,7 +104,8 @@ async function durchspielen() {
     }
     return id;
   };
-  await kauf(1, "Anna", "Alpha", 2);
+  const b1 = await kauf(1, "Anna", "Alpha", 2);
+  await dienst.from("tickets").update({ fastlane: true }).eq("bestellung_id", b1);
   const b2 = await kauf(2, "Ben", "Beta", 3);
   await kauf(3, "Cem", "Offen", 1, false);
   const b4 = await kauf(4, "Dora", "Tuer", 1);
@@ -147,6 +148,14 @@ async function durchspielen() {
     pruefe(!html.includes("Cem") && !html.includes("Dora") && !html.includes("Emil"),
       "Offen, Abendkasse und Storniertes fehlen");
     pruefe(!html.includes("@example.invalid"), "Keine Mailadressen");
+    // Nur im sichtbaren Teil zählen: Next schickt den Inhalt zusätzlich in
+    // <script>-Blöcken mit.
+    const sichtbar = html.replace(/<script[\s\S]*?<\/script>/g, "");
+    const zeileAnna = sichtbar.match(/Anna Alpha[\s\S]*?<\/li>/)?.[0] ?? "";
+    const zeileBen = sichtbar.match(/Ben Beta[\s\S]*?<\/li>/)?.[0] ?? "";
+    pruefe(zeileAnna.includes("Online") && zeileAnna.includes("Mit Fast Lane")
+      && zeileBen.includes("Online") && !zeileBen.includes("Fast Lane"),
+      "Ticketart je Bestellung, Fast Lane nur bei Anna");
     // Summe 4 (2 + 2), 2 Bestellungen
     pruefe(/>4<\/span>/.test(html) && />2<\/span>/.test(html), "Summen 4 Tickets, 2 Bestellungen");
 
