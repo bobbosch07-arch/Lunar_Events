@@ -15,7 +15,8 @@ import {
 } from "@/app/aktionen/bestellung";
 import { dienstClient } from "@/lib/supabase/server";
 import { preisText } from "@/lib/format";
-import { eigeneAdresse } from "@/lib/stripe";
+import { eigeneAdresse, stripe, stripeEingerichtet } from "@/lib/stripe";
+import { StripeZahlung } from "@/components/StripeZahlung";
 import css from "./bestaetigung.module.css";
 import { steuerhinweis } from "@/lib/steuer";
 import { Kosmos } from "@/components/Deko";
@@ -34,10 +35,14 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
   // eine Zusage, die erst der Zahlungseingang einlöst.
   const t = await getTranslations({ locale, namespace: "bestaetigung" });
   if (b) {
+    // Wie die Seite selbst: erst bei Stripe nachfragen, sonst stünde im Tab
+    // "nicht abgeschlossen", während die Seite schon die Tickets zeigt.
+    await stelleZahlungSicher(b);
     const bestellung = await holeEigeneBestellung(b);
     if (bestellung?.status === "offen" && (bestellung as { vorkasse?: boolean }).vorkasse) {
       return { title: t("titelVorkasse"), robots };
     }
+    if (bestellung && bestellung.status !== "bezahlt") return { title: t("offen.titel"), robots };
   }
   return { title: t("titel"), robots };
 }
@@ -62,6 +67,15 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
     getTranslations("bestaetigung"),
     getFormatter(),
   ]);
+
+  // Hierher schickt Stripe nach jeder Weiterleitung zurück (PayPal, Klarna,
+  // Freigabe in der Bank-App), auch wenn der Gast dort abgebrochen hat. Bis
+  // 14.10.2026 stand dann trotzdem "Du bist dabei" mit 0 Tickets da, und der
+  // Kauf wurde gezählt; Gäste fingen mit einer neuen Bestellung von vorn an
+  // (bei THE OPENING 19 Bestellungen, alle bis zur Zahlung gekommen).
+  if (bestellung.status !== "bezahlt" && !(bestellung as { vorkasse?: boolean }).vorkasse) {
+    return <ZahlungOffen bestellung={bestellung} locale={locale} />;
+  }
 
   const event = bestellung.event as unknown as {
     slug: string;
@@ -246,6 +260,85 @@ export default async function BestaetigungsSeite({ params, searchParams }: Props
               Weitere Events
             </Knopf>
           </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+/**
+ * Zurück von Stripe, aber nicht bezahlt. Läuft die Reservierung noch, steht
+ * das Zahlformular gleich wieder da, für dieselbe Bestellung: Stripe legt je
+ * Bestellung nur einen Zahlvorgang an, ein zweiter Versuch bucht also nie
+ * doppelt. Zustimmungen gab es schon in der Kasse. Kein Kauf wird gezählt.
+ */
+async function ZahlungOffen({
+  bestellung,
+  locale,
+}: {
+  bestellung: NonNullable<Awaited<ReturnType<typeof holeEigeneBestellung>>>;
+  locale: string;
+}) {
+  const [t, f] = await Promise.all([getTranslations("bestaetigung"), getFormatter()]);
+  const event = bestellung.event as unknown as { slug: string; titel: string };
+  const bis = bestellung.reserviert_bis as string | null;
+  const laeuft = bestellung.status === "offen" && Boolean(bis) && new Date(bis!).getTime() > Date.now();
+
+  // Manche Zahlarten brauchen einen Moment (z. B. Lastschrift): dann nicht
+  // zum zweiten Versuch auffordern.
+  let inBearbeitung = false;
+  if (laeuft && stripeEingerichtet()) {
+    const { data } = await dienstClient()
+      .from("bestellungen")
+      .select("zahlung_ref")
+      .eq("id", bestellung.id as string)
+      .single();
+    const ref = data?.zahlung_ref as string | null;
+    if (ref?.startsWith("pi_")) {
+      try {
+        inBearbeitung = (await stripe().paymentIntents.retrieve(ref)).status === "processing";
+      } catch {
+        // Stripe nicht erreichbar: dann eben das Formular anbieten.
+      }
+    }
+  }
+
+  return (
+    <div className={css.rahmen}>
+      <header className={css.kopf}>
+        <div className="seitenbreite">
+          <Link href="/" aria-label="Lunar Events">
+            <Logo ton="farbig" hoehe={44} prioritaet />
+          </Link>
+        </div>
+      </header>
+      <main className={`${css.inhalt} cosmos-host`}>
+        <div className="seitenbreite" style={{ maxWidth: 640 }}>
+          <div className={css.jubel}>
+            <h1 className={css.titel}>
+              {inBearbeitung ? t("offen.titelBearbeitung") : t("offen.titel")}
+            </h1>
+            <p className={css.event}>{event.titel}</p>
+            <p className={css.mail}>
+              {inBearbeitung
+                ? t("offen.textBearbeitung")
+                : laeuft
+                  ? t("offen.text", { zeit: f.dateTime(new Date(bis!), { hour: "2-digit", minute: "2-digit" }) })
+                  : t("offen.textAbgelaufen")}
+            </p>
+          </div>
+          {laeuft && !inBearbeitung && stripeEingerichtet() ? (
+            <StripeZahlung
+              bestellungId={bestellung.id as string}
+              rueckkehr={`${eigeneAdresse()}${locale === "de" ? "" : `/${locale}`}/checkout/bestaetigung?b=${bestellung.id as string}`}
+              freigegeben
+            />
+          ) : null}
+          {!laeuft ? (
+            <Knopf href={`/events/${event.slug}#tickets`} groesse="gross">
+              {t("offen.neu")}
+            </Knopf>
+          ) : null}
         </div>
       </main>
     </div>

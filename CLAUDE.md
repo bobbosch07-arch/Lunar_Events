@@ -766,6 +766,18 @@ Bestätigungsseite zusätzlich selbst bei Stripe nach
 (`stelleZahlungSicher`). Doppelt bestätigen ist gefahrlos, weil
 `bestaetige_zahlung` mehrfach aufrufbar ist.
 
+**Zurück von Stripe heißt nicht bezahlt** (14.10.2026). Nach jeder
+Weiterleitung (PayPal, Klarna, Freigabe in der Bank-App) schickt Stripe auf
+die Bestätigungsseite, auch nach Abbruch. Bis dahin stand dort „DU BIST
+DABEI“ mit 0 Tickets, und `kauf_abgeschlossen` (auch an GA4) wurde gezählt.
+Bei THE OPENING: 19 Bestellungen bis zur Zahlung, keine einzige Zahlung bei
+Stripe fehlgeschlagen (Abbrüche sind dort „unvollständig“), 7 Käufer fingen
+nach 1 bis 4 Minuten mit neuer Bestellung von vorn an; gezählt 38 Käufe bei
+30 bezahlten. Jetzt zeigt `ZahlungOffen` „Zahlung nicht abgeschlossen“, die
+Reservierungszeit und das Zahlformular für **dieselbe** Bestellung (ein
+Zahlvorgang je Bestellung, also nie doppelt), bei `processing` „wird
+geprüft“, nach Ablauf „Tickets neu wählen“. Gezählt wird dort nichts.
+
 **Der Betrag kommt immer aus der Datenbank**, nie aus dem Browser. Pro
 Bestellung entsteht nur ein Zahlungsvorgang, auch beim Neuladen —
 sonst stünden zwei offene Zahlungen für eine Bestellung in Stripe.

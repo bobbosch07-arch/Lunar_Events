@@ -249,7 +249,15 @@
     "summe": "Total",
     "rabatt": "Discount",
     "tickets": "Tickets",
-    "titelVorkasse": "Order received"
+    "titelVorkasse": "Order received",
+    "offen": {
+      "titel": "Payment not completed",
+      "text": "Nothing was charged. Your tickets are reserved for you until {zeit}. Try again right here, with another payment method if you like.",
+      "titelBearbeitung": "Payment is being checked",
+      "textBearbeitung": "Your payment is on its way. As soon as it is confirmed, the tickets arrive by email. Nothing else to do.",
+      "textAbgelaufen": "Nothing was charged, and your reservation has expired. Just choose your tickets again.",
+      "neu": "Choose tickets again"
+    }
   },
   "ticket": {
     "titel": "My tickets",

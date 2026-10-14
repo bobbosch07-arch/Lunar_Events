@@ -249,7 +249,15 @@
     "summe": "Summe",
     "rabatt": "Rabatt",
     "tickets": "Tickets",
-    "titelVorkasse": "Bestellung eingegangen"
+    "titelVorkasse": "Bestellung eingegangen",
+    "offen": {
+      "titel": "Zahlung nicht abgeschlossen",
+      "text": "Es wurde nichts abgebucht. Deine Tickets sind noch bis {zeit} Uhr für dich reserviert. Versuch es hier gleich nochmal, gern auch mit einer anderen Zahlart.",
+      "titelBearbeitung": "Zahlung wird geprüft",
+      "textBearbeitung": "Deine Zahlung ist unterwegs. Sobald sie bestätigt ist, kommen die Tickets per Mail. Du musst nichts weiter tun.",
+      "textAbgelaufen": "Es wurde nichts abgebucht, und deine Reservierung ist inzwischen abgelaufen. Wähl die Tickets einfach neu.",
+      "neu": "Tickets neu wählen"
+    }
   },
   "ticket": {
     "titel": "Meine Tickets",
