@@ -324,6 +324,29 @@ async function durchspielen() {
   await dienst.from("tickets").update({ status: "storniert" }).in("code", extra.slice(0, 1));
   pruefe((await stand(ev.id)) === v8 + 2, "Storno eines Eingelassenen: −1");
 
+  // --- 9. Gästeliste: einlassen und zurücknehmen (0050) ---
+  console.log("\n— 9. Gästeliste —");
+  const { data: gast } = await admin.rpc("speichere_gast", {
+    p_id: null, p_event_id: ev.id, p_name: "Crewtest Gast", p_email: null, p_begleitung: 3, p_notiz: null,
+  });
+  pruefe(gast?.ergebnis === "ok", "Gast mit 4 Personen angelegt", gast?.ergebnis);
+  const v9 = await stand(ev.id);
+  const { data: g1 } = await geraete[0].rpc("lasse_gast_ein", { p_gast_id: gast.id, p_anzahl: 3 });
+  pruefe(g1?.eingelassen === 3 && (await stand(ev.id)) === v9 + 3, "3 über die Gästeliste rein, Stand +3");
+  const { data: g2 } = await geraete[1].rpc("gast_einlass_rueckgaengig", { p_gast_id: gast.id, p_anzahl: 1 });
+  pruefe(g2?.ergebnis === "nicht_erlaubt", "Fremdes Gerät darf nicht zurücknehmen", g2?.ergebnis);
+  const { data: g3 } = await geraete[0].rpc("gast_einlass_rueckgaengig", { p_gast_id: gast.id, p_anzahl: 2 });
+  pruefe(g3?.ergebnis === "zurueck" && g3.anzahl === 2 && g3.drin === 1 && (await stand(ev.id)) === v9 + 1,
+    "Eigenes: 2 zurück, 1 bleibt drin, Stand passt", JSON.stringify(g3));
+  const { data: g4 } = await admin.rpc("gast_einlass_rueckgaengig", { p_gast_id: gast.id, p_anzahl: 5 });
+  pruefe(g4?.ergebnis === "zurueck" && g4.anzahl === 1 && g4.drin === 0, "Admin: der letzte zurück, nicht mehr als drin", JSON.stringify(g4));
+  const { data: g5 } = await geraete[0].rpc("gast_einlass_rueckgaengig", { p_gast_id: gast.id, p_anzahl: 1 });
+  pruefe(g5?.ergebnis === "nicht_drin", "Niemand mehr drin: nicht_drin", g5?.ergebnis);
+  const { data: g6 } = await geraete[0].rpc("lasse_gast_ein", { p_gast_id: gast.id, p_anzahl: 9 });
+  pruefe(g6?.eingelassen === 4, "Danach wieder einlassbar, höchstens 4", `${g6?.eingelassen}`);
+  await dienst.from("gaeste").delete().eq("id", gast.id);
+  pruefe((await stand(ev.id)) === v9, "Gast gelöscht: Stand wieder wie vorher");
+
   // --- 7. Realtime-Ergebnis ---
   await new Promise((r) => setTimeout(r, 3000));
   const endstand = await stand(ev.id);

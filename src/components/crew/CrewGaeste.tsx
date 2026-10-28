@@ -2,12 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { browserClient } from "@/lib/supabase/client";
-import { crewGaeste, crewGastEin, type CrewGast } from "@/lib/einlass";
+import { crewGaeste, crewGastEin, crewGastZurueck, type CrewGast } from "@/lib/einlass";
 import { ABLAGE, lies, schreib } from "@/lib/crew/ablage";
 
 type Offen = { id: string; gastId: string; anzahl: number; eventId: string; zeit: number };
 type Filter = "alle" | "offen" | "drin";
-type Meldung = { art: "gut" | "schon" | "nein"; text: string };
+/** `rueck`: was „Rückgängig“ zurücknimmt; mit `offenId` nur aus der Warteschlange. */
+type Meldung = {
+  art: "gut" | "schon" | "nein";
+  text: string;
+  rueck?: { gast: CrewGast; anzahl: number; offenId?: string };
+};
 
 const NACHTRAGEN_MS = 20 * 1000;
 const AUFFRISCHEN_MS = 2 * 60 * 1000;
@@ -143,6 +148,7 @@ export function CrewGaeste({ eventId, online }: { eventId: string; online: boole
           setMeldung({
             art: "gut",
             text: `${antwort.eingelassen === 1 ? "1 Person" : `${antwort.eingelassen} Personen`} rein · ${gast.name}`,
+            rueck: { gast, anzahl: antwort.eingelassen ?? n },
           });
         } else if (antwort.ergebnis === "schon_drin") {
           aktualisiere(gast.id, antwort.drin ?? gast.personen, antwort.personen);
@@ -162,9 +168,46 @@ export function CrewGaeste({ eventId, online }: { eventId: string; online: boole
     }
 
     // Ohne Antwort: merken und nachtragen.
-    setOffen([...offenRef.current, { id: crypto.randomUUID(), gastId: gast.id, anzahl: n, eventId, zeit: jetzt() }]);
+    const offenId = crypto.randomUUID();
+    setOffen([...offenRef.current, { id: offenId, gastId: gast.id, anzahl: n, eventId, zeit: jetzt() }]);
     aktualisiere(gast.id, gast.drin + n);
-    setMeldung({ art: "gut", text: `${n === 1 ? "1 Person" : `${n} Personen`} rein · ohne Netz gespeichert` });
+    setMeldung({
+      art: "gut",
+      text: `${n === 1 ? "1 Person" : `${n} Personen`} rein · ohne Netz gespeichert`,
+      rueck: { gast, anzahl: n, offenId },
+    });
+  }
+
+  async function rueckgaengig() {
+    const r = meldung?.rueck;
+    if (!r || laeuft) return;
+    const aktuell = gaeste.find((g) => g.id === r.gast.id) ?? r.gast;
+    // Noch nicht nachgetragen: einfach aus der Warteschlange nehmen.
+    if (r.offenId && offenRef.current.some((o) => o.id === r.offenId)) {
+      setOffen(offenRef.current.filter((o) => o.id !== r.offenId));
+      aktualisiere(aktuell.id, Math.max(0, aktuell.drin - r.anzahl));
+      setMeldung({ art: "schon", text: `Zurückgenommen · ${aktuell.name}` });
+      return;
+    }
+    if (!navigator.onLine) {
+      setMeldung({ art: "nein", text: "Zurücknehmen braucht Netz, der Einlass ist schon übertragen." });
+      return;
+    }
+    setLaeuft(aktuell.id);
+    const antwort = await crewGastZurueck(holeDb(), aktuell.id, r.anzahl);
+    setLaeuft(null);
+    if (!antwort) {
+      setMeldung({ ...meldung!, art: "nein", text: "Keine Antwort. Nochmal versuchen." });
+      return;
+    }
+    if (typeof antwort.drin === "number") aktualisiere(aktuell.id, antwort.drin, antwort.personen);
+    setMeldung(
+      antwort.ergebnis === "zurueck"
+        ? { art: "schon", text: `${antwort.anzahl === 1 ? "1 Person" : `${antwort.anzahl} Personen`} zurückgenommen · ${aktuell.name}` }
+        : antwort.ergebnis === "nicht_erlaubt"
+          ? { art: "nein", text: "Zurücknehmen geht nur beim eigenen Einlass der letzten 30 Minuten." }
+          : { art: "nein", text: `Nichts zurückzunehmen · ${aktuell.name}` },
+    );
   }
 
   const offenIds = useMemo(() => new Set(offen.map((o) => o.gastId)), [offen]);
@@ -208,6 +251,11 @@ export function CrewGaeste({ eventId, online }: { eventId: string; online: boole
             aria-hidden="true"
           />
           <span>{meldung.text}</span>
+          {meldung.rueck ? (
+            <button type="button" className="crew-band-aktion" onClick={() => void rueckgaengig()} disabled={laeuft !== null}>
+              Rückgängig
+            </button>
+          ) : null}
           <button type="button" className="crew-band-aktion" onClick={() => setMeldung(null)}>
             OK
           </button>

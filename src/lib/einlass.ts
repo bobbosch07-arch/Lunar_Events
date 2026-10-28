@@ -233,3 +233,20 @@ export function crewGastEin(db: SupabaseClient, gastId: string, anzahl: number) 
       .abortSignal(signal),
   );
 }
+
+export type CrewGastZurueck = {
+  ergebnis: "zurueck" | "nicht_drin" | "nicht_erlaubt" | "unbekannt" | "keine_berechtigung";
+  name?: string;
+  anzahl?: number;
+  personen?: number;
+  drin?: number;
+};
+
+/** Nimmt Einlässe über die Gästeliste zurück (0050). */
+export function crewGastZurueck(db: SupabaseClient, gastId: string, anzahl: number) {
+  return mitGrenze<CrewGastZurueck>(ZEITGRENZE_MS, (signal) =>
+    db
+      .rpc("gast_einlass_rueckgaengig", { p_gast_id: gastId, p_anzahl: Math.max(1, Math.floor(anzahl)) })
+      .abortSignal(signal),
+  );
+}

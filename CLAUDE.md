@@ -887,6 +887,63 @@ Personal legt `scripts/mitarbeiter.mjs` an — es gibt bewusst keine
 Oberfläche dafür. Wer Personal anlegen darf, bestimmt, wer an die Kasse
 kommt.
 
+### Crew-App `/crew` (Migrationen 0049–0050, 28.10.2026)
+
+Design: `Designs/crew-app/design_handoff_crew_app_lunar/` (README zuerst).
+Skin-Dateien liegen 1:1 unter `src/styles/crew/` (`crew-tokens.css`,
+`komponenten.css`), eigene Bildschirm-Styles in `crew.css` mit `crew-`
+davor. Schriften kommen aus next/font, Icons aus `@phosphor-icons/web` im
+Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
+
+- **PWA statt APK fürs Opening** (entschieden 28.10.): Das Personal hat fast
+  nur iPhones. Safari → „Zum Home-Bildschirm“. Danach (Phase 2) derselbe
+  Code in Capacitor für iOS und Android mit nativem Scanner; iOS-Build über
+  Cloud-Mac + TestFlight. Kein reines Kotlin.
+- **Die Seite ist für alle gleich** und prüft Anmeldung und Rolle im
+  Browser, nicht auf dem Server wie `/einlass`. Nur so kann der Service
+  Worker (`public/crew-sw.js`, liegt im Wurzelverzeichnis, weil ein Worker
+  unter `/crew/` den Pfad `/crew` nicht steuern dürfte) sie ohne Netz
+  ausliefern: Seite erst Netz, nach 4 s Speicher; `/_next/static` und
+  `/crew/*` einmal geladen, bleibt. Daten liegen in **IndexedDB**
+  (`src/lib/crew/ablage.ts`), nicht localStorage.
+- **Keine Server-Aktionen in der App, die nach dem Laden laufen.** Scanner
+  und Gästeliste sprechen direkt mit Supabase (`src/lib/einlass.ts`, Teil
+  „Crew-App“). Eine zwischengespeicherte Fassung fände die Aktions-IDs nach
+  dem nächsten Deploy nicht mehr. Ausnahme: die Anmeldung (`meldeCrewAn`),
+  die ohnehin Netz braucht.
+- **Anmeldung mit Passwort** (entschieden 28.10.), Stufe „einlass“ statt
+  „team“ (`src/app/aktionen/crew.ts`). Der Mail-Link taugt nicht: Er öffnet
+  Safari, und die Home-Bildschirm-App hat einen eigenen Speicher. Wer noch
+  keins hat: „Link anfordern“ → in Safari `/crew/passwort` → in der App
+  anmelden.
+- **Prüfen, dann entscheiden.** `einlass_pruefen` ändert nichts,
+  `einlass_reinlassen` entwertet, `einlass_rueckgaengig` nimmt zurück.
+  Abweisen braucht keinen Aufruf, das Ticket bleibt gültig. Ab 18 prüft
+  die Crew am Ausweis (Name + Alter), **kein Geburtsdatum gespeichert**;
+  dafür steht der Ticketname groß auf der Urteilsfläche. Modus je Event
+  (`events.einlass_modus`, `entscheiden` | `automatisch`) — je Event statt
+  je Veranstalter, weil es keine Veranstalter-Tabelle gibt.
+- **Rückgängig: eigenes der letzten 30 Minuten, Admins immer** — für Scan
+  (0049) und Gästeliste (`gast_einlass_rueckgaengig`, 0050). Sonst ließe
+  sich ein benutztes Ticket wieder gültig machen und weitergeben.
+- **„Drin“ ist die Zahl entwerteter Tickets**, kein eigener Zähler. Scanner,
+  Gästeliste und Kasse entwerten alle, also zählt jeder Weg von selbst mit.
+  Für Realtime hält ein Trigger `einlass_stand` (eine Zeile je Event)
+  nach, **mit Deltas unter Zeilensperre**, nicht mit count(*): Zwei
+  gleichzeitige Scans sähen die jeweils andere, noch offene Entwertung
+  nicht. `events.kapazitaet` (Backoffice, Abschnitt Einlass) speist die
+  Ampel der Kassenkarte (`useBelegung`, `src/lib/crew/belegung.ts`).
+- **Ohne Netz** entscheidet die Liste (`einlass_liste`), Reinlassen und
+  Rückgängig werden in Reihenfolge gesammelt und mit
+  `einlass_nachtragen_aktionen` nachgetragen. Ein Rückgängig auf ein noch
+  nicht nachgetragenes Reinlassen streicht beides auf dem Gerät.
+- „Nur prüfen“ dürfen in der App alle (es entwertet nichts); im alten
+  Scanner bleibt es Admins vorbehalten.
+- `/einlass` bleibt unverändert als Rückfallweg bis nach dem Opening.
+
+Lasttest: `node scripts/crew-last.mjs` (1000 Tickets, 6 Geräte, 28.10.:
+alles grün, prüfen und reinlassen je p50 61 ms, p95 unter 0,1 s).
+
 ## Wallet-Pässe
 
 Beide Anbieter sind gebaut und warten nur auf Zugangsdaten — die Schritte
