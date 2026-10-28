@@ -1,0 +1,277 @@
+/* ============================================================
+   CREW-APP · Bildschirme (Anmelden, Scanner)
+   Nachbau von Designs/crew-app/.../prototypen/Crew App Lunar.dc.html.
+   Werte nur aus crew-tokens.css; Klassen mit crew- davor, damit nichts
+   mit der Website zusammenstößt.
+   ============================================================ */
+
+/* Die Schriften liefert next/font (Layout der Website) — auch ohne Netz. */
+:root {
+  --crew-font: var(--font-body), "DM Sans", system-ui, sans-serif;
+  --crew-font-display: var(--font-unbounded), "Unbounded", "Arial Black", sans-serif;
+}
+
+html:has(.crew),
+html:has(.crew) body {
+  background: var(--crew-grund);
+  color: var(--crew-text);
+  font-family: var(--crew-font);
+}
+
+.crew {
+  min-height: 100dvh;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+/* ---------- Anmelden, Tor ---------- */
+.crew-tor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-8);
+  min-height: 100dvh;
+  padding: 72px var(--crew-rand) var(--space-8);
+}
+.crew-wortmarke { width: 220px; height: auto; }
+.crew-tor-karte { width: 100%; max-width: 400px; }
+.crew-anmelden {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 400px;
+}
+.crew-anmelden-titel { font-size: var(--crew-fs-titel); margin: 0; }
+.crew-anmelden .input { min-height: var(--crew-tap); }
+.crew-hauptknopf { min-height: var(--crew-knopf); font-size: var(--crew-fs-text); }
+.crew-fehler { margin: 0; color: var(--netz-aus); font-size: var(--crew-fs-klein); }
+.crew-hinweis { margin: 0; color: var(--crew-text-2); font-size: var(--crew-fs-klein); }
+.crew-anmelden .btn-ghost { min-height: var(--crew-tap); align-self: center; text-transform: none; font-family: var(--crew-font); font-size: var(--crew-fs-klein); }
+
+/* ---------- Scanner ---------- */
+.crew-schirm {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--crew-grund);
+}
+
+.crew-kopf {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: var(--crew-kopf);
+  padding: 0 var(--space-2) 0 var(--crew-rand);
+}
+.crew-kopf-icon { flex: none; width: 32px; height: 32px; border-radius: 8px; }
+.crew-kopf-event {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: var(--crew-tap);
+  justify-content: center;
+}
+.crew-kopf-titel {
+  font-size: var(--crew-fs-text);
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crew-kopf-unter { font-size: var(--crew-fs-mini); color: var(--crew-text-3); }
+/* Unsichtbar über dem Titel: Antippen öffnet die Auswahl des Systems. */
+.crew-kopf-wahl {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+.crew-pruefen { min-height: var(--crew-tap); font-size: var(--crew-fs-klein); gap: var(--space-2); }
+.crew-pruefen i { font-size: 18px; }
+.crew-pruefen[data-an] { color: var(--crew-grund); background: var(--urteil-pruefen); border-color: var(--urteil-pruefen); }
+
+.crew-band {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: var(--crew-band);
+  padding: var(--space-2) var(--crew-rand);
+  font-size: var(--crew-fs-klein);
+  font-weight: 500;
+}
+.crew-band i { font-size: 20px; flex: none; }
+.crew-band span { flex: 1; }
+.crew-band[data-art="abgelaufen"] { background: var(--band-abgelaufen); color: var(--auf-band-abgelaufen); }
+.crew-band[data-art="doppelt"] { background: var(--band-doppelt); color: var(--auf-band-doppelt); }
+.crew-band[data-art="pruefen"] { background: var(--band-pruefen); color: var(--auf-band-pruefen); }
+.crew-band[data-art="offline"] { background: var(--band-offline); color: var(--auf-band-offline); }
+.crew-band-aktion {
+  min-height: var(--crew-tap);
+  padding: 0 var(--space-2);
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.crew-kamera {
+  flex: 1;
+  min-height: 120px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--crew-kamera);
+}
+.crew-video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.crew-zielrahmen {
+  position: relative;
+  width: min(60vw, 200px, 70%);
+  aspect-ratio: 1;
+  max-height: 80%;
+}
+.crew-zielrahmen span {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border: 0 solid var(--color-neutral-100);
+}
+.crew-zielrahmen span:nth-child(1) { left: 0; top: 0; border-left-width: 3px; border-top-width: 3px; border-radius: 8px 0 0 0; }
+.crew-zielrahmen span:nth-child(2) { right: 0; top: 0; border-right-width: 3px; border-top-width: 3px; border-radius: 0 8px 0 0; }
+.crew-zielrahmen span:nth-child(3) { left: 0; bottom: 0; border-left-width: 3px; border-bottom-width: 3px; border-radius: 0 0 0 8px; }
+.crew-zielrahmen span:nth-child(4) { right: 0; bottom: 0; border-right-width: 3px; border-bottom-width: 3px; border-radius: 0 0 8px 0; }
+.crew-kamera-start { position: relative; min-height: var(--crew-knopf); font-size: var(--crew-fs-text); }
+.crew-kamera-start i { font-size: 22px; }
+
+.crew-urteil {
+  position: relative;
+  overflow: hidden;
+  flex: none;
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8) var(--crew-rand) var(--space-6);
+  background: var(--u);
+  color: var(--auf);
+  transition: background var(--crew-dauer) linear;
+}
+.crew-funken { position: absolute; right: 8px; top: 8px; width: 170px; height: 120px; pointer-events: none; }
+.crew-funke {
+  position: absolute;
+  left: 20%;
+  top: 55%;
+  opacity: 0;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+}
+.crew-urteil-zeile { display: flex; align-items: center; gap: var(--space-4); }
+.crew-urteil-zeile i { font-size: 52px; flex: none; }
+.crew-urteil-wort {
+  font-size: var(--crew-fs-urteil);
+  line-height: var(--crew-lh-urteil);
+  font-family: var(--crew-font-display);
+  font-weight: var(--crew-gewicht-display);
+  font-stretch: var(--crew-schnitt-display);
+  text-transform: var(--crew-tt-display);
+  letter-spacing: var(--crew-ls-display);
+}
+.crew-urteil-detail { font-size: var(--crew-fs-text); line-height: var(--crew-lh-text); font-weight: 500; }
+.crew-urteil-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: var(--space-4);
+  border-top: 2px solid currentColor;
+}
+.crew-urteil-kicker { font-size: var(--crew-fs-mini); letter-spacing: var(--crew-ls-mini); text-transform: uppercase; font-weight: 500; }
+.crew-urteil-gast { font-size: var(--crew-fs-name); line-height: var(--crew-lh-name); font-weight: 500; overflow-wrap: anywhere; }
+.crew-urteil-art { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-3); font-size: var(--crew-fs-text); font-weight: 500; }
+/* Umgekehrte Farben: Schrift wird Fläche. */
+.crew-urteil-marke {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--crew-radius-sm);
+  font-size: var(--crew-fs-klein);
+  background: var(--auf);
+  color: var(--u);
+}
+
+.crew-entscheidung {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+  margin-top: auto;
+}
+.crew-entscheidung .btn,
+.crew-urteil-knopf {
+  min-width: 0;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-2);
+  min-height: var(--crew-knopf-gross);
+  font-size: var(--crew-fs-klein);
+  color: inherit;
+  border: 2px solid currentColor;
+}
+.crew-entscheidung i { font-size: 22px; }
+/* Gefüllt: Fläche in Urteil-Schriftfarbe, Schrift in Urteilsfarbe. */
+.crew-entscheidung .crew-reinlassen { background: var(--auf); color: var(--u); border-color: var(--auf); }
+.crew-urteil-knopf { margin-top: auto; flex-direction: row; gap: var(--space-2); min-height: var(--crew-knopf); font-size: var(--crew-fs-text); }
+.crew-urteil-knopf i { font-size: 20px; }
+
+.crew-eingabe {
+  flex: none;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--crew-rand);
+  background: var(--crew-flaeche);
+}
+.crew-eingabe .input { min-height: var(--crew-tap); text-transform: uppercase; }
+.crew-eingabe .btn { min-height: var(--crew-tap); }
+
+.crew-fuss {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--crew-fuss);
+  padding: 0 var(--space-2) 0 var(--crew-rand);
+  background: var(--crew-flaeche);
+  font-size: var(--crew-fs-klein);
+}
+.crew-netz { display: flex; align-items: center; gap: var(--space-2); font-weight: 500; }
+.crew-netz i { font-size: 16px; }
+.crew-netz[data-netz="gut"] { color: var(--netz-gut); }
+.crew-netz[data-netz="schwach"] { color: var(--netz-schwach); }
+.crew-netz[data-netz="aus"] { color: var(--netz-aus); }
+.crew-belegung { display: flex; align-items: center; gap: var(--space-3); color: var(--crew-text-2); font-variant-numeric: tabular-nums; }
+.crew-belegung strong { color: var(--crew-text); font-weight: 700; font-size: var(--crew-fs-text); }
+.crew-offen { display: inline-flex; align-items: center; gap: 4px; color: var(--netz-schwach); }
+.crew-tastatur { width: var(--crew-tap); height: var(--crew-tap); padding: 0; font-size: 22px; }
+.crew-liste-stand {
+  flex: none;
+  margin: 0;
+  padding: 4px var(--crew-rand) 6px;
+  background: var(--crew-flaeche);
+  font-size: var(--crew-fs-mini);
+  color: var(--crew-text-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crew-urteil { transition: none; }
+}

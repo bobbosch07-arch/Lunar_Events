@@ -1,0 +1,66 @@
+/* ============================================================
+   CREW-APP · Skin Lunar Events · Komponenten
+   Dieselben Klassen wie Nocturne/Veya (Skin-Vertrag, siehe
+   crew-app-vorlage/LIES-MICH.md). Werte nur aus crew-tokens.css.
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--crew-grund); color: var(--crew-text); font-family: var(--crew-font); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+h1, h2, h3, h4, h5, h6 { margin: 0 0 var(--space-2); font-family: var(--crew-font-display); font-weight: 900; text-transform: uppercase; line-height: 1; letter-spacing: -0.01em; }
+h1 { font-size: 40px; } h2 { font-size: 30px; } h3 { font-size: 22px; } h4 { font-size: 18px; } h5 { font-size: 15px; }
+h6 { font-family: var(--crew-font); font-weight: 600; font-size: 12px; letter-spacing: 0.2em; color: #ff8fd6; }
+a { color: var(--crew-signal); text-underline-offset: 3px; }
+a:hover { color: #ff8fd6; }
+:focus { outline: none; }
+:focus-visible { outline: 2px solid var(--crew-fokus); outline-offset: 3px; }
+::selection { background: #ff8fd6; color: var(--crew-grund); }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-decoration: none;
+  font-family: var(--crew-font-display); font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em;
+  font-size: 13px; line-height: 1.1; color: var(--crew-text); background: transparent;
+  border: 1px solid transparent; border-radius: var(--crew-radius-sm); padding: 8px 14px;
+  transition: background 120ms ease, color 120ms ease, transform 80ms ease, box-shadow 80ms ease;
+}
+.btn:active { transform: translate(2px, 2px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-primary { background: var(--crew-signal); color: var(--crew-grund); box-shadow: 3px 3px 0 #ff8fd6; }
+.btn-primary:hover { background: var(--crew-signal-hover); }
+.btn-primary:active { background: var(--crew-signal-gedrueckt); box-shadow: 1px 1px 0 #ff8fd6; }
+.btn-secondary { border-color: var(--crew-linie-feld); }
+.btn-secondary:hover { background: rgba(247, 240, 255, 0.07); }
+.btn-secondary:active { background: rgba(247, 240, 255, 0.14); }
+.btn-ghost { color: var(--crew-signal); padding-inline: 4px; }
+.btn-ghost:hover { background: rgba(255, 225, 74, 0.1); }
+.btn-icon { width: 44px; height: 44px; padding: 0; }
+.btn-block { width: 100%; }
+
+.field > label { display: block; margin-bottom: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--crew-text-2); }
+.input { width: 100%; min-height: 44px; padding: 8px 12px; font: inherit; font-size: 16px; color: var(--crew-text); caret-color: var(--crew-signal); background: var(--crew-flaeche); border: 1px solid var(--crew-linie-feld); border-radius: var(--crew-radius-sm); }
+.input:hover { border-color: #a993d6; }
+.input:focus-visible { border-color: var(--crew-signal); box-shadow: 0 0 0 1px var(--crew-signal), 0 0 0 4px rgba(255, 225, 74, 0.2); outline: none; }
+.radio { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 15px; }
+.radio input, .seg-opt input { position: absolute; opacity: 0; width: 0; height: 0; pointer-events: none; }
+.radio .dot { width: 20px; height: 20px; flex: none; border-radius: 50%; border: 2px solid var(--crew-linie-feld); }
+.radio input:checked + .dot { border-color: var(--crew-signal); background: var(--crew-signal); box-shadow: inset 0 0 0 4px var(--crew-grund); }
+.seg { display: inline-flex; overflow: hidden; border: 1px solid var(--crew-linie-feld); border-radius: var(--crew-radius-sm); }
+.seg-opt { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
+.seg-opt + .seg-opt { border-left: 1px solid var(--crew-linie-feld); }
+.seg-opt:has(input:checked) { background: var(--crew-auswahl); color: var(--crew-text); box-shadow: inset 0 0 0 2px var(--crew-signal); }
+.seg-opt:not(:has(input:checked)):hover { background: rgba(247, 240, 255, 0.07); }
+.seg-opt:has(input:focus-visible) { outline: 2px solid var(--crew-fokus); outline-offset: -2px; }
+
+.card { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: var(--crew-radius-lg); background: var(--crew-flaeche); }
+.card-kicker { font-weight: 600; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #ff8fd6; }
+.card-kicker::before { content: "\2726\00a0"; }
+.card-title { font-family: var(--crew-font-display); font-weight: 900; text-transform: uppercase; font-size: 18px; line-height: 1.05; }
+.card-body { margin: 0; font-size: 14px; color: var(--crew-text-2); }
+.elev-sm { box-shadow: var(--shadow-sm); }
+.elev-md { box-shadow: var(--shadow-md); }
+.elev-lg { box-shadow: var(--shadow-lg); }
+
+.tag { display: inline-flex; align-items: center; font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 3px 8px; border-radius: 0; }
+.tag-accent { background: #ff8fd6; color: #220a4f; }
+.tag-neutral { background: var(--crew-flaeche-2); color: var(--crew-text); }
+.tag-outline { border: 1px solid var(--crew-signal); color: var(--crew-signal); }
+
+.text-muted { color: var(--crew-text-3); }

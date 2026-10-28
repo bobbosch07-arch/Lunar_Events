@@ -10,6 +10,7 @@ import {
 } from "@/app/aktionen/kasse";
 import { preisText } from "@/lib/format";
 import { useRouter } from "@/i18n/navigation";
+import { belegungsStufe, useBelegung } from "@/lib/crew/belegung";
 import css from "./Kasse.module.css";
 
 export type KassenPhase = {
@@ -112,6 +113,12 @@ export function Kasse({
     };
   }, [zustand, menge, standLaden]);
 
+  const belegung = useBelegung(eventId);
+  const ampel = belegung ? belegungsStufe(belegung) : null;
+  // Gesperrt, sobald weniger Plätze frei sind als verkauft werden sollen.
+  // Wer für später kauft, geht heute nicht rein und zählt nicht.
+  const zuVoll = einlassen && ampel?.frei != null && ampel.frei < menge;
+
   const summe = phase ? (phase.preis_cent + phase.gebuehr_cent) * menge : 0;
   const hoechstens = Math.min(20, phase?.rest ?? 20);
 
@@ -187,6 +194,26 @@ export function Kasse({
       </header>
 
       <main className={css.inhalt}>
+        {belegung && ampel ? (
+          <section className={css.belegung} data-stufe={ampel.stufe} aria-live="polite">
+            <span className={css.belegungKopf}>
+              <span className={css.beschriftung}>Gerade drin · live</span>
+              <span className={css.belegungStatus}>
+                {ampel.frei === null ? "ohne Grenze" : ampel.frei === 0 ? "Voll" : `Noch ${ampel.frei} frei`}
+              </span>
+            </span>
+            <span className={css.belegungZahl}>
+              <span className={css.belegungWert}>{belegung.drin}</span>
+              {belegung.kapazitaet ? <span>von {belegung.kapazitaet}</span> : null}
+            </span>
+            {belegung.kapazitaet ? (
+              <span className={css.belegungBalken} aria-hidden="true">
+                <span style={{ width: `${Math.min(100, (belegung.drin / belegung.kapazitaet) * 100)}%` }} />
+              </span>
+            ) : null}
+            <p className={css.belegungHinweis}>Zählt nur Reingelassene. Abgewiesene zählen nicht.</p>
+          </section>
+        ) : null}
         {zustand.art === "fertig" ? (
           <div className={`${css.ergebnis} ${css.gut}`} role="status" aria-live="assertive">
             <span className={css.urteil}>{zustand.eingelassen ? "Rein" : "Verkauft"}</span>
@@ -305,13 +332,18 @@ export function Kasse({
               <p className={css.fehler} role="alert">
                 {fehler}
               </p>
+            ) : zuVoll ? (
+              <p className={css.fehler} role="alert">
+                {ampel?.frei === 0 ? "Voll." : `Nur noch ${ampel?.frei} frei.`} Weniger Tickets wählen oder
+                „Sofort einlassen“ abwählen.
+              </p>
             ) : null}
 
             <div className={css.wege}>
               <button
                 type="button"
                 className={`${css.weg} ${css.bar}`}
-                disabled={laeuft || !phase || phase.rest === 0}
+                disabled={laeuft || !phase || phase.rest === 0 || zuVoll}
                 onClick={() => verkaufen("bar")}
               >
                 {laeuft ? "…" : "Bar"}
@@ -320,7 +352,7 @@ export function Kasse({
                 <button
                   type="button"
                   className={`${css.weg} ${css.qrWeg}`}
-                  disabled={laeuft || !phase || phase.rest === 0}
+                  disabled={laeuft || !phase || phase.rest === 0 || zuVoll}
                   onClick={() => verkaufen("qr")}
                 >
                   {laeuft ? "…" : "QR · Handy"}

@@ -94,6 +94,7 @@ export function EventFormular({
       bild_fokus: stand.bildFokus || null,
       poster_statt_bild: stand.posterStattBild,
       mindestalter: stand.mindestalter ? Number(stand.mindestalter) : null,
+      kapazitaet: stand.kapazitaet ? Number(stand.kapazitaet) : null,
       dresscode: stand.dresscode || null,
       lineup: stand.lineup
         ? stand.lineup.split(",").map((s) => s.trim()).filter(Boolean)
@@ -412,6 +413,20 @@ export function EventFormular({
               className={css.eingabe}
               value={stand.mindestalter}
               onChange={(e) => setze("mindestalter", e.target.value)}
+            />
+          </div>
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="kapazitaet">
+              Kapazität (gleichzeitig drin)
+            </label>
+            <input
+              id="kapazitaet"
+              type="number"
+              min={1}
+              placeholder="ohne Grenze"
+              className={css.eingabe}
+              value={stand.kapazitaet}
+              onChange={(e) => setze("kapazitaet", e.target.value)}
             />
           </div>
           <div className={`${css.feld} ${css.breit}`}>

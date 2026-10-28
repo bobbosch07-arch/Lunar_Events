@@ -1,0 +1,91 @@
+/* ============================================================
+   CREW-APP · Skin Lunar Events · Tokens
+   Gleiche Namen wie crew/crew-tokens.css. Farben aus Lunar Events
+   (Nacht #220A4F, Violett #5B21C9, Mondgelb #FFE14A, Rosa #FF8FD6,
+   Lila-Weiß #F7F0FF). Kontraste WCAG 2.x gegen den genannten Grund.
+   ============================================================ */
+:root {
+  /* Fläche */
+  --crew-grund: #220a4f;          /* Lunar-Nacht */
+  --crew-flaeche: #2f1468;
+  --crew-flaeche-2: #3c1c80;
+  --crew-kamera: #12052b;
+  --crew-linie: rgba(247, 240, 255, 0.14);
+  --crew-linie-feld: #8467c9;     /* 3,4:1 auf Fläche */
+
+  /* Text */
+  --crew-text: #f7f0ff;           /* Lila-Weiß, 15,4:1 */
+  --crew-text-2: #d6c8f5;         /* 11,0:1 */
+  --crew-text-3: #a993d6;         /* 6,4:1 (auf Fläche 5,5:1) */
+
+  /* Signal = Mondgelb */
+  --crew-signal: #ffe14a;         /* 13,2:1 */
+  --crew-signal-text: #ffe14a;
+  --crew-signal-hover: #fff08a;
+  --crew-signal-gedrueckt: #f2cc1a;
+  --crew-auswahl: #4a2a8f;
+  --crew-fokus: #ff8fd6;          /* Rosa-Ring, 8,3:1 */
+
+  --crew-gruen-100: #d9f8e9; --crew-gruen-800: #0f4a33; --crew-gruen-900: #062a1d;
+
+  /* Scanner-Urteil: Fläche + Schrift (Schrift immer Nacht) */
+  --urteil-einlass: #5fe0a4;      --auf-urteil-einlass: #220a4f;    /* 10,4:1 */
+  --urteil-schon-drin: #ffb347;   --auf-urteil-schon-drin: #220a4f; /* 9,6:1 Bernstein, bewusst nicht Mondgelb */
+  --urteil-abgelehnt: #ff5a5f;    --auf-urteil-abgelehnt: #220a4f;  /* 5,6:1 */
+  --urteil-pruefen: #c4a6ff;      --auf-urteil-pruefen: #220a4f;    /* 8,4:1 Lavendel, nie grün */
+  --urteil-neu-anmelden: #e6def5; --auf-urteil-neu-anmelden: #220a4f; /* 13,0:1 */
+  --urteil-bereit: #2f1468;       --auf-urteil-bereit: #f7f0ff;     /* 13,3:1 */
+
+  /* Bänder */
+  --band-pruefen: #4a2a8f;   --auf-band-pruefen: #f7f0ff;    /* 9,3:1 */
+  --band-doppelt: #5a3a00;   --auf-band-doppelt: #ffe2b0;    /* 8,2:1 */
+  --band-abgelaufen: #6b1d3a; --auf-band-abgelaufen: #ffd9e4; /* 8,8:1 */
+  --band-offline: #3c1c80;   --auf-band-offline: #f7f0ff;    /* 11,3:1 */
+
+  /* Netz (auf Fläche) */
+  --netz-gut: #5fe0a4; --netz-schwach: #ffb347; --netz-aus: #ff9db0;
+
+  /* Schrift: DM Sans + Unbounded wie lunar-events.de */
+  --crew-font: "DM Sans", system-ui, sans-serif;
+  --crew-gewicht: 400;
+  --crew-gewicht-titel: 600;
+  --crew-font-display: "Unbounded", "Arial Black", sans-serif;
+  --crew-gewicht-display: 900;
+  --crew-schnitt-display: 100%;
+  --crew-tt-display: uppercase;
+  --crew-ls-display: -0.03em;
+  --crew-fs-urteil: 32px;   --crew-lh-urteil: 1;      /* Unbounded ist sehr breit: längstes Wort „UNBEKANNT“ muss in 264 px passen */
+  --crew-fs-zahl: 112px;    --crew-lh-zahl: 0.9;
+  --crew-fs-name: 32px;     --crew-lh-name: 1.1;
+  --crew-fs-titel: 22px;
+  --crew-fs-gross: 20px;
+  --crew-fs-text: 17px;     --crew-lh-text: 1.45;
+  --crew-fs-klein: 14px;
+  --crew-fs-mini: 12px;
+  --crew-ls-mini: 0.14em;
+  --crew-ziffern: tabular-nums;
+
+  /* Größen (unverändert) */
+  --crew-tap: 48px; --crew-knopf: 56px; --crew-knopf-gross: 64px; --crew-taste: 64px;
+  --crew-tabs: 64px; --crew-kopf: 56px; --crew-band: 44px; --crew-fuss: 52px; --crew-rand: 16px;
+
+  /* Radien: fast eckig wie die Website */
+  --crew-radius-sm: 2px; --crew-radius: 4px; --crew-radius-lg: 6px;
+
+  --crew-dauer: 120ms;
+  --crew-vibration-ok: 40ms;
+  --crew-vibration-nein: 90ms 60ms 90ms;
+
+  /* Skin-Vertrag */
+  --color-bg: #220a4f;
+  --color-text: #f7f0ff;
+  --color-accent: #ffe14a;
+  --color-accent-300: #fff08a;
+  --color-divider: rgba(247, 240, 255, 0.2);
+  --color-neutral-100: #f7f0ff;
+  --color-neutral-600: #8467c9;
+  --shadow-sm: 0 0 0 1px rgba(247, 240, 255, 0.14);
+  --shadow-md: 0 0 0 1px rgba(247, 240, 255, 0.2), 0 10px 30px rgba(8, 0, 24, 0.55);
+  --shadow-lg: 0 0 0 1px rgba(247, 240, 255, 0.24), 0 24px 60px rgba(8, 0, 24, 0.65);
+  --space-2: 6px; --space-3: 8px; --space-4: 12px; --space-6: 16px; --space-8: 24px;
+}

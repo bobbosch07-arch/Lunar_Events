@@ -296,3 +296,65 @@
   color: var(--text-on-dark-muted);
   line-height: var(--lh-body);
 }
+
+/* ---------- Gerade drin · live (0049) ----------
+   Ampel wie in der Crew-App: grün mehr als 40 frei, gelb 1–40, rot voll. */
+
+.belegung {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--belegung-farbe);
+  border-radius: var(--radius-md);
+  background: var(--navy-900);
+}
+.belegung[data-stufe="gut"] { --belegung-farbe: #5fe0a4; }
+.belegung[data-stufe="knapp"] { --belegung-farbe: #ffb347; }
+.belegung[data-stufe="voll"] { --belegung-farbe: #ff9db0; }
+
+.belegungKopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.belegungStatus {
+  font-size: var(--fs-body-s);
+  font-weight: 600;
+  color: var(--belegung-farbe);
+}
+
+.belegungZahl {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.belegungWert {
+  font-family: var(--font-display);
+  font-weight: var(--fw-display);
+  font-size: 48px;
+  line-height: 1;
+}
+
+.belegungBalken {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--border-dark);
+  overflow: hidden;
+}
+
+.belegungBalken > span {
+  display: block;
+  height: 100%;
+  background: var(--belegung-farbe);
+}
+
+.belegungHinweis {
+  margin: 0;
+  font-size: var(--fs-caption);
+  color: var(--text-on-dark-muted);
+}

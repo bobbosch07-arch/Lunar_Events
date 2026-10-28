@@ -122,3 +122,74 @@ export function trageNach(
     db.rpc("einlass_nachtragen", { p_codes: codes, p_event_id: eventId }).abortSignal(signal),
   );
 }
+
+// ---------- Crew-App: prüfen, dann entscheiden (0049) ----------
+
+/**
+ * Antwort der Crew-Funktionen. Anders als beim alten Scan entwertet erst
+ * `reinlassen`; `pruefen` sagt nur, ob das Ticket gültig wäre. `drin` ist der
+ * Stand des Events nach der Aktion (Server, nicht das Gerät).
+ */
+export type CrewErgebnis = Omit<EinlassErgebnis, "ergebnis"> & {
+  ergebnis:
+    | EinlassErgebnis["ergebnis"]
+    | "drin"
+    | "zurueck"
+    | "nicht_drin"
+    | "nicht_erlaubt"
+    | "kein_event";
+  drin?: number;
+  /** Schon drin, und zwar vom eigenen Konto eingelassen. */
+  eigenes?: boolean;
+};
+
+export type CrewStand = {
+  ergebnis: "ok" | "keine_berechtigung";
+  drin?: number;
+  kapazitaet?: number | null;
+  modus?: "automatisch" | "entscheiden";
+};
+
+export function crewPruefen(db: SupabaseClient, code: string, eventId: string) {
+  return mitGrenze<CrewErgebnis>(ZEITGRENZE_MS, (signal) =>
+    db.rpc("einlass_pruefen", { p_code: code, p_event_id: eventId }).abortSignal(signal),
+  );
+}
+
+export function crewReinlassen(db: SupabaseClient, code: string, eventId: string) {
+  return mitGrenze<CrewErgebnis>(ZEITGRENZE_MS, (signal) =>
+    db.rpc("einlass_reinlassen", { p_code: code, p_event_id: eventId }).abortSignal(signal),
+  );
+}
+
+export function crewRueckgaengig(db: SupabaseClient, code: string, eventId: string) {
+  return mitGrenze<CrewErgebnis>(ZEITGRENZE_MS, (signal) =>
+    db.rpc("einlass_rueckgaengig", { p_code: code, p_event_id: eventId }).abortSignal(signal),
+  );
+}
+
+export function crewStand(db: SupabaseClient, eventId: string) {
+  return mitGrenze<CrewStand>(ZEITGRENZE_MS, (signal) =>
+    db.rpc("einlass_stand_abrufen", { p_event_id: eventId }).abortSignal(signal),
+  );
+}
+
+/** Eine ohne Netz getroffene Entscheidung, in der Reihenfolge am Gerät. */
+export type CrewAktion = { code: string; aktion: "rein" | "zurueck"; zeit: number; eventId: string };
+
+export type CrewNachgetragen = {
+  ergebnis: "ok" | "keine_berechtigung";
+  liste?: (Nachgetragen & { aktion: CrewAktion["aktion"] })[];
+  drin?: number;
+};
+
+export function crewTrageNach(db: SupabaseClient, aktionen: CrewAktion[], eventId: string) {
+  return mitGrenze<CrewNachgetragen>(20000, (signal) =>
+    db
+      .rpc("einlass_nachtragen_aktionen", {
+        p_aktionen: aktionen.map(({ code, aktion }) => ({ code, aktion })),
+        p_event_id: eventId,
+      })
+      .abortSignal(signal),
+  );
+}

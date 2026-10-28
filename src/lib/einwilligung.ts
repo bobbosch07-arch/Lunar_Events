@@ -104,7 +104,7 @@ export function mussFragen(e: Einwilligung | null): boolean {
  * Team, Kundenverhalten gibt es da nicht zu sehen. Dazu die Partnerseite
  * (0047): Sie ist für Geschäftspartner, nicht für Gäste.
  */
-const INTERN = /^\/(?:en\/)?(?:backoffice|kasse|einlass|garderobe|plan|styleguide|partner)(?:\/|$)/;
+const INTERN = /^\/(?:en\/)?(?:backoffice|kasse|einlass|crew|garderobe|plan|styleguide|partner)(?:\/|$)/;
 
 export function istInternerPfad(pfad: string): boolean {
   return INTERN.test(pfad);

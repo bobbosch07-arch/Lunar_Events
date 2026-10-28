@@ -48,6 +48,8 @@ export type EventStand = {
   bildAlt: string;
   bildFokus: string;
   mindestalter: string;
+  /** Personen gleichzeitig drin (0049), "" = ohne Grenze. */
+  kapazitaet: string;
   dresscode: string;
   /** Line-up als Text, Namen mit Komma getrennt (0036). */
   lineup: string;
