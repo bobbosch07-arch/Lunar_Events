@@ -7,6 +7,7 @@ import { ABLAGE, lies, schreib } from "@/lib/crew/ablage";
 import { meldeCrewAn } from "@/app/aktionen/crew";
 import { sendeAnmeldelink } from "@/app/aktionen/konto";
 import { CrewScanner, type CrewEvent } from "./CrewScanner";
+import { CrewGaeste } from "./CrewGaeste";
 
 type Person = { id: string; email: string; name: string | null; rolle: Rolle };
 
@@ -29,6 +30,19 @@ export function CrewApp() {
   const [zustand, setZustand] = useState<Zustand>({ art: "laedt" });
   const [events, setEvents] = useState<CrewEvent[]>([]);
   const [eventId, setEventIdState] = useState("");
+  const [tab, setTab] = useState<"scanner" | "gaeste">("scanner");
+  const [online, setOnline] = useState(true);
+
+  useEffect(() => {
+    const setzen = () => setOnline(navigator.onLine);
+    setzen();
+    window.addEventListener("online", setzen);
+    window.addEventListener("offline", setzen);
+    return () => {
+      window.removeEventListener("online", setzen);
+      window.removeEventListener("offline", setzen);
+    };
+  }, []);
 
   // Service Worker: die App selbst für den Start ohne Netz.
   useEffect(() => {
@@ -187,7 +201,42 @@ export function CrewApp() {
     );
   }
 
-  return <CrewScanner key={eventId} events={events} eventId={eventId} setEventId={setEventId} abmelden={() => void abmelden()} />;
+  // Beide Tabs bleiben aufgebaut: Die Kamera muss beim Zurückwechseln nicht
+  // neu freigegeben werden, und die Gästeliste behält Suche und Filter.
+  return (
+    <div className="crew-rahmen">
+      <CrewScanner
+        key={eventId}
+        events={events}
+        eventId={eventId}
+        setEventId={setEventId}
+        abmelden={() => void abmelden()}
+        aktiv={tab === "scanner"}
+      />
+      <div className="crew-schirm" hidden={tab !== "gaeste"}>
+        <CrewGaeste key={eventId} eventId={eventId} online={online} />
+      </div>
+      <nav className="crew-tabs" aria-label="Bereiche">
+        {(
+          [
+            ["scanner", "Scanner", "ph-scan"],
+            ["gaeste", "Gäste", "ph-list-checks"],
+          ] as const
+        ).map(([wert, name, icon]) => (
+          <button
+            key={wert}
+            type="button"
+            className="crew-tab"
+            aria-current={tab === wert ? "page" : undefined}
+            onClick={() => setTab(wert)}
+          >
+            <i className={`${tab === wert ? "ph-fill" : "ph-bold"} ${icon}`} aria-hidden="true" />
+            {name}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
 }
 
 function CrewAnmeldung({ onFertig }: { onFertig: () => void }) {

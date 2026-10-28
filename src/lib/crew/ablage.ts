@@ -69,4 +69,7 @@ export const ABLAGE = {
   /** Was dieses Gerät eingelassen hat (Prüfsummen), auch schon nachgetragenes. */
   drin: (eventId: string) => `drin.${eventId}`,
   stand: (eventId: string) => `stand.${eventId}`,
+  gaeste: (eventId: string) => `gaeste.${eventId}`,
+  /** Offene Einlässe über die Gästeliste, alle Events. */
+  gaesteAktionen: "gaeste-aktionen",
 } as const;

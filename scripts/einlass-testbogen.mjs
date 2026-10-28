@@ -115,7 +115,7 @@ async function anlegen(ausgabe, adminAdresse) {
   karten.push({ code: "ZZZZ9999ZZZZ9999ZZZZ", titel: "Ausgedachter Code", erwartet: "Unbekannt (rot)", art: "schlecht" });
   karten.push({ code: "G-TESTBOGEN0000000000", titel: "Garderobenmarke", erwartet: "Hinweis: Garderobenmarke", art: "schlecht" });
 
-  await dienst.from("events").update({ status: "entwurf" }).in("id", [ev.id, ev2.id]);
+  await dienst.from("events").update({ status: "entwurf", kapazitaet: 30 }).in("id", [ev.id, ev2.id]);
 
   if (adminAdresse) {
     const { data: k, error } = await dienst.auth.admin.createUser({ email: adminAdresse, email_confirm: true });

@@ -193,3 +193,43 @@ export function crewTrageNach(db: SupabaseClient, aktionen: CrewAktion[], eventI
       .abortSignal(signal),
   );
 }
+
+// ---------- Crew-App: Gästeliste (0021, direkt statt über Server-Aktionen) ----------
+
+/**
+ * Dieselben Funktionen wie `holeGaesteliste`/`lasseGastEin` in
+ * aktionen/einlass.ts, aber direkt aus dem Browser: Die Crew-App liegt im
+ * Speicher des Geräts, und eine Server-Aktion aus einer älteren Fassung
+ * findet der Server nach dem nächsten Deploy nicht mehr.
+ */
+export type CrewGast = {
+  id: string;
+  name: string;
+  notiz: string | null;
+  vip?: boolean;
+  tisch?: string | null;
+  personen: number;
+  drin: number;
+};
+
+export type CrewGastEinlass = {
+  ergebnis: "gueltig" | "schon_drin" | "storniert" | "unbekannt" | "keine_berechtigung";
+  name?: string;
+  eingelassen?: number;
+  personen?: number;
+  drin?: number;
+};
+
+export function crewGaeste(db: SupabaseClient, eventId: string) {
+  return mitGrenze<CrewGast[]>(15000, (signal) =>
+    db.rpc("gaesteliste_einlass", { p_event_id: eventId }).abortSignal(signal),
+  );
+}
+
+export function crewGastEin(db: SupabaseClient, gastId: string, anzahl: number) {
+  return mitGrenze<CrewGastEinlass>(ZEITGRENZE_MS, (signal) =>
+    db
+      .rpc("lasse_gast_ein", { p_gast_id: gastId, p_anzahl: Math.max(1, Math.floor(anzahl)) })
+      .abortSignal(signal),
+  );
+}

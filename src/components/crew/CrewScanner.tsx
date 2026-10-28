@@ -76,11 +76,14 @@ export function CrewScanner({
   eventId,
   setEventId,
   abmelden,
+  aktiv = true,
 }: {
   events: CrewEvent[];
   eventId: string;
   setEventId: (id: string) => void;
   abmelden: () => void;
+  /** Sichtbar? Auf einem anderen Tab läuft die Kamera weiter, liest aber nichts. */
+  aktiv?: boolean;
 }) {
   const db = useRef<ReturnType<typeof browserClient> | null>(null);
   const holeDb = () => (db.current ??= browserClient());
@@ -95,6 +98,10 @@ export function CrewScanner({
   const funken = useRef<HTMLSpanElement>(null);
 
   const eventRef = useRef(eventId);
+  const aktivRef = useRef(aktiv);
+  useEffect(() => {
+    aktivRef.current = aktiv;
+  }, [aktiv]);
   const [nurPruefen, setNurPruefen] = useState(false);
   const pruefenRef = useRef(false);
   const modusRef = useRef<"automatisch" | "entscheiden">("entscheiden");
@@ -552,7 +559,7 @@ export function CrewScanner({
             ctx.drawImage(v, (v.videoWidth - kante) / 2, (v.videoHeight - kante) / 2, kante, kante, 0, 0, kante, kante);
             const bild = ctx.getImageData(0, 0, kante, kante);
             const treffer = jsQR(bild.data, bild.width, bild.height, { inversionAttempts: "dontInvert" });
-            if (treffer?.data) void verarbeite(treffer.data);
+            if (treffer?.data && aktivRef.current) void verarbeite(treffer.data);
           }
         }
         if (laufend.current) requestAnimationFrame(schritt);
@@ -582,7 +589,7 @@ export function CrewScanner({
   const u = urteilFuer(anzeige, drinAnzeige, gewaehlt?.titel);
 
   return (
-    <div className="crew-schirm">
+    <div className="crew-schirm" hidden={!aktiv}>
       <header className="crew-kopf">
         <img src="/crew/app-icon-192.png" alt="" width={32} height={32} className="crew-kopf-icon" />
         <label className="crew-kopf-event">
