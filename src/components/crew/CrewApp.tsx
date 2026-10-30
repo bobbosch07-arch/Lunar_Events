@@ -245,7 +245,11 @@ export function CrewApp() {
         </div>
       ) : null}
       <div className="crew-schirm" hidden={offen !== "plan"}>
-        <CrewPlan online={online} abmelden={() => void abmelden()} />
+        <CrewPlan
+          online={online}
+          abmelden={() => void abmelden()}
+          teamEventId={zustand.person.rolle === "admin" && mitEvent ? eventId : undefined}
+        />
       </div>
       {tabs.length > 1 ? (
         <nav className="crew-tabs" aria-label="Bereiche">

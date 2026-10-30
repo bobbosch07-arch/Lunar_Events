@@ -78,4 +78,7 @@ export const ABLAGE = {
   marken: (eventId: string) => `marken.${eventId}`,
   /** Abgaben und Ausgaben ohne Netz, alle Events, in Reihenfolge. */
   garderobePuffer: "garderobe-puffer",
+  /** Admin: Schichten eines Events und offenes Ein-/Auschecken. */
+  team: (eventId: string) => `team.${eventId}`,
+  teamAktionen: "team-aktionen",
 } as const;

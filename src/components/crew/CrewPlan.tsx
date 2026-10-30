@@ -5,6 +5,7 @@ import { browserClient } from "@/lib/supabase/client";
 import { ROLLEN_NAMEN } from "@/lib/rollen";
 import { ABLAGE, lies, schreib } from "@/lib/crew/ablage";
 import { crewMeineSchichten, type CrewSchicht } from "@/lib/crew/plan";
+import { CrewTeam } from "./CrewTeam";
 
 const AUFFRISCHEN_MS = 5 * 60 * 1000;
 const ZONE = "Europe/Berlin";
@@ -29,7 +30,16 @@ const jetzt = () => Date.now();
  *
  * Ohne Netz gilt der zuletzt geladene Plan aus der Ablage.
  */
-export function CrewPlan({ online, abmelden }: { online: boolean; abmelden: () => void }) {
+export function CrewPlan({
+  online,
+  abmelden,
+  teamEventId,
+}: {
+  online: boolean;
+  abmelden: () => void;
+  /** Nur beim Admin: dessen Team wird hier ein- und ausgecheckt. */
+  teamEventId?: string;
+}) {
   const db = useRef<ReturnType<typeof browserClient> | null>(null);
   const [schichten, setSchichten] = useState<CrewSchicht[] | null>(null);
   const [stand, setStand] = useState<number | null>(null);
@@ -180,6 +190,8 @@ export function CrewPlan({ online, abmelden }: { online: boolean; abmelden: () =
             </ul>
           </section>
         ) : null}
+
+        {teamEventId ? <CrewTeam key={teamEventId} eventId={teamEventId} online={online} /> : null}
 
         {gearbeitet.anzahl > 0 ? (
           <p className="crew-plan-stunden">

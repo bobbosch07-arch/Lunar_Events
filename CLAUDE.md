@@ -969,7 +969,14 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   der Ablage, gilt also ohne Netz. **Entschieden 30.10.:** kein „Pause
   starten“ (Ein- und Auschecken bleibt beim Admin, 0023), Pause als Dauer,
   statt „Leitung“ die Notiz der Schicht. Abmelden steht im Plan-Kopf, weil
-  ihn jeder hat. Für Kasse und Admin gilt die 8-Stunden-
+  ihn jeder hat.
+- **Team heute** (30.10.): im Plan des Admins alle Schichten des gewählten
+  Events mit Einchecken, Auschecken und Zurücksetzen (zweiter Tipp). Wie
+  `setzeAnwesenheit`, aber direkt in `schichten` — nur Admins dürfen das
+  (`schichten_pflegen`). **Die Uhrzeit kommt vom Gerät**, auch ohne Netz:
+  Getippt wird gesammelt und mit der Zeit des Tippens nachgetragen, weil
+  die Stunden daran hängen. Auschecken ohne Einchecken lehnt die Datenbank
+  ab (23514) — dann ist der Tipp überholt und wird verworfen. Für Kasse und Admin gilt die 8-Stunden-
   Sitzung der Datenbank auch hier; den zweiten Faktor verlangt die
   Datenbank, sobald `betrieb.zwei_faktor` an ist.
 
@@ -977,7 +984,7 @@ Lasttest: `node scripts/crew-last.mjs` (1000 Tickets, 6 Geräte, 28.10.:
 alles grün, prüfen und reinlassen je p50 61 ms, p95 unter 0,1 s).
 Kasse: `node scripts/crew-kasse-testen.mjs http://localhost:3005` gegen
 `npx next start -p 3005`, mit echten Sitzungs-Cookies (30.10.: grün).
-Plan: `node scripts/crew-plan-testen.mjs`.
+Plan: `node scripts/crew-plan-testen.mjs`, Team: `node scripts/crew-team-testen.mjs`.
 
 ## Wallet-Pässe
 

@@ -626,3 +626,18 @@ html:has(.crew) body {
 @media (prefers-reduced-motion: reduce) {
   .crew-buegel-strich { animation: none; }
 }
+
+/* ---------- Team heute (Admin, im Plan) ---------- */
+.crew-team ul { margin: 0; padding: 0; list-style: none; }
+.crew-team-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: var(--space-3); }
+.crew-team-zeile {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: center;
+  padding: var(--space-3) 0;
+  box-shadow: inset 0 -1px 0 var(--crew-linie);
+}
+.crew-team-name { font-size: var(--crew-fs-text); font-weight: 500; overflow-wrap: anywhere; }
+.crew-team-knoepfe { display: flex; align-items: center; gap: var(--space-2); }
+.crew-team-zurueck { width: var(--crew-tap); height: var(--crew-tap); padding: 0; font-size: 20px; }
