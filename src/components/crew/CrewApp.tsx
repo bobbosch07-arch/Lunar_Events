@@ -9,21 +9,28 @@ import { sendeAnmeldelink } from "@/app/aktionen/konto";
 import { CrewScanner, type CrewEvent } from "./CrewScanner";
 import { CrewGaeste } from "./CrewGaeste";
 import { CrewKasse } from "./CrewKasse";
+import { CrewPlan } from "./CrewPlan";
 
 type Person = { id: string; email: string; name: string | null; rolle: Rolle };
-type Tab = "scanner" | "gaeste" | "kasse";
+type Tab = "scanner" | "gaeste" | "kasse" | "plan";
 
 const TABS: Record<Tab, { name: string; icon: string }> = {
   scanner: { name: "Scanner", icon: "ph-scan" },
   gaeste: { name: "Gäste", icon: "ph-list-checks" },
   kasse: { name: "Kasse", icon: "ph-cash-register" },
+  plan: { name: "Mein Plan", icon: "ph-calendar-check" },
 };
 
-/** Wie im Design: die Kasse verkauft statt Gäste abzuhaken, der Admin hat alles. */
-function tabsFuer(rolle: Rolle): Tab[] {
-  if (rolle === "admin") return ["scanner", "gaeste", "kasse"];
-  if (rolle === "kasse") return ["scanner", "kasse"];
-  return ["scanner", "gaeste"];
+/**
+ * Wie im Design: die Kasse verkauft statt Gäste abzuhaken, der Admin hat
+ * alles, und „Mein Plan“ hat jeder. Wer nicht scannt (Security, Runner …)
+ * oder wenn gerade kein Event läuft, bleibt nur der Plan.
+ */
+function tabsFuer(rolle: Rolle, mitEvent: boolean): Tab[] {
+  if (!darfScannen(rolle) || !mitEvent) return ["plan"];
+  if (rolle === "admin") return ["scanner", "gaeste", "kasse", "plan"];
+  if (rolle === "kasse") return ["scanner", "kasse", "plan"];
+  return ["scanner", "gaeste", "plan"];
 }
 
 type Zustand =
@@ -96,7 +103,7 @@ export function CrewApp() {
         return;
       }
       const rolle = istRolle(m?.rolle) ? m.rolle : null;
-      if (!m?.aktiv || !rolle || !darfScannen(rolle)) {
+      if (!m?.aktiv || !rolle) {
         setZustand({ art: "kein_zugang", email: nutzer.email ?? "", rolle });
         return;
       }
@@ -111,8 +118,9 @@ export function CrewApp() {
 
   // Events: wie holeEventsFuerDenAbend, aber aus dem Browser.
   const istAdmin = zustand.art === "bereit" && zustand.person.rolle === "admin";
+  const scannt = zustand.art === "bereit" && darfScannen(zustand.person.rolle);
   useEffect(() => {
-    if (zustand.art !== "bereit") return;
+    if (!scannt) return;
     let aktiv = true;
     void (async () => {
       const gemerkt = await lies<CrewEvent[]>(ABLAGE.events, []);
@@ -153,7 +161,7 @@ export function CrewApp() {
     return () => {
       aktiv = false;
     };
-  }, [zustand.art, istAdmin]);
+  }, [scannt, istAdmin]);
 
   function setEventId(id: string) {
     setEventIdState(id);
@@ -185,28 +193,7 @@ export function CrewApp() {
         <div className="card elev-sm crew-tor-karte">
           <span className="card-kicker">Kein Zugang</span>
           <p className="card-body">
-            {zustand.rolle
-              ? "Mit dieser Rolle scannst du keine Tickets. Scannen dürfen Einlass, Bar und Kasse."
-              : `Dieses Konto (${zustand.email}) ist nicht fürs Personal freigeschaltet. Melde dich bei der Veranstaltungsleitung.`}
-          </p>
-          <button type="button" className="btn btn-secondary" onClick={() => void abmelden()}>
-            Abmelden
-          </button>
-        </div>
-      </main>
-    );
-  }
-
-  if (events.length === 0 || !eventId) {
-    return (
-      <main className="crew-tor">
-        <img src="/crew/lunar-events-wortmarke.png" alt="Lunar Events" width={220} className="crew-wortmarke" />
-        <div className="card elev-sm crew-tor-karte">
-          <span className="card-kicker">Kein Event</span>
-          <p className="card-body">
-            {navigator.onLine
-              ? "Zurzeit ist keine Veranstaltung angesetzt, für die gescannt werden könnte."
-              : "Ohne Netz und noch keine Events auf diesem Gerät. Einmal mit Netz öffnen."}
+            Dieses Konto ({zustand.email}) ist nicht fürs Personal freigeschaltet. Melde dich bei der Veranstaltungsleitung.
           </p>
           <button type="button" className="btn btn-secondary" onClick={() => void abmelden()}>
             Abmelden
@@ -219,41 +206,50 @@ export function CrewApp() {
   // Alle Tabs bleiben aufgebaut: Die Kamera muss beim Zurückwechseln nicht
   // neu freigegeben werden, die Gästeliste behält Suche und Filter, und die
   // Kasse wartet weiter auf eine Kartenzahlung.
-  const tabs = tabsFuer(zustand.person.rolle);
+  const mitEvent = events.length > 0 && Boolean(eventId);
+  const tabs = tabsFuer(zustand.person.rolle, mitEvent);
+  const offen = tabs.includes(tab) ? tab : tabs[0];
   return (
     <div className="crew-rahmen">
-      <CrewScanner
-        key={eventId}
-        events={events}
-        eventId={eventId}
-        setEventId={setEventId}
-        abmelden={() => void abmelden()}
-        aktiv={tab === "scanner"}
-      />
+      {tabs.includes("scanner") ? (
+        <CrewScanner
+          key={eventId}
+          events={events}
+          eventId={eventId}
+          setEventId={setEventId}
+          abmelden={() => void abmelden()}
+          aktiv={offen === "scanner"}
+        />
+      ) : null}
       {tabs.includes("gaeste") ? (
-        <div className="crew-schirm" hidden={tab !== "gaeste"}>
+        <div className="crew-schirm" hidden={offen !== "gaeste"}>
           <CrewGaeste key={eventId} eventId={eventId} online={online} />
         </div>
       ) : null}
       {tabs.includes("kasse") ? (
-        <div className="crew-schirm" hidden={tab !== "kasse"}>
+        <div className="crew-schirm" hidden={offen !== "kasse"}>
           <CrewKasse key={eventId} eventId={eventId} online={online} />
         </div>
       ) : null}
-      <nav className="crew-tabs" aria-label="Bereiche">
-        {tabs.map((wert) => (
-          <button
-            key={wert}
-            type="button"
-            className="crew-tab"
-            aria-current={tab === wert ? "page" : undefined}
-            onClick={() => setTab(wert)}
-          >
-            <i className={`${tab === wert ? "ph-fill" : "ph-bold"} ${TABS[wert].icon}`} aria-hidden="true" />
-            {TABS[wert].name}
-          </button>
-        ))}
-      </nav>
+      <div className="crew-schirm" hidden={offen !== "plan"}>
+        <CrewPlan online={online} abmelden={() => void abmelden()} />
+      </div>
+      {tabs.length > 1 ? (
+        <nav className="crew-tabs" aria-label="Bereiche">
+          {tabs.map((wert) => (
+            <button
+              key={wert}
+              type="button"
+              className="crew-tab"
+              aria-current={offen === wert ? "page" : undefined}
+              onClick={() => setTab(wert)}
+            >
+              <i className={`${offen === wert ? "ph-fill" : "ph-bold"} ${TABS[wert].icon}`} aria-hidden="true" />
+              {TABS[wert].name}
+            </button>
+          ))}
+        </nav>
+      ) : null}
     </div>
   );
 }
@@ -286,7 +282,7 @@ function CrewAnmeldung({ onFertig }: { onFertig: () => void }) {
         : antwort.fehler === "zu_oft"
           ? "Zu viele Versuche. Warte ein paar Minuten."
           : antwort.fehler === "kein_team"
-            ? "Dieses Konto ist nicht fürs Scannen freigeschaltet."
+            ? "Dieses Konto gehört nicht zum Team."
             : "Das hat nicht geklappt. Versuch es bitte noch einmal.",
     );
   }

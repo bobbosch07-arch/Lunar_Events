@@ -887,7 +887,7 @@ Personal legt `scripts/mitarbeiter.mjs` an — es gibt bewusst keine
 Oberfläche dafür. Wer Personal anlegen darf, bestimmt, wer an die Kasse
 kommt.
 
-### Crew-App `/crew` (Migrationen 0049–0050, 28.10.2026)
+### Crew-App `/crew` (Migrationen 0049–0051, 28.–30.10.2026)
 
 Design: `Designs/crew-app/design_handoff_crew_app_lunar/` (README zuerst).
 Skin-Dateien liegen 1:1 unter `src/styles/crew/` (`crew-tokens.css`,
@@ -949,9 +949,20 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   Tipp bestätigt („50 € erhalten“) statt mit `window.confirm`. Kommt beim
   Verkauf keine Antwort, sagt die App „unklar“ statt den Knopf wieder
   freizugeben — der Verkauf ist womöglich gebucht.
-- **Tabs je Rolle** wie im Design: Einlass und Bar Scanner + Gäste, Kasse
-  Scanner + Kasse, Admin alle drei. Alle Tabs bleiben aufgebaut (Kamera,
-  Suche, wartende Kartenzahlung). Für Kasse und Admin gilt die 8-Stunden-
+- **Tabs je Rolle** wie im Design (`tabsFuer` in `CrewApp`): Einlass und
+  Bar Scanner + Gäste, Kasse Scanner + Kasse, Admin alles, dazu bei allen
+  „Mein Plan“. Rollen ohne Scanner (Security, Runner, Toiletten, Garderobe)
+  und alle, wenn kein Event ansteht, sehen nur den Plan — deshalb meldet
+  `meldeCrewAn` seit 30.10. mit Stufe „personal“ an. Alle Tabs bleiben
+  aufgebaut (Kamera, Suche, wartende Kartenzahlung).
+- **Mein Plan** (30.10., Migration 0051): `meine_schichten()` gibt die
+  eigenen Schichten mit Titel, Beginn und Ort des Events heraus — auch bei
+  Entwürfen, die das Personal sonst nicht lesen darf (`/plan` nimmt dafür
+  den Dienstschlüssel). Kommende alle, vergangene die letzten 20. Liegt in
+  der Ablage, gilt also ohne Netz. **Entschieden 30.10.:** kein „Pause
+  starten“ (Ein- und Auschecken bleibt beim Admin, 0023), Pause als Dauer,
+  statt „Leitung“ die Notiz der Schicht. Abmelden steht im Plan-Kopf, weil
+  ihn jeder hat. Für Kasse und Admin gilt die 8-Stunden-
   Sitzung der Datenbank auch hier; den zweiten Faktor verlangt die
   Datenbank, sobald `betrieb.zwei_faktor` an ist.
 
@@ -959,6 +970,7 @@ Lasttest: `node scripts/crew-last.mjs` (1000 Tickets, 6 Geräte, 28.10.:
 alles grün, prüfen und reinlassen je p50 61 ms, p95 unter 0,1 s).
 Kasse: `node scripts/crew-kasse-testen.mjs http://localhost:3005` gegen
 `npx next start -p 3005`, mit echten Sitzungs-Cookies (30.10.: grün).
+Plan: `node scripts/crew-plan-testen.mjs`.
 
 ## Wallet-Pässe
 

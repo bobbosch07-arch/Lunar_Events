@@ -498,3 +498,52 @@ html:has(.crew) body {
 }
 /* Auf der Urteilsfläche wie die Entscheidungsknöpfe: Fläche in Schriftfarbe. */
 .crew-kasse-ergebnis .crew-kasse-weiter { background: var(--auf); color: var(--u); border-color: var(--auf); }
+
+/* ---------- Mein Plan (Design 10) ---------- */
+.crew-plan-abmelden { min-height: var(--crew-tap); gap: var(--space-2); font-size: var(--crew-fs-klein); padding: 0 var(--space-3); margin-right: calc(-1 * var(--space-3)); }
+.crew-plan {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-2) var(--crew-rand) var(--space-6);
+}
+.crew-plan .card { padding: var(--space-4); gap: var(--space-3); }
+.crew-plan .card-kicker { font-size: var(--crew-fs-mini); }
+.crew-plan-jetzt[data-laeuft] { box-shadow: 0 0 0 1px var(--crew-signal), 0 6px 18px rgba(0, 0, 0, 0.55); }
+.crew-plan-jetzt-kopf { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.crew-plan-drin { gap: 4px; font-size: var(--crew-fs-klein); background: var(--crew-gruen-800); color: var(--crew-gruen-100); }
+.crew-plan-rolle {
+  font-size: var(--crew-fs-titel);
+  font-family: var(--crew-font-display);
+  font-weight: var(--crew-gewicht-display);
+  text-transform: var(--crew-tt-display);
+  letter-spacing: var(--crew-ls-display);
+  line-height: 1.15;
+}
+.crew-plan-daten { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--space-2) var(--space-4); margin: 0; font-size: var(--crew-fs-text); }
+.crew-plan-daten dt { color: var(--crew-text-3); }
+.crew-plan-daten dd { margin: 0; overflow-wrap: anywhere; }
+.crew-plan-zahl { font-variant-numeric: tabular-nums; }
+.crew-plan-ort { display: block; font-size: var(--crew-fs-klein); color: var(--crew-text-2); }
+.crew-plan-notiz { white-space: pre-line; }
+
+.crew-plan-ueber { margin: 0 0 var(--space-2); font-size: var(--crew-fs-mini); letter-spacing: var(--crew-ls-mini); text-transform: uppercase; font-weight: 600; color: var(--crew-text-3); }
+.crew-plan-weitere ul { margin: 0; padding: 0; list-style: none; }
+.crew-plan-zeile {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-4) 0;
+  box-shadow: inset 0 -1px 0 var(--crew-linie);
+}
+.crew-plan-tag { display: flex; flex-direction: column; align-items: center; padding: var(--space-2) 0; background: var(--crew-flaeche); border-radius: var(--crew-radius); line-height: 1.1; }
+.crew-plan-tag span { font-size: var(--crew-fs-mini); color: var(--crew-text-3); }
+.crew-plan-tag strong { font-size: var(--crew-fs-gross); font-weight: 500; }
+.crew-plan-zeile-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.crew-plan-zeile-titel { font-size: var(--crew-fs-text); font-weight: 500; }
+.crew-plan-zeile-unter { font-size: var(--crew-fs-klein); color: var(--crew-text-2); font-variant-numeric: tabular-nums; }
+.crew-plan-stunden { margin: 0; font-size: var(--crew-fs-klein); color: var(--crew-text-3); }

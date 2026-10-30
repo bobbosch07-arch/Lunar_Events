@@ -72,4 +72,6 @@ export const ABLAGE = {
   gaeste: (eventId: string) => `gaeste.${eventId}`,
   /** Offene Einlässe über die Gästeliste, alle Events. */
   gaesteAktionen: "gaeste-aktionen",
+  /** Die eigenen Schichten mit Abrufzeit: Der Plan gilt auch ohne Netz. */
+  plan: "plan",
 } as const;

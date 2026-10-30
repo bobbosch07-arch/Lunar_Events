@@ -15,8 +15,9 @@ import type { PasswortErgebnis } from "./konto";
  * Das Passwort legt man einmal in Safari fest (/crew/passwort, erreicht über
  * den Anmeldelink).
  *
- * Wie `meldeMitPasswortAn`, nur mit der Stufe "einlass" statt "team": Wer
- * Tickets scannen darf (Admin, Kasse, Einlass, Bar). Wer die Rolle nicht
+ * Wie `meldeMitPasswortAn`, nur mit der Stufe "personal" statt "team": Jeder
+ * aus dem Team, seit „Mein Plan“ in der App steht (30.10.) — was jemand dort
+ * sieht, hängt an der Rolle (`tabsFuer` in CrewApp). Wer die Rolle nicht
  * (mehr) hat, wird sofort wieder abgemeldet — sonst ginge das Passwort am
  * Rollenentzug vorbei.
  */
@@ -24,7 +25,7 @@ import type { PasswortErgebnis } from "./konto";
 async function istCrew(db: Awaited<ReturnType<typeof serverClient>>): Promise<boolean> {
   const { data: nutzer } = await db.auth.getUser();
   if (!nutzer.user) return false;
-  const { data, error } = await db.rpc("ist_mitarbeiter", { mindestens: "einlass" });
+  const { data, error } = await db.rpc("ist_mitarbeiter", { mindestens: "personal" });
   return !error && data === true;
 }
 
