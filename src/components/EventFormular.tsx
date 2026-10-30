@@ -95,6 +95,7 @@ export function EventFormular({
       poster_statt_bild: stand.posterStattBild,
       mindestalter: stand.mindestalter ? Number(stand.mindestalter) : null,
       kapazitaet: stand.kapazitaet ? Number(stand.kapazitaet) : null,
+      einlass_modus: stand.einlassModus,
       dresscode: stand.dresscode || null,
       lineup: stand.lineup
         ? stand.lineup.split(",").map((s) => s.trim()).filter(Boolean)
@@ -428,6 +429,20 @@ export function EventFormular({
               value={stand.kapazitaet}
               onChange={(e) => setze("kapazitaet", e.target.value)}
             />
+          </div>
+          <div className={css.feld}>
+            <label className={css.beschriftung} htmlFor="einlassmodus">
+              Einlass in der Crew-App
+            </label>
+            <select
+              id="einlassmodus"
+              className={css.eingabe}
+              value={stand.einlassModus}
+              onChange={(e) => setze("einlassModus", e.target.value as typeof stand.einlassModus)}
+            >
+              <option value="entscheiden">Nach Ausweis entscheiden</option>
+              <option value="automatisch">Sofort beim Scan</option>
+            </select>
           </div>
           <div className={`${css.feld} ${css.breit}`}>
             <label className={css.beschriftung} htmlFor="dresscode">

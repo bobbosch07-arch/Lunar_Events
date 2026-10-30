@@ -50,6 +50,8 @@ export type EventStand = {
   mindestalter: string;
   /** Personen gleichzeitig drin (0049), "" = ohne Grenze. */
   kapazitaet: string;
+  /** Crew-App: Reinlassen erst nach Tipp (Lunar ab 18) oder sofort beim Scan. */
+  einlassModus: "entscheiden" | "automatisch";
   dresscode: string;
   /** Line-up als Text, Namen mit Komma getrennt (0036). */
   lineup: string;

@@ -42,6 +42,8 @@ export type EventEingabe = {
   mindestalter: number | null;
   /** Höchstens gleichzeitig drin, für die Ampel an der Kasse (0049). */
   kapazitaet: number | null;
+  /** Lunar ab 18: erst nach dem Ausweis reinlassen (0049). */
+  einlass_modus: "entscheiden" | "automatisch";
   dresscode: string | null;
   lineup: string[];
   abendkasse: boolean;
@@ -184,6 +186,7 @@ function eventZeile(eingabe: EventEingabe, slug: string, ortId: string) {
     poster_statt_bild: Boolean(eingabe.poster_statt_bild),
     mindestalter: eingabe.mindestalter,
     kapazitaet: eingabe.kapazitaet && eingabe.kapazitaet > 0 ? Math.round(eingabe.kapazitaet) : null,
+    einlass_modus: eingabe.einlass_modus === "automatisch" ? "automatisch" : "entscheiden",
     dresscode: eingabe.dresscode?.trim() || null,
     lineup: eingabe.lineup,
     abendkasse: eingabe.abendkasse,
@@ -227,7 +230,7 @@ const ABSCHNITT_SPALTEN: Record<EventAbschnitt, string[]> = {
   grunddaten: ["slug", "titel", "untertitel", "teaser", "beschreibung", "kategorie"],
   wannwo: ["beginn", "einlass", "ende", "ort_id"],
   bild: ["bild_pfad", "bild_alt", "bild_fokus", "poster_statt_bild"],
-  einlass: ["mindestalter", "kapazitaet", "dresscode", "lineup", "abendkasse", "abendkasse_hinweis", "streichpreis_cent"],
+  einlass: ["mindestalter", "kapazitaet", "einlass_modus", "dresscode", "lineup", "abendkasse", "abendkasse_hinweis", "streichpreis_cent"],
   fastlane: ["fastlane_aktiv", "fastlane_preis_cent", "fastlane_kontingent", "fastlane_beschreibung"],
   garderobe: ["garderobe_aktiv", "garderobe_preis_cent", "garderobe_kontingent"],
   verkauf: ["presale_ab", "verkauf_ab"],
