@@ -940,9 +940,25 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
 - „Nur prüfen“ dürfen in der App alle (es entwertet nichts); im alten
   Scanner bleibt es Admins vorbehalten.
 - `/einlass` bleibt unverändert als Rückfallweg bis nach dem Opening.
+- **Kasse-Tab** (30.10., Design 06/07): verkauft mit denselben Funktionen
+  wie `/kasse` (`src/app/aktionen/kasse.ts`), aber über die feste Route
+  **`/api/crew/kasse`** statt Server-Aktionen (siehe oben). Die Route prüft
+  vorher `ist_mitarbeiter('kasse')`, die Datenbank bei jedem Verkauf noch
+  einmal selbst. **Ohne Netz wird nicht verkauft** — Kontingent und Geld
+  lassen sich nicht nachtragen wie ein Einlass. Bar wird in einem zweiten
+  Tipp bestätigt („50 € erhalten“) statt mit `window.confirm`. Kommt beim
+  Verkauf keine Antwort, sagt die App „unklar“ statt den Knopf wieder
+  freizugeben — der Verkauf ist womöglich gebucht.
+- **Tabs je Rolle** wie im Design: Einlass und Bar Scanner + Gäste, Kasse
+  Scanner + Kasse, Admin alle drei. Alle Tabs bleiben aufgebaut (Kamera,
+  Suche, wartende Kartenzahlung). Für Kasse und Admin gilt die 8-Stunden-
+  Sitzung der Datenbank auch hier; den zweiten Faktor verlangt die
+  Datenbank, sobald `betrieb.zwei_faktor` an ist.
 
 Lasttest: `node scripts/crew-last.mjs` (1000 Tickets, 6 Geräte, 28.10.:
 alles grün, prüfen und reinlassen je p50 61 ms, p95 unter 0,1 s).
+Kasse: `node scripts/crew-kasse-testen.mjs http://localhost:3005` gegen
+`npx next start -p 3005`, mit echten Sitzungs-Cookies (30.10.: grün).
 
 ## Wallet-Pässe
 

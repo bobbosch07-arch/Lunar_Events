@@ -374,3 +374,127 @@ html:has(.crew) body {
 .crew-gast-knoepfe { display: flex; flex-direction: column; align-items: stretch; gap: 2px; }
 .crew-gast-knopf { min-width: 112px; min-height: var(--crew-knopf); font-size: var(--crew-fs-text); }
 .crew-gast-einer { min-height: var(--crew-tap); font-family: var(--crew-font); text-transform: none; font-size: var(--crew-fs-klein); }
+
+/* ---------- Abendkasse (Design 06 und 07) ---------- */
+.crew-kasse-netz { display: inline-flex; align-items: center; gap: var(--space-2); font-weight: 500; color: var(--netz-gut); }
+.crew-kasse-netz[data-online="false"] { color: var(--netz-aus); }
+.crew-kasse-netz i { font-size: 12px; }
+
+.crew-kasse {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-2) var(--crew-rand) var(--space-6);
+}
+.crew-kasse .card { padding: var(--space-4); gap: var(--space-3); }
+.crew-kasse .card-kicker { font-size: var(--crew-fs-mini); }
+.crew-kasse-hinweis { font-size: var(--crew-fs-klein); color: var(--crew-text-3); }
+.crew-kasse-leer { margin: 0; font-size: var(--crew-fs-text); color: var(--crew-text-2); }
+
+.crew-kasse-belegung { box-shadow: 0 0 0 1px var(--stufe), var(--shadow-sm); }
+.crew-kasse-belegung-kopf { display: flex; justify-content: space-between; align-items: center; gap: var(--space-3); }
+.crew-kasse-belegung-status { display: inline-flex; align-items: center; gap: 4px; font-size: var(--crew-fs-klein); font-weight: 600; color: var(--stufe); }
+.crew-kasse-belegung-zahl { display: flex; align-items: baseline; gap: var(--space-2); font-size: var(--crew-fs-gross); color: var(--crew-text-2); font-variant-numeric: tabular-nums; }
+.crew-kasse-belegung-wert { font-family: var(--crew-font-display); font-weight: 900; font-size: 48px; line-height: 1; letter-spacing: -0.02em; color: var(--crew-text); }
+.crew-kasse-balken { display: block; height: 8px; overflow: hidden; background: var(--crew-flaeche-2); border-radius: var(--crew-radius-sm); }
+.crew-kasse-balken span { display: block; height: 100%; background: var(--stufe); transition: width 300ms ease; }
+
+.crew-kasse-stand-zahlen { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-3); font-variant-numeric: tabular-nums; }
+.crew-kasse-stand-zahlen > span { display: flex; flex-direction: column; }
+.crew-kasse-stand-zahlen > span > span { font-size: var(--crew-fs-mini); color: var(--crew-text-3); }
+.crew-kasse-stand-zahlen strong { font-size: var(--crew-fs-gross); font-weight: 500; }
+
+.crew-kasse .field { display: flex; flex-direction: column; gap: var(--space-2); }
+.crew-kasse-label { font-size: var(--crew-fs-klein); color: var(--crew-text-2); }
+.crew-kasse-phasen { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.crew-kasse-phasen .seg-opt {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  min-height: var(--crew-knopf-gross);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--crew-fs-text);
+}
+/* Mehr als zwei Phasen: die dritte beginnt eine neue Zeile ohne Doppelrand. */
+.crew-kasse-phasen .seg-opt:nth-child(2n + 1) { border-left: 0; }
+.crew-kasse-phasen .seg-opt:nth-child(n + 3) { border-top: 1px solid var(--crew-linie-feld); }
+.crew-kasse-phasen .seg-opt[data-aus] { opacity: 0.45; cursor: not-allowed; }
+.crew-kasse-phase-name { font-weight: 500; }
+.crew-kasse-phase-preis { font-size: var(--crew-fs-klein); font-weight: 400; color: var(--crew-text-2); font-variant-numeric: tabular-nums; }
+
+.crew-kasse-menge { display: grid; grid-template-columns: var(--crew-knopf-gross) 1fr var(--crew-knopf-gross); align-items: center; gap: var(--space-3); }
+.crew-kasse-menge .btn { height: var(--crew-knopf-gross); font-size: 26px; padding: 0; }
+.crew-kasse-menge output { text-align: center; font-size: 44px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+.crew-kasse-wann { display: grid; grid-template-columns: 1fr 1fr; }
+.crew-kasse-wann .seg-opt { justify-content: center; min-height: var(--crew-tap); font-size: var(--crew-fs-klein); }
+
+.crew-kasse-summe {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: var(--space-4);
+  box-shadow: inset 0 1px 0 var(--crew-linie);
+  font-size: var(--crew-fs-text);
+  color: var(--crew-text-2);
+}
+.crew-kasse-summe strong { font-size: 44px; font-weight: 500; color: var(--crew-text); font-variant-numeric: tabular-nums; }
+
+.crew-kasse-wege { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); margin-top: auto; }
+.crew-kasse-wege .btn { min-height: var(--crew-knopf-gross); font-size: var(--crew-fs-gross); gap: var(--space-2); }
+.crew-kasse-wege .btn i { font-size: 24px; }
+.crew-kasse-wege .btn:disabled { opacity: 0.45; }
+
+.crew-kasse-ergebnis {
+  --u: var(--urteil-einlass);
+  --auf: var(--auf-urteil-einlass);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--space-4);
+  border-radius: var(--crew-radius-lg);
+  background: var(--u);
+  color: var(--auf);
+}
+.crew-kasse-ergebnis[data-art="nein"] { --u: var(--band-abgelaufen); --auf: var(--auf-band-abgelaufen); }
+.crew-kasse-ergebnis > i { font-size: 40px; }
+.crew-kasse-ergebnis-wort {
+  font-family: var(--crew-font-display);
+  font-weight: var(--crew-gewicht-display);
+  font-size: var(--crew-fs-urteil);
+  line-height: var(--crew-lh-urteil);
+  text-transform: uppercase;
+}
+.crew-kasse-ergebnis-text { font-size: var(--crew-fs-text); line-height: var(--crew-lh-text); }
+.crew-kasse-weiter { align-self: stretch; min-height: var(--crew-knopf); }
+.crew-kasse-ergebnis .crew-kasse-qr-code { align-self: center; }
+
+.crew-kasse-qr {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-8) var(--crew-rand);
+}
+.crew-kasse-qr-kopf { display: flex; flex-direction: column; gap: var(--space-2); }
+.crew-kasse-qr-was { font-size: var(--crew-fs-text); color: var(--crew-text-2); }
+.crew-kasse-qr-code { align-self: center; width: 280px; max-width: 100%; padding: 16px; background: var(--color-neutral-100, #fff); border-radius: var(--crew-radius-lg); }
+.crew-kasse-qr-code svg { display: block; width: 100%; height: auto; }
+.crew-kasse-warte { align-self: center; display: flex; align-items: center; gap: var(--space-3); font-size: var(--crew-fs-text); color: var(--crew-text-2); }
+.crew-kasse-warte i { font-size: 22px; color: var(--crew-signal); animation: crew-dreh 1s linear infinite; }
+.crew-kasse-qr-hinweis { font-size: var(--crew-fs-klein); color: var(--crew-text-3); text-align: center; }
+.crew-kasse-abbrechen { margin-top: auto; min-height: var(--crew-knopf); }
+
+@keyframes crew-dreh { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .crew-kasse-warte i { animation: none; }
+}
+/* Auf der Urteilsfläche wie die Entscheidungsknöpfe: Fläche in Schriftfarbe. */
+.crew-kasse-ergebnis .crew-kasse-weiter { background: var(--auf); color: var(--u); border-color: var(--auf); }

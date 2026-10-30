@@ -8,8 +8,23 @@ import { meldeCrewAn } from "@/app/aktionen/crew";
 import { sendeAnmeldelink } from "@/app/aktionen/konto";
 import { CrewScanner, type CrewEvent } from "./CrewScanner";
 import { CrewGaeste } from "./CrewGaeste";
+import { CrewKasse } from "./CrewKasse";
 
 type Person = { id: string; email: string; name: string | null; rolle: Rolle };
+type Tab = "scanner" | "gaeste" | "kasse";
+
+const TABS: Record<Tab, { name: string; icon: string }> = {
+  scanner: { name: "Scanner", icon: "ph-scan" },
+  gaeste: { name: "Gäste", icon: "ph-list-checks" },
+  kasse: { name: "Kasse", icon: "ph-cash-register" },
+};
+
+/** Wie im Design: die Kasse verkauft statt Gäste abzuhaken, der Admin hat alles. */
+function tabsFuer(rolle: Rolle): Tab[] {
+  if (rolle === "admin") return ["scanner", "gaeste", "kasse"];
+  if (rolle === "kasse") return ["scanner", "kasse"];
+  return ["scanner", "gaeste"];
+}
 
 type Zustand =
   | { art: "laedt" }
@@ -30,7 +45,7 @@ export function CrewApp() {
   const [zustand, setZustand] = useState<Zustand>({ art: "laedt" });
   const [events, setEvents] = useState<CrewEvent[]>([]);
   const [eventId, setEventIdState] = useState("");
-  const [tab, setTab] = useState<"scanner" | "gaeste">("scanner");
+  const [tab, setTab] = useState<Tab>("scanner");
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
@@ -201,8 +216,10 @@ export function CrewApp() {
     );
   }
 
-  // Beide Tabs bleiben aufgebaut: Die Kamera muss beim Zurückwechseln nicht
-  // neu freigegeben werden, und die Gästeliste behält Suche und Filter.
+  // Alle Tabs bleiben aufgebaut: Die Kamera muss beim Zurückwechseln nicht
+  // neu freigegeben werden, die Gästeliste behält Suche und Filter, und die
+  // Kasse wartet weiter auf eine Kartenzahlung.
+  const tabs = tabsFuer(zustand.person.rolle);
   return (
     <div className="crew-rahmen">
       <CrewScanner
@@ -213,16 +230,18 @@ export function CrewApp() {
         abmelden={() => void abmelden()}
         aktiv={tab === "scanner"}
       />
-      <div className="crew-schirm" hidden={tab !== "gaeste"}>
-        <CrewGaeste key={eventId} eventId={eventId} online={online} />
-      </div>
+      {tabs.includes("gaeste") ? (
+        <div className="crew-schirm" hidden={tab !== "gaeste"}>
+          <CrewGaeste key={eventId} eventId={eventId} online={online} />
+        </div>
+      ) : null}
+      {tabs.includes("kasse") ? (
+        <div className="crew-schirm" hidden={tab !== "kasse"}>
+          <CrewKasse key={eventId} eventId={eventId} online={online} />
+        </div>
+      ) : null}
       <nav className="crew-tabs" aria-label="Bereiche">
-        {(
-          [
-            ["scanner", "Scanner", "ph-scan"],
-            ["gaeste", "Gäste", "ph-list-checks"],
-          ] as const
-        ).map(([wert, name, icon]) => (
+        {tabs.map((wert) => (
           <button
             key={wert}
             type="button"
@@ -230,8 +249,8 @@ export function CrewApp() {
             aria-current={tab === wert ? "page" : undefined}
             onClick={() => setTab(wert)}
           >
-            <i className={`${tab === wert ? "ph-fill" : "ph-bold"} ${icon}`} aria-hidden="true" />
-            {name}
+            <i className={`${tab === wert ? "ph-fill" : "ph-bold"} ${TABS[wert].icon}`} aria-hidden="true" />
+            {TABS[wert].name}
           </button>
         ))}
       </nav>
