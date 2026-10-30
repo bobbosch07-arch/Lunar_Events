@@ -980,6 +980,37 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   Sitzung der Datenbank auch hier; den zweiten Faktor verlangt die
   Datenbank, sobald `betrieb.zwei_faktor` an ist.
 
+**Android-App „Lunar Crew“** (Phase 2, ab 30.10.): Capacitor 8.5 im
+Projekt selbst (`android/`, `capacitor.config.ts`), Paket
+`de.lunarevents.crew`. Lädt **`https://lunar-events.de/crew`** (`server.url`)
+— Änderungen an /crew sind nach dem Deploy in der App, eine neue APK braucht
+es nur für Natives. Ohne Netz trägt der Service Worker von /crew, den die
+Android-WebView kennt. Verteilt wird **als APK, kein Store** (entschieden
+30.10.).
+- **Scanner nativ** über `@capacitor-mlkit/barcode-scanning` (ML Kit,
+  Modell gebündelt), Weiche in `CrewKamera` (`Capacitor.isNativePlatform()`),
+  im Browser weiter jsQR. Das Kamerabild liegt *hinter* der WebView: Seite
+  und Kamerafeld werden durchsichtig (`html.crew-nativ-kamera`, crew.css
+  „Nativer Scanner“), und **gescannt wird nur, solange das Feld sichtbar
+  ist** (ResizeObserver + visibilitychange) — sonst schiene die Kamera durch
+  andere Tabs. Mit Taschenlampe, wo es eine gibt.
+- **Signierschlüssel** liegt außerhalb des Projekts unter
+  `%USERPROFILE%\.lunar-crew\` (`lunar-crew.jks` + Kopie von
+  `keystore.properties`); `android/keystore.properties` ist von git
+  ignoriert. **Geht der Schlüssel verloren, lässt sich keine neue APK über
+  die alte installieren** — dann einmal deinstallieren.
+- Bauen: `npm run android:apk` (mit `JAVA_HOME`/`ANDROID_HOME` wie in Love
+  OS) → `android/app/build/outputs/apk/release/app-release.apk`. Symbol und
+  Startbild: `node scripts/android-symbole.mjs` aus
+  `public/crew/app-icon-512.png`.
+- iOS folgt erst mit dem Apple-Konto (TestFlight/App Store, kein
+  Gegenstück zur APK). Dasselbe Plugin kann iOS.
+
+Testwelt fürs Handy: `node scripts/crew-testwelt.mjs anlegen | weg` —
+veröffentlichtes, online nicht kaufbares Event, fünf Konten mit Passwort,
+Bogen mit Zugangsdaten und QR-Codes in `crew-testwelt.local.html`
+(ignoriert). **Steht auf der Website, solange es existiert.**
+
 Lasttest: `node scripts/crew-last.mjs` (1000 Tickets, 6 Geräte, 28.10.:
 alles grün, prüfen und reinlassen je p50 61 ms, p95 unter 0,1 s).
 Kasse: `node scripts/crew-kasse-testen.mjs http://localhost:3005` gegen

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Lunar Crew</string>
+    <string name="title_activity_main">Lunar Crew</string>
+    <string name="package_name">de.lunarevents.crew</string>
+    <string name="custom_url_scheme">de.lunarevents.crew</string>
+</resources>

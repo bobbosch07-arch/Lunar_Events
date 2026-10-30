@@ -641,3 +641,29 @@ html:has(.crew) body {
 .crew-team-name { font-size: var(--crew-fs-text); font-weight: 500; overflow-wrap: anywhere; }
 .crew-team-knoepfe { display: flex; align-items: center; gap: var(--space-2); }
 .crew-team-zurueck { width: var(--crew-tap); height: var(--crew-tap); padding: 0; font-size: 20px; }
+
+/* ---------- Nativer Scanner (Android-App, CrewKamera) ----------
+   ML Kit zeichnet das Kamerabild hinter die WebView. Durchsichtig wird nur,
+   was über dem Kamerafeld liegt: Seite, der Bildschirm mit dem Feld und das
+   Feld selbst. Alle anderen Kinder des Bildschirms bekommen den Grund —
+   mit :where() ohne Gewicht, damit Bänder, Urteil und Fuß ihre eigene Farbe
+   behalten. */
+html.crew-nativ-kamera,
+html.crew-nativ-kamera body,
+html.crew-nativ-kamera .crew-rahmen,
+html.crew-nativ-kamera .crew-schirm:has(.crew-kamera[data-nativ]) { background: transparent; }
+:where(html.crew-nativ-kamera .crew-schirm:has(.crew-kamera[data-nativ])) > :where(:not(:has(.crew-kamera))) { background-color: var(--crew-grund); }
+.crew-kamera[data-nativ] { background: transparent; }
+html.crew-nativ-kamera .crew-tabs { background: var(--crew-flaeche); }
+
+.crew-licht {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  width: var(--crew-tap);
+  height: var(--crew-tap);
+  padding: 0;
+  font-size: 22px;
+  border-radius: 999px;
+}
+.crew-licht[aria-pressed="true"] { background: var(--crew-signal); color: var(--crew-grund); border-color: var(--crew-signal); }
