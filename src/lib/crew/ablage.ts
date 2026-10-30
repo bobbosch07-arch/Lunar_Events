@@ -74,4 +74,8 @@ export const ABLAGE = {
   gaesteAktionen: "gaeste-aktionen",
   /** Die eigenen Schichten mit Abrufzeit: Der Plan gilt auch ohne Netz. */
   plan: "plan",
+  /** Garderobenmarken eines Events (Prüfsummen, nie Codes). */
+  marken: (eventId: string) => `marken.${eventId}`,
+  /** Abgaben und Ausgaben ohne Netz, alle Events, in Reihenfolge. */
+  garderobePuffer: "garderobe-puffer",
 } as const;

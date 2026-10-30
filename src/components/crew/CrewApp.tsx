@@ -10,24 +10,30 @@ import { CrewScanner, type CrewEvent } from "./CrewScanner";
 import { CrewGaeste } from "./CrewGaeste";
 import { CrewKasse } from "./CrewKasse";
 import { CrewPlan } from "./CrewPlan";
+import { CrewGarderobe } from "./CrewGarderobe";
 
 type Person = { id: string; email: string; name: string | null; rolle: Rolle };
-type Tab = "scanner" | "gaeste" | "kasse" | "plan";
+type Tab = "scanner" | "gaeste" | "kasse" | "garderobe" | "plan";
 
 const TABS: Record<Tab, { name: string; icon: string }> = {
   scanner: { name: "Scanner", icon: "ph-scan" },
   gaeste: { name: "Gäste", icon: "ph-list-checks" },
   kasse: { name: "Kasse", icon: "ph-cash-register" },
+  garderobe: { name: "Garderobe", icon: "ph-coat-hanger" },
   plan: { name: "Mein Plan", icon: "ph-calendar-check" },
 };
 
 /**
  * Wie im Design: die Kasse verkauft statt Gäste abzuhaken, der Admin hat
- * alles, und „Mein Plan“ hat jeder. Wer nicht scannt (Security, Runner …)
- * oder wenn gerade kein Event läuft, bleibt nur der Plan.
+ * alles außer der Garderobe, und „Mein Plan“ hat jeder. Die Garderobe hat
+ * nur die Rolle Garderobe: Zwei Tabs mit Kamera gäbe es auf dem iPhone nicht
+ * gleichzeitig, und an der Tür braucht niemand den Tresen. Wer sonst nicht
+ * scannt (Security, Runner …) oder wenn kein Event ansteht: nur der Plan.
  */
 function tabsFuer(rolle: Rolle, mitEvent: boolean): Tab[] {
-  if (!darfScannen(rolle) || !mitEvent) return ["plan"];
+  if (!mitEvent) return ["plan"];
+  if (rolle === "garderobe") return ["garderobe", "plan"];
+  if (!darfScannen(rolle)) return ["plan"];
   if (rolle === "admin") return ["scanner", "gaeste", "kasse", "plan"];
   if (rolle === "kasse") return ["scanner", "kasse", "plan"];
   return ["scanner", "gaeste", "plan"];
@@ -118,7 +124,9 @@ export function CrewApp() {
 
   // Events: wie holeEventsFuerDenAbend, aber aus dem Browser.
   const istAdmin = zustand.art === "bereit" && zustand.person.rolle === "admin";
-  const scannt = zustand.art === "bereit" && darfScannen(zustand.person.rolle);
+  // Wer ein Event braucht: alle mit Scanner, dazu die Garderobe.
+  const scannt =
+    zustand.art === "bereit" && (darfScannen(zustand.person.rolle) || zustand.person.rolle === "garderobe");
   useEffect(() => {
     if (!scannt) return;
     let aktiv = true;
@@ -229,6 +237,11 @@ export function CrewApp() {
       {tabs.includes("kasse") ? (
         <div className="crew-schirm" hidden={offen !== "kasse"}>
           <CrewKasse key={eventId} eventId={eventId} online={online} />
+        </div>
+      ) : null}
+      {tabs.includes("garderobe") ? (
+        <div className="crew-schirm" hidden={offen !== "garderobe"}>
+          <CrewGarderobe key={eventId} eventId={eventId} online={online} events={events} setEventId={setEventId} />
         </div>
       ) : null}
       <div className="crew-schirm" hidden={offen !== "plan"}>

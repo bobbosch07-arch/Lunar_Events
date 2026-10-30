@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import jsQR from "jsqr";
+import { CrewKamera } from "./CrewKamera";
 import { browserClient } from "@/lib/supabase/client";
 import {
   crewPruefen,
@@ -88,10 +88,6 @@ export function CrewScanner({
   const db = useRef<ReturnType<typeof browserClient> | null>(null);
   const holeDb = () => (db.current ??= browserClient());
 
-  const video = useRef<HTMLVideoElement>(null);
-  const leinwand = useRef<HTMLCanvasElement>(null);
-  const strom = useRef<MediaStream | null>(null);
-  const laufend = useRef(false);
   const zuletzt = useRef<{ code: string; zeit: number } | null>(null);
   const flaeche = useRef<HTMLDivElement>(null);
   const zeile = useRef<HTMLSpanElement>(null);
@@ -115,8 +111,6 @@ export function CrewScanner({
     setAnzeigeState(a);
   };
 
-  const [laeuft, setLaeuft] = useState(false);
-  const [kameraFehler, setKameraFehler] = useState(false);
   const [online, setOnline] = useState(true);
   const [schwach, setSchwach] = useState(false);
   const [anmeldungWeg, setAnmeldungWeg] = useState(false);
@@ -535,47 +529,13 @@ export function CrewScanner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // --- Kamera ---
-  async function starten() {
-    try {
-      const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-      strom.current = s;
-      if (video.current) {
-        video.current.srcObject = s;
-        await video.current.play();
-      }
-      setKameraFehler(false);
-      setLaeuft(true);
-      laufend.current = true;
-      const schritt = () => {
-        const v = video.current;
-        const c = leinwand.current;
-        if (v && c && v.readyState === v.HAVE_ENOUGH_DATA) {
-          const kante = Math.min(v.videoWidth, v.videoHeight) * 0.7;
-          c.width = kante;
-          c.height = kante;
-          const ctx = c.getContext("2d", { willReadFrequently: true });
-          if (ctx) {
-            ctx.drawImage(v, (v.videoWidth - kante) / 2, (v.videoHeight - kante) / 2, kante, kante, 0, 0, kante, kante);
-            const bild = ctx.getImageData(0, 0, kante, kante);
-            const treffer = jsQR(bild.data, bild.width, bild.height, { inversionAttempts: "dontInvert" });
-            if (treffer?.data && aktivRef.current) void verarbeite(treffer.data);
-          }
-        }
-        if (laufend.current) requestAnimationFrame(schritt);
-      };
-      requestAnimationFrame(schritt);
-    } catch {
-      setKameraFehler(true);
-    }
-  }
-
-  useEffect(() => {
-    return () => {
-      laufend.current = false;
-      strom.current?.getTracks().forEach((t) => t.stop());
-    };
-  }, []);
+  // --- Kamera: nur annehmen, solange dieser Tab sichtbar ist ---
+  const beiCode = useCallback(
+    (code: string) => {
+      if (aktivRef.current) void verarbeite(code);
+    },
+    [verarbeite],
+  );
 
   // --- Darstellung ---
   const offenHier = offen.filter((o) => o.eventId === eventId);
@@ -677,23 +637,7 @@ export function CrewScanner({
         </div>
       ) : null}
 
-      <div className="crew-kamera" role="img" aria-label="Kamerabild">
-        <video ref={video} className="crew-video" playsInline muted />
-        <canvas ref={leinwand} hidden />
-        {laeuft ? (
-          <div className="crew-zielrahmen" aria-hidden="true">
-            <span />
-            <span />
-            <span />
-            <span />
-          </div>
-        ) : (
-          <button type="button" className="btn btn-primary crew-kamera-start" onClick={starten}>
-            <i className="ph-bold ph-qr-code" aria-hidden="true" />
-            {kameraFehler ? "Kamera erneut versuchen" : "Kamera starten"}
-          </button>
-        )}
-      </div>
+      <CrewKamera beiCode={beiCode} />
 
       <div
         ref={flaeche}

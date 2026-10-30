@@ -955,6 +955,13 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   und alle, wenn kein Event ansteht, sehen nur den Plan — deshalb meldet
   `meldeCrewAn` seit 30.10. mit Stufe „personal“ an. Alle Tabs bleiben
   aufgebaut (Kamera, Suche, wartende Kartenzahlung).
+- **Garderobe-Tab** (30.10., Design 08/09) nur für die Rolle Garderobe —
+  auf dem iPhone läuft nur eine Kamera zugleich, und alle Tabs bleiben
+  aufgebaut. Abläufe wie der Tresen `/garderobe` (0027), aber direkt zu
+  Supabase (`src/lib/crew/garderobe.ts`) und mit Ablage in IndexedDB.
+  **Abholung mit einem Scan wie bisher** (entschieden 30.10.), deshalb kein
+  Umschalter Abgabe/Abholung: Was dran ist, weiß die Marke. Die Kamera ist
+  `CrewKamera`, dieselbe wie im Scanner — eine Stelle, an der sie läuft.
 - **Mein Plan** (30.10., Migration 0051): `meine_schichten()` gibt die
   eigenen Schichten mit Titel, Beginn und Ort des Events heraus — auch bei
   Entwürfen, die das Personal sonst nicht lesen darf (`/plan` nimmt dafür

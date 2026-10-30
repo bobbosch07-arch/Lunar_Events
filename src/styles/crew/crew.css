@@ -547,3 +547,82 @@ html:has(.crew) body {
 .crew-plan-zeile-titel { font-size: var(--crew-fs-text); font-weight: 500; }
 .crew-plan-zeile-unter { font-size: var(--crew-fs-klein); color: var(--crew-text-2); font-variant-numeric: tabular-nums; }
 .crew-plan-stunden { margin: 0; font-size: var(--crew-fs-klein); color: var(--crew-text-3); }
+
+/* ---------- Garderobe (Design 08 und 09) ---------- */
+.crew-garderobe-kopf { display: flex; align-items: center; gap: var(--space-3); }
+.crew-garderobe-suchen { min-height: 40px; padding: 0 var(--space-3); gap: var(--space-2); font-size: var(--crew-fs-klein); }
+.crew-garderobe-event { flex: none; margin: 0 var(--crew-rand) var(--space-2); width: auto; min-height: var(--crew-tap); }
+.crew-garderobe-kamera { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.crew-garderobe-kamera[hidden] { display: none; }
+
+.crew-garderobe-ergebnis {
+  --u: var(--urteil-schon-drin);
+  --auf: var(--auf-urteil-schon-drin);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6) var(--crew-rand);
+  background: var(--u);
+  color: var(--auf);
+  overflow: auto;
+}
+.crew-garderobe-ergebnis[data-art="gut"] { --u: var(--urteil-einlass); --auf: var(--auf-urteil-einlass); }
+.crew-garderobe-ergebnis[data-art="nein"] { --u: var(--urteil-abgelehnt); --auf: var(--auf-urteil-abgelehnt); }
+.crew-garderobe-kicker {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--crew-fs-mini);
+  letter-spacing: var(--crew-ls-mini);
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.crew-garderobe-nummer,
+.crew-garderobe-wort {
+  font-family: var(--crew-font-display);
+  font-weight: var(--crew-gewicht-display);
+  text-transform: var(--crew-tt-display);
+  letter-spacing: var(--crew-ls-display);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.crew-garderobe-nummer { font-size: var(--crew-fs-zahl); line-height: var(--crew-lh-zahl); }
+.crew-garderobe-wort { font-size: var(--crew-fs-urteil); line-height: var(--crew-lh-urteil); }
+.crew-garderobe-detail { padding-top: var(--space-3); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--auf) 25%, transparent); font-size: var(--crew-fs-gross); font-weight: 500; }
+.crew-garderobe-knoepfe { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: var(--space-2); margin-top: auto; }
+.crew-garderobe-knopf { min-height: var(--crew-knopf); gap: var(--space-2); background: var(--auf); color: var(--u); border-color: var(--auf); font-size: var(--crew-fs-text); }
+.crew-garderobe-knopf[data-leise] { background: transparent; color: var(--auf); border: 2px solid var(--auf); }
+
+.crew-abgabe { flex: 1; min-height: 0; overflow: auto; display: flex; flex-direction: column; gap: var(--space-4); padding: 0 var(--crew-rand) var(--space-4); }
+.crew-abgabe-marke { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4); background: var(--crew-flaeche); border-radius: var(--crew-radius); }
+.crew-abgabe-marke > i { font-size: 32px; color: var(--netz-gut); flex: none; }
+.crew-abgabe-marke > span { display: flex; flex-direction: column; min-width: 0; }
+.crew-abgabe-titel { font-size: var(--crew-fs-gross); font-weight: 500; overflow-wrap: anywhere; }
+.crew-abgabe-name { font-size: var(--crew-fs-klein); color: var(--crew-text-2); }
+.crew-abgabe .field { display: flex; flex-direction: column; gap: var(--space-2); }
+.crew-buegel {
+  display: flex;
+  align-items: center;
+  height: 72px;
+  padding: 0 var(--space-4);
+  background: var(--crew-flaeche);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--crew-radius);
+  font-size: 44px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.crew-buegel[data-fehler] { border-color: var(--netz-aus); }
+.crew-buegel-strich { width: 2px; height: 44px; margin-left: 4px; background: var(--color-accent); animation: crew-blinken 1s steps(1) infinite; }
+.crew-tasten { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2); }
+.crew-taste { height: 60px; font-size: var(--crew-fs-titel); background: var(--crew-flaeche); }
+.crew-taste i { font-size: 26px; }
+.crew-taste[data-art="ok"]:not(:disabled) { background: var(--crew-signal); color: var(--crew-grund); border-color: var(--crew-signal); }
+.crew-abgabe-abbrechen { min-height: var(--crew-tap); }
+
+@keyframes crew-blinken { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .crew-buegel-strich { animation: none; }
+}
