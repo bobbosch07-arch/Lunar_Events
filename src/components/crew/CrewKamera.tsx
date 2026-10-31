@@ -152,6 +152,32 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
     setLicht(enabled);
   }
 
+  // Browser (iPhone vom Home-Bildschirm): Bildschirm anlassen, solange die
+  // Kamera läuft — an der Tür geht er sonst zwischen zwei Gästen aus. Das
+  // System gibt die Sperre beim Wegwischen der App frei, deshalb bei jeder
+  // Rückkehr neu anfordern. Die Android-App macht das nativ (MainActivity).
+  useEffect(() => {
+    if (!laeuft || nativ || !("wakeLock" in navigator)) return;
+    let sperre: WakeLockSentinel | null = null;
+    let aus = false;
+    const anfordern = async () => {
+      if (aus || document.visibilityState !== "visible") return;
+      try {
+        sperre = await navigator.wakeLock.request("screen");
+        if (aus) void sperre.release();
+      } catch {
+        // Nicht erlaubt (Stromsparmodus): dann eben ohne.
+      }
+    };
+    void anfordern();
+    document.addEventListener("visibilitychange", anfordern);
+    return () => {
+      aus = true;
+      document.removeEventListener("visibilitychange", anfordern);
+      void sperre?.release().catch(() => {});
+    };
+  }, [laeuft, nativ]);
+
   // Browser: Kamera beim Verlassen freigeben.
   useEffect(() => {
     return () => {

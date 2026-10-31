@@ -26,6 +26,10 @@ const config: CapacitorConfig = {
   android: {
     backgroundColor: "#220a4f",
   },
+  plugins: {
+    // Helle Schrift in Status- und Navigationsleiste: Der Grund ist dunkel.
+    SystemBars: { style: "DARK" },
+  },
 };
 
 export default config;

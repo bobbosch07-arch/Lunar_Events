@@ -1003,6 +1003,13 @@ Android-WebView kennt. Verteilt wird **als APK, kein Store** (entschieden
   OS) → `android/app/build/outputs/apk/release/app-release.apk`. Symbol und
   Startbild: `node scripts/android-symbole.mjs` aus
   `public/crew/app-icon-512.png`.
+- **An der Tür:** Bildschirm bleibt an (App: `FLAG_KEEP_SCREEN_ON` in
+  `MainActivity`, weil die WebView keinen Wake Lock kennt; iPhone-Web-App:
+  Wake Lock, solange die Kamera läuft). Die Zurück-Geste schließt die App
+  nicht, sondern führt zum ersten Tab (`@capacitor/app`, in `CrewApp`).
+  Statusleiste hell auf dunkel (`SystemBars.style: DARK`). Ränder: Capacitor
+  8.5 regelt sie selbst — mit `viewport-fit=cover` stimmt `env()` in beiden
+  Fällen (neue WebView reicht durch, alte rückt die WebView weg).
 - iOS folgt erst mit dem Apple-Konto (TestFlight/App Store, kein
   Gegenstück zur APK). Dasselbe Plugin kann iOS.
 

@@ -13,6 +13,7 @@
   "dependencies": {
     "@capacitor-mlkit/barcode-scanning": "8.2.1",
     "@capacitor/android": "8.5.0",
+    "@capacitor/app": "8.1.2",
     "@capacitor/core": "8.5.0",
     "@paypal/react-paypal-js": "^10.4.1",
     "@phosphor-icons/web": "^2.1.1",

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Capacitor } from "@capacitor/core";
 import { browserClient } from "@/lib/supabase/client";
 import { darfScannen, istRolle, type Rolle } from "@/lib/rollen";
 import { ABLAGE, lies, schreib } from "@/lib/crew/ablage";
@@ -171,6 +172,35 @@ export function CrewApp() {
     };
   }, [scannt, istAdmin]);
 
+  // Android-App: Die Zurück-Geste (Wischen vom Rand, passiert an der Tür
+  // leicht aus Versehen) schließt die App nicht, sondern führt zum ersten
+  // Tab; dort legt sie die App nur in den Hintergrund.
+  const tabsJetzt =
+    zustand.art === "bereit" ? tabsFuer(zustand.person.rolle, events.length > 0 && Boolean(eventId)) : [];
+  const offenJetzt = tabsJetzt.includes(tab) ? tab : tabsJetzt[0];
+  const zurueckRef = useRef({ offen: offenJetzt, erster: tabsJetzt[0] });
+  useEffect(() => {
+    zurueckRef.current = { offen: offenJetzt, erster: tabsJetzt[0] };
+  });
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let aus = false;
+    let entfernen: (() => void) | null = null;
+    void import("@capacitor/app").then(async ({ App }) => {
+      const hoerer = await App.addListener("backButton", () => {
+        const { offen, erster } = zurueckRef.current;
+        if (erster && offen !== erster) setTab(erster);
+        else void App.minimizeApp();
+      });
+      if (aus) void hoerer.remove();
+      else entfernen = () => void hoerer.remove();
+    });
+    return () => {
+      aus = true;
+      entfernen?.();
+    };
+  }, []);
+
   function setEventId(id: string) {
     setEventIdState(id);
     void schreib(ABLAGE.eventWahl, id);
@@ -215,8 +245,8 @@ export function CrewApp() {
   // neu freigegeben werden, die Gästeliste behält Suche und Filter, und die
   // Kasse wartet weiter auf eine Kartenzahlung.
   const mitEvent = events.length > 0 && Boolean(eventId);
-  const tabs = tabsFuer(zustand.person.rolle, mitEvent);
-  const offen = tabs.includes(tab) ? tab : tabs[0];
+  const tabs = tabsJetzt;
+  const offen = offenJetzt;
   return (
     <div className="crew-rahmen">
       {tabs.includes("scanner") ? (
