@@ -60,6 +60,10 @@ async function weg() {
     }
     await dienst.from("gaeste").delete().eq("event_id", ev.id);
     await dienst.from("schichten").delete().eq("event_id", ev.id);
+    // Hängen nur lose am Event (on delete set null) und zählten sonst in der
+    // Auswertung weiter — ohne Event, aber mit.
+    await dienst.from("ereignisse").delete().eq("event_id", ev.id);
+    await dienst.from("vip_anfragen").delete().eq("event_id", ev.id);
     await dienst.from("phasen").delete().eq("event_id", ev.id);
     const { error } = await dienst.from("events").delete().eq("id", ev.id);
     if (error) console.error(`Event ${slug} blieb stehen: ${error.message}`);
