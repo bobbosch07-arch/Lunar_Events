@@ -1,17 +1,38 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import type { Kassenstand } from "@/app/aktionen/kasse";
+import type { Kassenstand, TuerVerkauf } from "@/app/aktionen/kasse";
 import type { KassenPhase } from "@/components/Kasse";
 import { preisText } from "@/lib/format";
 import { belegungsStufe, useBelegung } from "@/lib/crew/belegung";
-import { crewKassenDaten, crewVerkaufAbbrechen, crewVerkaufen, crewZahlungStand } from "@/lib/crew/kasse";
+import {
+  crewDirektBestaetigen,
+  crewKassenDaten,
+  crewVerkaufAbbrechen,
+  crewVerkaufen,
+  crewZahlungStand,
+} from "@/lib/crew/kasse";
+
+type Zahlweg = "bar" | "qr" | "paypal" | "ueberweisung";
+type Direkt = NonNullable<Extract<TuerVerkauf, { ok: true }>["direkt"]>;
 
 type Zustand =
   | { art: "bereit" }
   | { art: "bar_bestaetigen" }
   | { art: "qr"; bestellungId: string; qr: string; gesamtCent: number; anzahl: number; einlassen: boolean }
-  | { art: "fertig"; anzahl: number; gesamtCent: number; eingelassen: boolean; zahlung: "bar" | "qr"; qr: string | null }
+  | {
+      art: "direkt";
+      bestellungId: string;
+      qr: string;
+      gesamtCent: number;
+      anzahl: number;
+      einlassen: boolean;
+      direkt: Direkt;
+      /** „Zahlung gesehen“ einmal getippt — der zweite Tipp bucht. */
+      fragt: boolean;
+      fehler?: string;
+    }
+  | { art: "fertig"; anzahl: number; gesamtCent: number; eingelassen: boolean; zahlung: Zahlweg; qr: string | null }
   | { art: "abgelaufen" }
   | { art: "unklar" };
 
@@ -27,12 +48,25 @@ const STUFE = {
 
 const euro = (cent: number) => preisText(cent, "de");
 
+const WEG_TEXT: Record<Zahlweg, string> = {
+  bar: "bar",
+  qr: "mit Karte",
+  paypal: "per PayPal",
+  ueberweisung: "per Überweisung",
+};
+
 /**
  * Abendkasse der Crew-App (Design: 06 · Kasse, 07 · Karte per QR). Verkauft
  * wird genau wie an /kasse — dieselben Funktionen, nur über eine feste Route.
  * Wer sofort reingeht, zählt auf „drin“ (die Tickets werden entwertet, 0049);
  * Bar und Karte sind gesperrt, wenn weniger Plätze frei sind als verkauft
  * werden sollen.
+ *
+ * PayPal und Überweisung direkt (0052, entschieden 13.11.): ohne Gebühr
+ * eines Zahlungsdienstes. Der Gast zahlt selbst per paypal.me bzw. GiroCode
+ * und zeigt die Bestätigung; die Crew bucht mit „Zahlung gesehen“ (zweiter
+ * Tipp). Die Kasse sieht das Geld nicht eingehen — abgeglichen wird nach dem
+ * Abend über die getrennten Summen im Kassenstand.
  *
  * Ohne Netz wird nicht verkauft: Kontingent und Geld lassen sich nicht
  * nachtragen wie ein Einlass, zwei Kassen würden sonst dieselben letzten
@@ -42,6 +76,8 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
   const [phasen, setPhasen] = useState<KassenPhase[] | null>(null);
   const [stand, setStand] = useState<Kassenstand | null>(null);
   const [qrMoeglich, setQrMoeglich] = useState(false);
+  const [paypalDirekt, setPaypalDirekt] = useState(false);
+  const [ueberweisung, setUeberweisung] = useState(false);
   const [keinZugang, setKeinZugang] = useState(false);
   const [phaseId, setPhaseId] = useState("");
   const [menge, setMenge] = useState(1);
@@ -69,6 +105,8 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
       setPhasen(daten.phasen);
       setStand(daten.stand);
       setQrMoeglich(daten.qrMoeglich);
+      setPaypalDirekt(daten.paypalDirekt);
+      setUeberweisung(daten.ueberweisung);
       // Die Wahl bleibt stehen, solange es die Phase noch gibt.
       setPhaseId((alt) =>
         daten.phasen.some((p) => p.id === alt) ? alt : (daten.phasen.find((p) => p.rest !== 0)?.id ?? daten.phasen[0]?.id ?? ""),
@@ -127,7 +165,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
   const hoechstens = Math.max(1, Math.min(20, phase?.rest ?? 20));
   const gesperrt = laeuft || !online || !phase || phase.rest === 0 || zuVoll;
 
-  async function verkaufen(zahlung: "bar" | "qr") {
+  async function verkaufen(zahlung: Zahlweg) {
     if (!phase || laeuft) return;
     setLaeuft(true);
     setFehler(null);
@@ -157,6 +195,19 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
       });
       return;
     }
+    if ((zahlung === "paypal" || zahlung === "ueberweisung") && antwort.direkt) {
+      setZustand({
+        art: "direkt",
+        bestellungId: antwort.bestellungId,
+        qr: antwort.qr ?? "",
+        gesamtCent: antwort.gesamtCent,
+        anzahl: antwort.anzahl,
+        einlassen,
+        direkt: antwort.direkt,
+        fragt: false,
+      });
+      return;
+    }
     if (navigator.vibrate) navigator.vibrate(60);
     setZustand({
       art: "fertig",
@@ -169,8 +220,37 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
     laden();
   }
 
+  async function zahlungGesehen() {
+    if (zustand.art !== "direkt" || laeuft) return;
+    if (!zustand.fragt) {
+      setZustand({ ...zustand, fragt: true, fehler: undefined });
+      return;
+    }
+    setLaeuft(true);
+    const antwort = await crewDirektBestaetigen(zustand.bestellungId, zustand.einlassen);
+    setLaeuft(false);
+    if (!antwort) {
+      setZustand({ ...zustand, fragt: false, fehler: "Keine Antwort. Nochmal tippen, doppelt buchen geht nicht." });
+      return;
+    }
+    if (!antwort.ok) {
+      setZustand({ ...zustand, fragt: false, fehler: antwort.fehler });
+      return;
+    }
+    if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+    setZustand({
+      art: "fertig",
+      anzahl: zustand.anzahl,
+      gesamtCent: zustand.gesamtCent,
+      eingelassen: zustand.einlassen && antwort.eingelassen > 0,
+      zahlung: zustand.direkt.art,
+      qr: antwort.qr,
+    });
+    laden();
+  }
+
   async function abbrechen() {
-    if (zustand.art !== "qr") return;
+    if (zustand.art !== "qr" && zustand.art !== "direkt") return;
     setLaeuft(true);
     await crewVerkaufAbbrechen(zustand.bestellungId);
     setLaeuft(false);
@@ -183,6 +263,59 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
     setMenge(1);
     setEinlassen(true);
     setFehler(null);
+  }
+
+  // ---------- PayPal / Überweisung direkt: der Bildschirm gehört dem Gast ----------
+  if (zustand.art === "direkt") {
+    const d = zustand.direkt;
+    return (
+      <div className="crew-kasse-qr">
+        <span className="crew-kasse-qr-kopf">
+          <span className="crew-titel">{d.art === "paypal" ? "PayPal" : "Überweisung"}</span>
+          <span className="crew-kasse-qr-was">
+            {zustand.anzahl} × {phase?.name ?? "Abendkasse"} · <strong>{euro(zustand.gesamtCent)}</strong>
+          </span>
+        </span>
+        {/* Das SVG erzeugt der Server aus paypal.me-Link bzw. GiroCode. */}
+        <div className="crew-kasse-qr-code" role="img" aria-label="QR-Code zum Bezahlen" dangerouslySetInnerHTML={{ __html: zustand.qr }} />
+        {d.art === "paypal" ? (
+          <dl className="crew-kasse-direkt">
+            <dt>Gast</dt>
+            <dd>scannt mit der Handykamera, PayPal öffnet sich mit dem Betrag.</dd>
+            <dt>Nachricht</dt>
+            <dd className="crew-kasse-direkt-wert">{d.verwendungszweck}</dd>
+          </dl>
+        ) : (
+          <dl className="crew-kasse-direkt">
+            <dt>Gast</dt>
+            <dd>scannt in der Banking-App (Scannen, GiroCode oder Foto-Überweisung) und wählt Echtzeitüberweisung.</dd>
+            <dt>Empfänger</dt>
+            <dd>{d.inhaber}</dd>
+            <dt>IBAN</dt>
+            <dd className="crew-kasse-direkt-wert">{d.iban}</dd>
+            <dt>Zweck</dt>
+            <dd className="crew-kasse-direkt-wert">{d.verwendungszweck}</dd>
+          </dl>
+        )}
+        <span className="crew-kasse-qr-hinweis">
+          Erst buchen, wenn der Gast die Bestätigung zeigt: richtiger Betrag, richtiger Empfänger, Uhrzeit jetzt.
+        </span>
+        {zustand.fehler ? (
+          <p className="crew-fehler" role="alert">
+            {zustand.fehler}
+          </p>
+        ) : null}
+        <div className="crew-kasse-wege crew-kasse-direkt-knoepfe">
+          <button type="button" className="btn btn-secondary" onClick={() => void abbrechen()} disabled={laeuft}>
+            Abbrechen
+          </button>
+          <button type="button" className="btn btn-primary" onClick={() => void zahlungGesehen()} disabled={laeuft}>
+            <i className="ph-bold ph-check" aria-hidden="true" />
+            {laeuft ? "Bucht …" : zustand.fragt ? `${euro(zustand.gesamtCent)} gesehen?` : "Zahlung gesehen"}
+          </button>
+        </div>
+      </div>
+    );
   }
 
   // ---------- Karte per QR: der Bildschirm gehört dem Gast ----------
@@ -259,14 +392,22 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         <section className="card elev-sm crew-kasse-stand">
           <span className="card-kicker">Kassenstand heute</span>
           <div className="crew-kasse-stand-zahlen">
-            <span>
-              <span>Bar</span>
-              <strong>{stand ? euro(stand.barCent) : "–"}</strong>
-            </span>
-            <span>
-              <span>Karte</span>
-              <strong>{stand ? euro(stand.qrCent) : "–"}</strong>
-            </span>
+            {(
+              [
+                ["Bar", stand?.barCent, true],
+                ["Karte", stand?.qrCent, qrMoeglich],
+                ["PayPal", stand?.paypalDirektCent, paypalDirekt],
+                ["Überweisung", stand?.ueberweisungCent, ueberweisung],
+              ] as const
+            )
+              // Was nicht eingerichtet ist und nichts eingenommen hat, bleibt weg.
+              .filter(([, cent, an]) => an || (cent ?? 0) > 0)
+              .map(([name, cent]) => (
+                <span key={name}>
+                  <span>{name}</span>
+                  <strong>{stand ? euro(cent ?? 0) : "–"}</strong>
+                </span>
+              ))}
             <span>
               <span>Tickets</span>
               <strong>{stand ? stand.tickets : "–"}</strong>
@@ -274,7 +415,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
           </div>
           {stand && stand.offen > 0 ? (
             <span className="crew-kasse-hinweis">
-              {stand.offen === 1 ? "1 Kartenzahlung offen" : `${stand.offen} Kartenzahlungen offen`}
+              {stand.offen === 1 ? "1 Zahlung offen" : `${stand.offen} Zahlungen offen`}
             </span>
           ) : null}
         </section>
@@ -285,7 +426,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
             <span className="crew-kasse-ergebnis-wort">{zustand.eingelassen ? "Drin" : "Bezahlt"}</span>
             <span className="crew-kasse-ergebnis-text">
               {zustand.anzahl === 1 ? "1 Ticket" : `${zustand.anzahl} Tickets`} · {euro(zustand.gesamtCent)}{" "}
-              {zustand.zahlung === "bar" ? "bar" : "mit Karte"}
+              {WEG_TEXT[zustand.zahlung]}
               {zustand.eingelassen ? " · eingelassen und gezählt" : ""}
             </span>
             {zustand.qr ? (
@@ -414,16 +555,24 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
                   <i className="ph-bold ph-money" aria-hidden="true" />
                   Bar
                 </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => void verkaufen("qr")}
-                  disabled={gesperrt || !qrMoeglich}
-                  title={qrMoeglich ? undefined : "Kartenzahlung geht, sobald Stripe eingerichtet ist."}
-                >
-                  <i className="ph-bold ph-qr-code" aria-hidden="true" />
-                  {laeuft ? "…" : "Karte"}
-                </button>
+                {qrMoeglich ? (
+                  <button type="button" className="btn btn-primary" onClick={() => void verkaufen("qr")} disabled={gesperrt}>
+                    <i className="ph-bold ph-credit-card" aria-hidden="true" />
+                    {laeuft ? "…" : "Karte"}
+                  </button>
+                ) : null}
+                {paypalDirekt ? (
+                  <button type="button" className="btn btn-primary" onClick={() => void verkaufen("paypal")} disabled={gesperrt}>
+                    <i className="ph-bold ph-paypal-logo" aria-hidden="true" />
+                    {laeuft ? "…" : "PayPal"}
+                  </button>
+                ) : null}
+                {ueberweisung ? (
+                  <button type="button" className="btn btn-primary" onClick={() => void verkaufen("ueberweisung")} disabled={gesperrt}>
+                    <i className="ph-bold ph-bank" aria-hidden="true" />
+                    {laeuft ? "…" : "Überweisung"}
+                  </button>
+                ) : null}
               </div>
             )}
           </>

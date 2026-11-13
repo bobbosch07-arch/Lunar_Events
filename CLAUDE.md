@@ -949,6 +949,23 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   Tipp bestätigt („50 € erhalten“) statt mit `window.confirm`. Kommt beim
   Verkauf keine Antwort, sagt die App „unklar“ statt den Knopf wieder
   freizugeben — der Verkauf ist womöglich gebucht.
+- **PayPal und Überweisung direkt an der Abendkasse** (13.11., Migration
+  0052): ohne Stripe und ohne PayPal-Schnittstelle, also ohne Gebühr eines
+  Zahlungsdienstes. Der Gast zahlt selbst — paypal.me-Link mit Betrag bzw.
+  **GiroCode** (EPC-QR, Banking-App füllt Empfänger, IBAN, Betrag und
+  Bestellnummer aus; Echtzeitüberweisung) — und zeigt die Bestätigung. Die
+  Kasse sieht das Geld nicht eingehen: Die Crew bucht mit „Zahlung gesehen“
+  (zweiter Tipp, `abendkasse_direkt_bestaetigen`), `zahlung_ref` hält fest,
+  wer. Bestellung entsteht offen und hält die Tickets 20 Minuten wie bei der
+  Karte. Zahlarten `paypal_direkt` / `ueberweisung` (die Zahlart `paypal`
+  bleibt der Webshop-Weg über die Schnittstelle), Kassenstand weist sie
+  getrennt aus — **Abgleich mit Konto und PayPal nach dem Abend**.
+  Einstellungen in `src/lib/kasse-direkt.ts`: `KASSE_PAYPAL_ME`,
+  `KASSE_KONTOINHABER`, `KASSE_IBAN`, `KASSE_BIC` — **eigene** Variablen, weil
+  `VORKASSE_IBAN` online die Vorkasse einschaltet (fehlen sie, gilt das
+  Vorkasse-Konto). Ohne Einstellung kein Knopf. Hingewiesen am 13.11.:
+  „Freunde und Familie“ für Ticketverkauf verstößt gegen PayPals Regeln;
+  der Gast wählt die Art selbst, wir erzwingen nichts.
 - **Tabs je Rolle** wie im Design (`tabsFuer` in `CrewApp`): Einlass und
   Bar Scanner + Gäste, Kasse Scanner + Kasse, Admin alles, dazu bei allen
   „Mein Plan“. Rollen ohne Scanner (Security, Runner, Toiletten, Garderobe)

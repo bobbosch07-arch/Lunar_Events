@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import {
+  bestaetigeDirektZahlung,
   brecheTuerVerkaufAb,
   holeKassenstand,
   pruefeTuerZahlung,
@@ -7,6 +8,7 @@ import {
 } from "@/app/aktionen/kasse";
 import { serverClient } from "@/lib/supabase/server";
 import { stripeEingerichtet } from "@/lib/stripe";
+import { kassenKonto, paypalMeName } from "@/lib/kasse-direkt";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +33,7 @@ async function darfKassieren(): Promise<boolean> {
   return data === true;
 }
 
-/** Phasen mit Rest, Kassenstand und ob QR-Zahlung geht. */
+/** Phasen mit Rest, Kassenstand und welche Zahlwege eingerichtet sind. */
 export async function GET(anfrage: NextRequest) {
   const eventId = anfrage.nextUrl.searchParams.get("event");
   if (!eventId) return antwort({ ergebnis: "event_fehlt" }, 400);
@@ -52,6 +54,8 @@ export async function GET(anfrage: NextRequest) {
   return antwort({
     ergebnis: "ok",
     qrMoeglich: stripeEingerichtet(),
+    paypalDirekt: Boolean(paypalMeName()),
+    ueberweisung: Boolean(kassenKonto()),
     stand,
     phasen: (phasen ?? []).map((p) => ({
       id: p.id as string,
@@ -65,7 +69,15 @@ export async function GET(anfrage: NextRequest) {
 }
 
 type Schritt =
-  | { schritt: "verkaufen"; eventId: string; phaseId: string; menge: number; zahlung: "bar" | "qr"; einlassen: boolean }
+  | {
+      schritt: "verkaufen";
+      eventId: string;
+      phaseId: string;
+      menge: number;
+      zahlung: "bar" | "qr" | "paypal" | "ueberweisung";
+      einlassen: boolean;
+    }
+  | { schritt: "bestaetigen"; bestellungId: string; einlassen: boolean }
   | { schritt: "zahlung"; bestellungId: string; einlassen: boolean }
   | { schritt: "abbrechen"; bestellungId: string };
 
@@ -79,13 +91,16 @@ export async function POST(anfrage: NextRequest) {
         eventId: String(eingabe.eventId),
         phaseId: String(eingabe.phaseId),
         menge: Number(eingabe.menge),
-        zahlung: eingabe.zahlung === "qr" ? "qr" : "bar",
+        zahlung: (["qr", "paypal", "ueberweisung"] as const).find((z) => z === eingabe.zahlung) ?? "bar",
         einlassen: Boolean(eingabe.einlassen),
       }),
     );
   }
   if (eingabe.schritt === "zahlung") {
     return antwort(await pruefeTuerZahlung(String(eingabe.bestellungId), Boolean(eingabe.einlassen)));
+  }
+  if (eingabe.schritt === "bestaetigen") {
+    return antwort(await bestaetigeDirektZahlung(String(eingabe.bestellungId), Boolean(eingabe.einlassen)));
   }
   if (eingabe.schritt === "abbrechen") {
     return antwort(await brecheTuerVerkaufAb(String(eingabe.bestellungId)));

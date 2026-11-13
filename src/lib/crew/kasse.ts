@@ -1,4 +1,4 @@
-import type { Kassenstand, TuerVerkauf, TuerZahlungStand } from "@/app/aktionen/kasse";
+import type { DirektBestaetigt, Kassenstand, TuerVerkauf, TuerZahlungStand } from "@/app/aktionen/kasse";
 import type { KassenPhase } from "@/components/Kasse";
 
 /**
@@ -10,6 +10,9 @@ import type { KassenPhase } from "@/components/Kasse";
 export type CrewKassenDaten = {
   ergebnis: "ok";
   qrMoeglich: boolean;
+  /** PayPal per paypal.me und Überweisung per GiroCode (0052) eingerichtet? */
+  paypalDirekt: boolean;
+  ueberweisung: boolean;
   stand: Kassenstand | null;
   phasen: KassenPhase[];
 };
@@ -57,7 +60,7 @@ export function crewVerkaufen(eingabe: {
   eventId: string;
   phaseId: string;
   menge: number;
-  zahlung: "bar" | "qr";
+  zahlung: "bar" | "qr" | "paypal" | "ueberweisung";
   einlassen: boolean;
 }) {
   return schicke<TuerVerkauf>(15000, { schritt: "verkaufen", ...eingabe });
@@ -65,6 +68,11 @@ export function crewVerkaufen(eingabe: {
 
 export function crewZahlungStand(bestellungId: string, einlassen: boolean) {
   return schicke<TuerZahlungStand>(10000, { schritt: "zahlung", bestellungId, einlassen });
+}
+
+/** „Zahlung gesehen“ bei PayPal oder Überweisung direkt. */
+export function crewDirektBestaetigen(bestellungId: string, einlassen: boolean) {
+  return schicke<DirektBestaetigt>(10000, { schritt: "bestaetigen", bestellungId, einlassen });
 }
 
 export function crewVerkaufAbbrechen(bestellungId: string) {

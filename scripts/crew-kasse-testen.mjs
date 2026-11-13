@@ -2,8 +2,12 @@
  * Prüft die Kassen-Route der Crew-App (`/api/crew/kasse`) gegen einen
  * laufenden Server — mit echten Sitzungs-Cookies, wie sie das Handy schickt.
  *
- *   npx next start -p 3005
+ *   KASSE_PAYPAL_ME=lunartest KASSE_IBAN=DE89370400440532013000 \
+ *   KASSE_KONTOINHABER="Lunar Test" npx next start -p 3005
  *   node scripts/crew-kasse-testen.mjs http://localhost:3005
+ *
+ * Die Werte für PayPal und Überweisung sind Beispiele (DE89… ist die
+ * offizielle Muster-IBAN) — es fließt kein Geld, gebucht wird nur bei uns.
  *
  * Legt ein eigenes Event mit Abendkassen-Phase und zwei Konten (Kasse,
  * Einlass) an und räumt am Ende alles wieder weg. Kartenzahlung wird nur
@@ -155,6 +159,55 @@ try {
     pruefe(danach?.art === "abgelaufen", "Danach: abgelaufen", danach);
     const frei = await holen(kasse, ev.id);
     pruefe(frei.daten?.phasen?.[0]?.rest === 2, "Ticket wieder frei, Rest 2", frei.daten?.phasen?.[0]);
+  }
+
+  // --- PayPal und Überweisung direkt (0052) ---
+  // Braucht am Server KASSE_PAYPAL_ME und KASSE_IBAN/KASSE_KONTOINHABER
+  // (siehe Kopf); sonst sind beide Wege aus und der Abschnitt meldet das.
+  console.log("\n— PayPal und Überweisung direkt —");
+  await dienst.from("phasen").update({ kontingent: 20 }).eq("id", ph.id);
+  const wege = await holen(kasse, ev.id);
+  if (!wege.daten?.paypalDirekt || !wege.daten?.ueberweisung) {
+    pruefe(false, "Server ohne KASSE_PAYPAL_ME / KASSE_IBAN gestartet — Abschnitt übersprungen", wege.daten);
+  } else {
+    pruefe(true, "Beide Wege eingerichtet");
+    const drinVorher = await drin();
+
+    const pp = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: ph.id, menge: 1, zahlung: "paypal", einlassen: true });
+    pruefe(pp?.ok && !pp.bezahlt && pp.direkt?.art === "paypal", "PayPal: Bestellung offen angelegt", pp?.direkt);
+    pruefe(pp?.direkt?.link === "https://paypal.me/lunartest/25.00EUR", "… paypal.me-Link mit Betrag", pp?.direkt?.link);
+    pruefe(String(pp?.qr).includes("<svg") && pp?.direkt?.verwendungszweck === pp?.nummer, "… QR und Bestellnummer als Nachricht");
+    pruefe((await drin()) === drinVorher, "Noch nicht bestätigt: zählt nicht");
+
+    const fremd = await schicken(einlass, { schritt: "bestaetigen", bestellungId: pp.bestellungId, einlassen: true });
+    pruefe(fremd?.ok === false, "Einlass kann nicht bestätigen", fremd?.fehler);
+
+    const ok = await schicken(kasse, { schritt: "bestaetigen", bestellungId: pp.bestellungId, einlassen: true });
+    pruefe(ok?.ok && ok.eingelassen === 1, "Zahlung gesehen: bezahlt und eingelassen", ok);
+    pruefe((await drin()) === drinVorher + 1, "drin +1");
+    const nochmal = await schicken(kasse, { schritt: "bestaetigen", bestellungId: pp.bestellungId, einlassen: true });
+    const { count: ppTickets } = await dienst.from("tickets").select("*", { count: "exact", head: true }).eq("bestellung_id", pp.bestellungId);
+    pruefe(nochmal?.ok && ppTickets === 1, "Doppelt getippt: keine doppelten Tickets", ppTickets);
+    const { data: ppB } = await dienst.from("bestellungen").select("status, zahlungsart, zahlung_ref").eq("id", pp.bestellungId).single();
+    pruefe(ppB.status === "bezahlt" && ppB.zahlungsart === "paypal_direkt" && ppB.zahlung_ref?.startsWith("kasse:"), "Bestellung: paypal_direkt, wer bestätigt hat, steht dran", ppB);
+
+    const ue = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: ph.id, menge: 2, zahlung: "ueberweisung", einlassen: false });
+    pruefe(ue?.ok && ue.direkt?.art === "ueberweisung" && ue.direkt.iban === "DE89 3704 0044 0532 0130 00", "Überweisung: GiroCode, IBAN lesbar", ue?.direkt);
+    pruefe(ue?.direkt?.verwendungszweck?.startsWith(ue?.nummer), "… Bestellnummer im Verwendungszweck", ue?.direkt?.verwendungszweck);
+    const ueOk = await schicken(kasse, { schritt: "bestaetigen", bestellungId: ue.bestellungId, einlassen: false });
+    pruefe(ueOk?.ok && ueOk.eingelassen === 0 && String(ueOk.qr).includes("<svg"), "Für später: bezahlt, nicht drin, QR mit den Tickets", ueOk?.eingelassen);
+    pruefe((await drin()) === drinVorher + 1, "drin unverändert");
+
+    const weg = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: ph.id, menge: 1, zahlung: "paypal", einlassen: true });
+    await schicken(kasse, { schritt: "abbrechen", bestellungId: weg.bestellungId });
+    const zuSpaet = await schicken(kasse, { schritt: "bestaetigen", bestellungId: weg.bestellungId, einlassen: true });
+    pruefe(zuSpaet?.ok === false && /abgelaufen|abgebrochen/.test(zuSpaet.fehler), "Abgebrochen: lässt sich nicht mehr bestätigen", zuSpaet?.fehler);
+
+    const barB = await schicken(kasse, { schritt: "bestaetigen", bestellungId: bar.bestellungId, einlassen: true });
+    pruefe(barB?.ok === false, "Bar-Bestellung über „Zahlung gesehen“: abgelehnt", barB?.fehler);
+
+    const st = (await holen(kasse, ev.id)).daten?.stand;
+    pruefe(st?.paypalDirektCent === 2500 && st?.ueberweisungCent === 5000 && st?.barCent === 7500, "Kassenstand getrennt: PayPal 25 €, Überweisung 50 €, Bar 75 €", st);
   }
 
   console.log("\n— Unsinn —");
