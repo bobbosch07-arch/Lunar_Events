@@ -202,8 +202,8 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
           Warte auf Zahlung …
         </span>
         <span className="crew-kasse-qr-hinweis">
-          Bildschirm zum Gast drehen. Nach der Zahlung erscheint „Bezahlt“ in Grün, die Tickets gehen an die Mail des
-          Gastes.
+          Bildschirm zum Gast drehen. Er zahlt am eigenen Handy mit Karte, Apple Pay oder Google Pay. Danach erscheint
+          hier „Bezahlt“, und der Gast findet seine Tickets auf derselben Seite. Eine Mail gibt es nicht.
         </span>
         <button type="button" className="btn btn-secondary crew-kasse-abbrechen" onClick={() => void abbrechen()} disabled={laeuft}>
           Abbrechen
