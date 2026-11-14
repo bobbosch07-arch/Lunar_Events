@@ -26,27 +26,49 @@ function marke(status: string) {
 
 export default async function Bestellungen({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ suche?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const suche = (await searchParams).suche?.trim() ?? "";
 
   return (
     <>
       <BackofficeKopf titel="Bestellungen">
         <Aufraeumknopf />
       </BackofficeKopf>
-      <Suspense fallback={<BackofficeSkelett zeilen={10} />}>
-        <Inhalt locale={locale} />
+      {/* Ohne Suche nur die neuesten 150 — ältere findet man hierüber. */}
+      <form className={css.suche} role="search" method="get">
+        <input
+          className={css.sucheFeld}
+          type="search"
+          name="suche"
+          defaultValue={suche}
+          placeholder="Bestellnummer, Mail oder Name"
+          aria-label="Bestellungen durchsuchen"
+        />
+        <button type="submit" className={css.sucheKnopf}>
+          Suchen
+        </button>
+        {suche ? (
+          <a href="?" className={css.sucheZurueck}>
+            Alle neuesten
+          </a>
+        ) : null}
+      </form>
+      <Suspense key={suche} fallback={<BackofficeSkelett zeilen={10} />}>
+        <Inhalt locale={locale} suche={suche} />
       </Suspense>
     </>
   );
 }
 
-async function Inhalt({ locale }: { locale: string }) {
+async function Inhalt({ locale, suche }: { locale: string; suche: string }) {
   const [bestellungen, f, ohneNamen] = await Promise.all([
-    holeBestellungen(150),
+    holeBestellungen(150, suche || undefined),
     getFormatter(),
     // Über alle Bestellungen kommender Events, nicht nur die 150 hier.
     zaehleFehlendeNamen(),
@@ -76,7 +98,7 @@ async function Inhalt({ locale }: { locale: string }) {
             {bestellungen.length === 0 ? (
               <tr>
                 <td colSpan={8} className={css.leer}>
-                  Noch keine Bestellungen.
+                  {suche ? `Nichts gefunden zu „${suche}“.` : "Noch keine Bestellungen."}
                 </td>
               </tr>
             ) : (

@@ -388,3 +388,39 @@
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* Suche in den Bestellungen (14.11.) */
+.suche {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.sucheFeld {
+  flex: 1 1 260px;
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  font: inherit;
+  font-size: var(--fs-body-s);
+  color: var(--text-primary);
+  background: var(--ivory-50);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+}
+.sucheKnopf {
+  min-height: 44px;
+  padding: 0 var(--space-6);
+  font: inherit;
+  font-size: var(--fs-body-s);
+  font-weight: var(--fw-medium);
+  color: var(--text-primary);
+  background: var(--ivory-100);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.sucheZurueck {
+  font-size: var(--fs-body-s);
+  color: var(--text-secondary);
+}

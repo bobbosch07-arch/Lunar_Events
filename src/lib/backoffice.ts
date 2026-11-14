@@ -229,10 +229,30 @@ export type BestellZeile = {
   namenMailAm: string | null;
 };
 
-export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
+/**
+ * `suche` (14.11.): über *alle* Bestellungen, nicht nur die neuesten —
+ * Bestellnummer, Mailadresse oder Name des Käufers. Ohne Suche die
+ * neuesten `grenze`.
+ */
+export async function holeBestellungen(grenze = 100, suche?: string): Promise<BestellZeile[]> {
   const db = await serverClient();
 
-  const { data, error } = await db
+  // Zeichen, die im Filter von PostgREST eine Bedeutung haben, fliegen raus.
+  const begriff = (suche ?? "").replace(/[,()%*\\]/g, " ").trim().slice(0, 80);
+  let kundenIds: string[] | null = null;
+  if (begriff && !/^LUN-/i.test(begriff)) {
+    const teile = begriff.split(/\s+/).filter(Boolean);
+    let kunden = db.from("kunden").select("id").limit(200);
+    // Jedes Wort muss in Mail, Vor- oder Nachname vorkommen („lara hoffmann“).
+    for (const teil of teile) {
+      kunden = kunden.or(`email.ilike.%${teil}%,vorname.ilike.%${teil}%,nachname.ilike.%${teil}%`);
+    }
+    const { data: treffer } = await kunden;
+    kundenIds = (treffer ?? []).map((k) => k.id as string);
+    if (kundenIds.length === 0) return [];
+  }
+
+  let abfrage = db
     .from("bestellungen")
     .select(
       `id, nummer, status, gesamt_cent, zahlungsart, zahlung_ref, erstellt_am, vorkasse, reserviert_bis,
@@ -244,6 +264,10 @@ export async function holeBestellungen(grenze = 100): Promise<BestellZeile[]> {
     )
     .order("erstellt_am", { ascending: false })
     .limit(grenze);
+  if (begriff && kundenIds === null) abfrage = abfrage.ilike("nummer", `%${begriff}%`);
+  if (kundenIds) abfrage = abfrage.in("kunde_id", kundenIds);
+
+  const { data, error } = await abfrage;
 
   if (error || !data) {
     console.error("[backoffice] Bestellungen laden fehlgeschlagen:", error?.message);
