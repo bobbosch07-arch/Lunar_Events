@@ -19,20 +19,29 @@ type Direkt = NonNullable<Extract<TuerVerkauf, { ok: true }>["direkt"]>;
 type Zustand =
   | { art: "bereit" }
   | { art: "bar_bestaetigen" }
-  | { art: "qr"; bestellungId: string; qr: string; gesamtCent: number; anzahl: number; einlassen: boolean }
+  | { art: "qr"; bestellungId: string; qr: string; gesamtCent: number; anzahl: number; garderobe: number; einlassen: boolean }
   | {
       art: "direkt";
       bestellungId: string;
       qr: string;
       gesamtCent: number;
       anzahl: number;
+      garderobe: number;
       einlassen: boolean;
       direkt: Direkt;
       /** „Zahlung gesehen“ einmal getippt — der zweite Tipp bucht. */
       fragt: boolean;
       fehler?: string;
     }
-  | { art: "fertig"; anzahl: number; gesamtCent: number; eingelassen: boolean; zahlung: Zahlweg; qr: string | null }
+  | {
+      art: "fertig";
+      anzahl: number;
+      garderobe: number;
+      gesamtCent: number;
+      eingelassen: boolean;
+      zahlung: Zahlweg;
+      qr: string | null;
+    }
   | { art: "abgelaufen" }
   | { art: "unklar" };
 
@@ -47,6 +56,14 @@ const STUFE = {
 } as const;
 
 const euro = (cent: number) => preisText(cent, "de");
+
+/** „2 Tickets + 1 Garderobe“ — was verkauft wurde, kurz. */
+function wasVerkauft(anzahl: number, garderobe: number): string {
+  const teile = [];
+  if (anzahl > 0) teile.push(anzahl === 1 ? "1 Ticket" : `${anzahl} Tickets`);
+  if (garderobe > 0) teile.push(`${garderobe} Garderobe`);
+  return teile.join(" + ");
+}
 
 const WEG_TEXT: Record<Zahlweg, string> = {
   bar: "bar",
@@ -78,6 +95,9 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
   const [qrMoeglich, setQrMoeglich] = useState(false);
   const [paypalDirekt, setPaypalDirekt] = useState(false);
   const [ueberweisung, setUeberweisung] = useState(false);
+  /** Garderobe an der Abendkasse (0053): Preis je Stück, null = aus. */
+  const [garderobeCent, setGarderobeCent] = useState<number | null>(null);
+  const [garderobe, setGarderobe] = useState(0);
   const [keinZugang, setKeinZugang] = useState(false);
   const [phaseId, setPhaseId] = useState("");
   const [menge, setMenge] = useState(1);
@@ -107,6 +127,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
       setQrMoeglich(daten.qrMoeglich);
       setPaypalDirekt(daten.paypalDirekt);
       setUeberweisung(daten.ueberweisung);
+      setGarderobeCent(daten.garderobeCent);
       // Die Wahl bleibt stehen, solange es die Phase noch gibt.
       setPhaseId((alt) =>
         daten.phasen.some((p) => p.id === alt) ? alt : (daten.phasen.find((p) => p.rest !== 0)?.id ?? daten.phasen[0]?.id ?? ""),
@@ -133,6 +154,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         setZustand({
           art: "fertig",
           anzahl: zustand.anzahl,
+          garderobe: zustand.garderobe,
           gesamtCent: zustand.gesamtCent,
           eingelassen: zustand.einlassen && antwort.eingelassen > 0,
           zahlung: "qr",
@@ -158,18 +180,32 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
   const belegung = useBelegung(eventId);
   const ampel = belegung ? belegungsStufe(belegung) : null;
   // Wer für später kauft, geht heute nicht rein und zählt nicht.
-  const zuVoll = einlassen && ampel?.frei != null && ampel.frei < menge;
+  const zuVoll = menge > 0 && einlassen && ampel?.frei != null && ampel.frei < menge;
 
   const phase = phasen?.find((p) => p.id === phaseId);
-  const summe = phase ? (phase.preis_cent + phase.gebuehr_cent) * menge : 0;
+  const summe = (phase ? (phase.preis_cent + phase.gebuehr_cent) * menge : 0) + (garderobeCent ?? 0) * garderobe;
   const hoechstens = Math.max(1, Math.min(20, phase?.rest ?? 20));
-  const gesperrt = laeuft || !online || !phase || phase.rest === 0 || zuVoll;
+  // Nur Garderobe (Online-Ticket schon in der Hand): 0 Tickets erlaubt.
+  const mindestens = garderobeCent ? 0 : 1;
+  const gesperrt =
+    laeuft ||
+    !online ||
+    (menge === 0 && garderobe === 0) ||
+    (menge > 0 && (!phase || phase.rest === 0 || zuVoll));
 
   async function verkaufen(zahlung: Zahlweg) {
-    if (!phase || laeuft) return;
+    if (laeuft || (menge > 0 && !phase) || (menge === 0 && garderobe === 0)) return;
     setLaeuft(true);
     setFehler(null);
-    const antwort = await crewVerkaufen({ eventId, phaseId: phase.id, menge, zahlung, einlassen });
+    const antwort = await crewVerkaufen({
+      eventId,
+      phaseId: menge > 0 && phase ? phase.id : "",
+      menge,
+      zahlung,
+      // Ohne Ticket gibt es nichts einzulassen — und keinen Ticket-QR für später.
+      einlassen: menge > 0 ? einlassen : true,
+      garderobe,
+    });
     setLaeuft(false);
 
     if (!antwort) {
@@ -191,6 +227,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         qr: antwort.qr ?? "",
         gesamtCent: antwort.gesamtCent,
         anzahl: antwort.anzahl,
+        garderobe: antwort.garderobe,
         einlassen,
       });
       return;
@@ -202,6 +239,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         qr: antwort.qr ?? "",
         gesamtCent: antwort.gesamtCent,
         anzahl: antwort.anzahl,
+        garderobe: antwort.garderobe,
         einlassen,
         direkt: antwort.direkt,
         fragt: false,
@@ -212,6 +250,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
     setZustand({
       art: "fertig",
       anzahl: antwort.anzahl,
+      garderobe: antwort.garderobe,
       gesamtCent: antwort.gesamtCent,
       eingelassen: antwort.eingelassen,
       zahlung: "bar",
@@ -241,6 +280,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
     setZustand({
       art: "fertig",
       anzahl: zustand.anzahl,
+      garderobe: zustand.garderobe,
       gesamtCent: zustand.gesamtCent,
       eingelassen: zustand.einlassen && antwort.eingelassen > 0,
       zahlung: zustand.direkt.art,
@@ -261,6 +301,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
   function naechster() {
     setZustand({ art: "bereit" });
     setMenge(1);
+    setGarderobe(0);
     setEinlassen(true);
     setFehler(null);
   }
@@ -273,7 +314,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         <span className="crew-kasse-qr-kopf">
           <span className="crew-titel">{d.art === "paypal" ? "PayPal" : "Überweisung"}</span>
           <span className="crew-kasse-qr-was">
-            {zustand.anzahl} × {phase?.name ?? "Abendkasse"} · <strong>{euro(zustand.gesamtCent)}</strong>
+            {wasVerkauft(zustand.anzahl, zustand.garderobe)} · <strong>{euro(zustand.gesamtCent)}</strong>
           </span>
         </span>
         {/* Das SVG erzeugt der Server aus paypal.me-Link bzw. GiroCode. */}
@@ -325,7 +366,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
         <span className="crew-kasse-qr-kopf">
           <span className="crew-titel">Gast scannt mit dem Handy</span>
           <span className="crew-kasse-qr-was">
-            {zustand.anzahl} × {phase?.name ?? "Abendkasse"} · {euro(zustand.gesamtCent)}
+            {wasVerkauft(zustand.anzahl, zustand.garderobe)} · {euro(zustand.gesamtCent)}
           </span>
         </span>
         {/* Das SVG erzeugt der Server aus unserem eigenen Zahllink. */}
@@ -412,6 +453,12 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
               <span>Tickets</span>
               <strong>{stand ? stand.tickets : "–"}</strong>
             </span>
+            {garderobeCent || (stand?.garderobe ?? 0) > 0 ? (
+              <span>
+                <span>Garderobe</span>
+                <strong>{stand ? stand.garderobe : "–"}</strong>
+              </span>
+            ) : null}
           </div>
           {stand && stand.offen > 0 ? (
             <span className="crew-kasse-hinweis">
@@ -425,10 +472,16 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
             <i className="ph-fill ph-check-circle" aria-hidden="true" />
             <span className="crew-kasse-ergebnis-wort">{zustand.eingelassen ? "Drin" : "Bezahlt"}</span>
             <span className="crew-kasse-ergebnis-text">
-              {zustand.anzahl === 1 ? "1 Ticket" : `${zustand.anzahl} Tickets`} · {euro(zustand.gesamtCent)}{" "}
+              {wasVerkauft(zustand.anzahl, zustand.garderobe)} · {euro(zustand.gesamtCent)}{" "}
               {WEG_TEXT[zustand.zahlung]}
               {zustand.eingelassen ? " · eingelassen und gezählt" : ""}
             </span>
+            {zustand.garderobe > 0 ? (
+              <span className="crew-kasse-ergebnis-garderobe">
+                <i className="ph-bold ph-coat-hanger" aria-hidden="true" />
+                {zustand.garderobe === 1 ? "1 Garderobenzeichen geben" : `${zustand.garderobe} Garderobenzeichen geben`}
+              </span>
+            ) : null}
             {zustand.qr ? (
               <>
                 <span className="crew-kasse-ergebnis-text">Tickets für später: Der Gast fotografiert den Code oder scannt ihn.</span>
@@ -495,8 +548,8 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
                   type="button"
                   className="btn btn-secondary"
                   aria-label="Eins weniger"
-                  onClick={() => setMenge((m) => Math.max(1, m - 1))}
-                  disabled={menge <= 1}
+                  onClick={() => setMenge((m) => Math.max(mindestens, m - 1))}
+                  disabled={menge <= mindestens}
                 >
                   <i className="ph-bold ph-minus" aria-hidden="true" />
                 </button>
@@ -513,6 +566,34 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
               </div>
             </div>
 
+            {garderobeCent ? (
+              <div className="field">
+                <span className="crew-kasse-label">Garderobe · {euro(garderobeCent)} je Stück</span>
+                <div className="crew-kasse-menge">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    aria-label="Eine Garderobe weniger"
+                    onClick={() => setGarderobe((g) => Math.max(0, g - 1))}
+                    disabled={garderobe <= 0}
+                  >
+                    <i className="ph-bold ph-minus" aria-hidden="true" />
+                  </button>
+                  <output aria-live="polite">{garderobe}</output>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    aria-label="Eine Garderobe mehr"
+                    onClick={() => setGarderobe((g) => Math.min(20, g + 1))}
+                    disabled={garderobe >= 20}
+                  >
+                    <i className="ph-bold ph-plus" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+            ) : null}
+
+            {menge > 0 ? (
             <div className="seg crew-kasse-wann" role="radiogroup" aria-label="Wann geht der Gast rein">
               <label className="seg-opt">
                 <input type="radio" name="crew-kasse-wann" checked={einlassen} onChange={() => setEinlassen(true)} />
@@ -523,6 +604,7 @@ export function CrewKasse({ eventId, online }: { eventId: string; online: boolea
                 Für später
               </label>
             </div>
+            ) : null}
 
             <div className="crew-kasse-summe">
               <span>Zu zahlen</span>

@@ -21,6 +21,8 @@ export type TuerVerkauf =
       bezahlt: boolean;
       eingelassen: boolean;
       anzahl: number;
+      /** Verkaufte Garderobe (0053) — der Gast bekommt dafür ein Zeichen. */
+      garderobe: number;
       /** QR für den Gast: bei "qr" der Zahllink, bei "nur verkaufen" die Tickets. */
       qr: string | null;
       /** PayPal oder Überweisung direkt (0052): was der Gast zum Zahlen braucht. */
@@ -36,7 +38,8 @@ export type TuerVerkauf =
 
 const FEHLER: Record<string, string> = {
   keine_berechtigung: "Verkaufen dürfen nur Kasse und Admin.",
-  menge: "Zwischen 1 und 20 Tickets.",
+  menge: "Zwischen 1 und 20 Tickets bzw. Garderobe.",
+  garderobe_aus: "Garderobe wird an der Abendkasse nicht verkauft.",
   zahlungsart: "Unbekannte Zahlungsart.",
   nicht_eingerichtet: "Diese Zahlart ist nicht eingerichtet.",
   event_zu: "Für dieses Event wird nicht mehr verkauft.",
@@ -56,6 +59,8 @@ export async function verkaufeAnDerTuer(eingabe: {
   menge: number;
   zahlung: TuerZahlweg;
   einlassen: boolean;
+  /** Garderobe an der Abendkasse (0053): Stück, mit oder ohne Tickets. */
+  garderobe?: number;
 }): Promise<TuerVerkauf> {
   // Nicht eingerichtet: gar nicht erst reservieren.
   if (eingabe.zahlung === "paypal" && !paypalMeLink(100)) return { ok: false, fehler: FEHLER.nicht_eingerichtet };
@@ -64,11 +69,12 @@ export async function verkaufeAnDerTuer(eingabe: {
   const db = await serverClient();
   const { data, error } = await db.rpc("verkaufe_abendkasse", {
     p_event_id: eingabe.eventId,
-    p_phase_id: eingabe.phaseId,
+    p_phase_id: eingabe.phaseId || null,
     p_menge: Math.floor(eingabe.menge),
     p_zahlung: eingabe.zahlung,
     p_einlassen: eingabe.einlassen,
     p_email: null,
+    p_garderobe: Math.floor(eingabe.garderobe ?? 0),
   });
   if (error || !data) {
     console.error("[kasse] Verkauf fehlgeschlagen:", error?.message);
@@ -134,6 +140,7 @@ export async function verkaufeAnDerTuer(eingabe: {
     bezahlt: Boolean(antwort.bezahlt),
     eingelassen: Boolean(antwort.eingelassen),
     anzahl: Math.floor(eingabe.menge),
+    garderobe: Math.floor(eingabe.garderobe ?? 0),
     qr,
     direkt,
   };
@@ -257,6 +264,8 @@ export async function brecheTuerVerkaufAb(bestellungId: string): Promise<{ ok: b
 
 export type Kassenstand = {
   tickets: number;
+  /** An der Abendkasse verkaufte Garderobe (0053). */
+  garderobe: number;
   barCent: number;
   qrCent: number;
   /** PayPal und Überweisung direkt (0052) — zum Abgleich nach dem Abend. */
@@ -271,6 +280,7 @@ export async function holeKassenstand(eventId: string): Promise<Kassenstand | nu
   const stand = data as {
     ergebnis: string;
     tickets?: number;
+    garderobe?: number;
     bar_cent?: number;
     qr_cent?: number;
     paypal_direkt_cent?: number;
@@ -280,6 +290,7 @@ export async function holeKassenstand(eventId: string): Promise<Kassenstand | nu
   if (stand?.ergebnis !== "ok") return null;
   return {
     tickets: stand.tickets ?? 0,
+    garderobe: stand.garderobe ?? 0,
     barCent: stand.bar_cent ?? 0,
     qrCent: stand.qr_cent ?? 0,
     paypalDirektCent: stand.paypal_direkt_cent ?? 0,

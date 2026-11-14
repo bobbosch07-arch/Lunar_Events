@@ -56,6 +56,7 @@ export type EventEingabe = {
   fastlane_kontingent: number | null;
   fastlane_beschreibung: string | null;
   garderobe_aktiv: boolean;
+  garderobe_abendkasse: boolean;
   garderobe_preis_cent: number;
   garderobe_kontingent: number | null;
   /** Ortszeit aus dem Formular, "" oder null = nicht gesetzt */
@@ -200,6 +201,7 @@ function eventZeile(eingabe: EventEingabe, slug: string, ortId: string) {
     fastlane_kontingent: eingabe.fastlane_kontingent,
     fastlane_beschreibung: eingabe.fastlane_beschreibung?.trim() || null,
     garderobe_aktiv: eingabe.garderobe_aktiv,
+    garderobe_abendkasse: Boolean(eingabe.garderobe_abendkasse),
     garderobe_preis_cent: Math.max(0, eingabe.garderobe_preis_cent),
     garderobe_kontingent: eingabe.garderobe_kontingent,
     presale_ab: presaleAb,
@@ -232,7 +234,7 @@ const ABSCHNITT_SPALTEN: Record<EventAbschnitt, string[]> = {
   bild: ["bild_pfad", "bild_alt", "bild_fokus", "poster_statt_bild"],
   einlass: ["mindestalter", "kapazitaet", "einlass_modus", "dresscode", "lineup", "abendkasse", "abendkasse_hinweis", "streichpreis_cent"],
   fastlane: ["fastlane_aktiv", "fastlane_preis_cent", "fastlane_kontingent", "fastlane_beschreibung"],
-  garderobe: ["garderobe_aktiv", "garderobe_preis_cent", "garderobe_kontingent"],
+  garderobe: ["garderobe_aktiv", "garderobe_abendkasse", "garderobe_preis_cent", "garderobe_kontingent"],
   verkauf: ["presale_ab", "verkauf_ab"],
   status: ["status", "featured"],
 };

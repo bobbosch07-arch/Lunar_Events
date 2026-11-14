@@ -966,6 +966,21 @@ Bündel — **kein CDN**, sonst fehlen sie ohne Netz.
   Vorkasse-Konto). Ohne Einstellung kein Knopf. Hingewiesen am 13.11.:
   „Freunde und Familie“ für Ticketverkauf verstößt gegen PayPals Regeln;
   der Gast wählt die Art selbst, wir erzwingen nichts.
+- **Garderobe an der Abendkasse** (14.11., Migration 0053): oben verkaufen,
+  damit unten keine Kasse steht. Mit oder ohne Ticket (0 Tickets = nur
+  Garderobe, für Online-Käufer), alle Zahlwege. **Körperliches Zeichen**
+  (Stempel/Bändchen), das System zählt nur Stück und Geld — eigene Spalte
+  `bestellungen.kasse_garderobe`, **nicht** `garderobe_menge`, sonst stellte
+  `bestaetige_zahlung` digitale Marken aus. Kein Bügel-Kontingent.
+  Eingeschaltet je Event: `events.garderobe_abendkasse` (Backoffice,
+  Abschnitt Garderobe), Preis = `garderobe_preis_cent` wie online.
+- **Kamera-Zoom 1×/2×** in `CrewKamera` (14.11.): nativ `setZoomRatio`, im
+  Browser echter Zoom, wo die Kamera ihn kann, sonst digital (Bild größer,
+  nur die Mitte durchsuchen). Gemerkt je Gerät.
+- **PayPal direkt im Online-Checkout ist aus** (14.11., lief nicht
+  zuverlässig): Schalter `paypalDirektImCheckout` in `checkout/page.tsx`.
+  PayPal gibt es online nur über Stripe — dort muss es eingeschaltet sein.
+  Webhook und Erstattung der PayPal-Schnittstelle bleiben an.
 - **Tabs je Rolle** wie im Design (`tabsFuer` in `CrewApp`): Einlass und
   Bar Scanner + Gäste, Kasse Scanner + Kasse, Admin alles, dazu bei allen
   „Mein Plan“. Rollen ohne Scanner (Security, Runner, Toiletten, Garderobe)

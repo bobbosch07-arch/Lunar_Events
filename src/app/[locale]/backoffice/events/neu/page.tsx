@@ -49,6 +49,7 @@ function vorlage(): EventStand {
     fastlaneBeschreibung: "",
     fastlaneVerkauft: 0,
     garderobeAktiv: false,
+    garderobeAbendkasse: false,
     garderobePreisEuro: "3,00",
     garderobeKontingent: "",
     garderobeVerkauft: 0,

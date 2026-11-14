@@ -40,7 +40,7 @@ export async function GET(anfrage: NextRequest) {
   if (!(await darfKassieren())) return antwort({ ergebnis: "keine_berechtigung" }, 403);
 
   const db = await serverClient();
-  const [{ data: phasen }, stand] = await Promise.all([
+  const [{ data: phasen }, stand, { data: event }] = await Promise.all([
     db
       .from("phasen")
       .select("id, name, preis_cent, gebuehr_cent, kontingent, verkauft, position")
@@ -49,6 +49,7 @@ export async function GET(anfrage: NextRequest) {
       .eq("aktiv", true)
       .order("position"),
     holeKassenstand(eventId),
+    db.from("events").select("garderobe_abendkasse, garderobe_preis_cent").eq("id", eventId).maybeSingle(),
   ]);
 
   return antwort({
@@ -56,6 +57,11 @@ export async function GET(anfrage: NextRequest) {
     qrMoeglich: stripeEingerichtet(),
     paypalDirekt: Boolean(paypalMeName()),
     ueberweisung: Boolean(kassenKonto()),
+    // Garderobe an der Abendkasse (0053): Preis je Stück, null = aus.
+    garderobeCent:
+      event?.garderobe_abendkasse && (event.garderobe_preis_cent as number) > 0
+        ? (event.garderobe_preis_cent as number)
+        : null,
     stand,
     phasen: (phasen ?? []).map((p) => ({
       id: p.id as string,
@@ -76,6 +82,7 @@ type Schritt =
       menge: number;
       zahlung: "bar" | "qr" | "paypal" | "ueberweisung";
       einlassen: boolean;
+      garderobe?: number;
     }
   | { schritt: "bestaetigen"; bestellungId: string; einlassen: boolean }
   | { schritt: "zahlung"; bestellungId: string; einlassen: boolean }
@@ -93,6 +100,7 @@ export async function POST(anfrage: NextRequest) {
         menge: Number(eingabe.menge),
         zahlung: (["qr", "paypal", "ueberweisung"] as const).find((z) => z === eingabe.zahlung) ?? "bar",
         einlassen: Boolean(eingabe.einlassen),
+        garderobe: Number(eingabe.garderobe ?? 0) || 0,
       }),
     );
   }

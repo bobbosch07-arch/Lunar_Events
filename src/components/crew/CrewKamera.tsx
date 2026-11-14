@@ -25,6 +25,8 @@ import { Capacitor, type PluginListenerHandle } from "@capacitor/core";
  * `children` liegt über dem Bild (Ergebnis der Garderobe), ohne die Kamera
  * anzuhalten — der nächste Gast kann schon scannen.
  */
+const ZOOM_SCHLUESSEL = "lunar.crew.zoom";
+
 export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => void; children?: ReactNode }) {
   const feld = useRef<HTMLDivElement>(null);
   const video = useRef<HTMLVideoElement>(null);
@@ -36,10 +38,72 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
   const [fehler, setFehler] = useState(false);
   const [nativ, setNativ] = useState(false);
   const [licht, setLicht] = useState<boolean | null>(null);
+  // Zoom 1× / 2× (14.11.): für kleine oder weiter entfernte Codes. Echt, wo
+  // die Kamera es kann (`hardware`), sonst digital: Bild größer zeigen und nur
+  // die Mitte durchsuchen. Die Wahl merkt sich das Gerät.
+  const [zoom, setZoom] = useState<1 | 2>(1);
+  const zoomRef = useRef<1 | 2>(1);
+  const [hardware, setHardware] = useState(false);
+  const hardwareRef = useRef(false);
+  useEffect(() => {
+    hardwareRef.current = hardware;
+  }, [hardware]);
 
   useEffect(() => {
     rueckruf.current = beiCode;
   }, [beiCode]);
+
+  /** Gemerkten Zoom beim Start der Kamera übernehmen. */
+  function gemerkterZoom() {
+    try {
+      if (localStorage.getItem(ZOOM_SCHLUESSEL) === "2") {
+        zoomRef.current = 2;
+        setZoom(2);
+      }
+    } catch {
+      // Ohne Speicher eben 1×.
+    }
+  }
+
+  // Zoom anwenden: nativ über ML Kit, im Browser über die Kamera selbst,
+  // sonst bleibt es beim digitalen Weg (Darstellung + Suchfeld).
+  useEffect(() => {
+    zoomRef.current = zoom;
+    if (!laeuft) return;
+    if (nativ) {
+      void import("@capacitor-mlkit/barcode-scanning").then(async ({ BarcodeScanner }) => {
+        try {
+          const [{ zoomRatio: min }, { zoomRatio: max }] = await Promise.all([
+            BarcodeScanner.getMinZoomRatio(),
+            BarcodeScanner.getMaxZoomRatio(),
+          ]);
+          await BarcodeScanner.setZoomRatio({ zoomRatio: Math.min(max, Math.max(min, zoom)) });
+        } catch {
+          // Scanner gerade nicht aktiv (Tab verdeckt): beim nächsten Wechsel.
+        }
+      });
+      return;
+    }
+    const spur = strom.current?.getVideoTracks()[0];
+    const faehig = spur?.getCapabilities?.() as (MediaTrackCapabilities & { zoom?: { min: number; max: number } }) | undefined;
+    if (spur && faehig?.zoom) {
+      const wert = Math.min(faehig.zoom.max, Math.max(faehig.zoom.min, zoom));
+      void spur
+        .applyConstraints({ advanced: [{ zoom: wert } as MediaTrackConstraintSet] })
+        .then(() => setHardware(true))
+        .catch(() => setHardware(false));
+    }
+  }, [zoom, laeuft, nativ]);
+
+  function zoomUmschalten() {
+    const neu = zoom === 1 ? 2 : 1;
+    setZoom(neu);
+    try {
+      localStorage.setItem(ZOOM_SCHLUESSEL, String(neu));
+    } catch {
+      // Ohne Speicher gilt es bis zum Neustart.
+    }
+  }
 
   async function startenNativ() {
     const { BarcodeScanner } = await import("@capacitor-mlkit/barcode-scanning");
@@ -68,7 +132,9 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
         const v = video.current;
         const c = leinwand.current;
         if (v && c && v.readyState === v.HAVE_ENOUGH_DATA) {
-          const kante = Math.min(v.videoWidth, v.videoHeight) * 0.7;
+          // Digitaler Zoom: nur die Mitte durchsuchen (bei echtem Zoom nicht nötig).
+          const teil = hardwareRef.current ? 1 : zoomRef.current;
+          const kante = (Math.min(v.videoWidth, v.videoHeight) * 0.7) / teil;
           c.width = kante;
           c.height = kante;
           const ctx = c.getContext("2d", { willReadFrequently: true });
@@ -88,6 +154,7 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
   }
 
   function starten() {
+    gemerkterZoom();
     if (Capacitor.isNativePlatform()) void startenNativ().catch(() => setFehler(true));
     else void startenBrowser();
   }
@@ -115,6 +182,14 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
           document.documentElement.classList.add("crew-nativ-kamera");
           await BarcodeScanner.startScan({ formats: [BarcodeFormat.QrCode] });
           an = true;
+          // Zoom erst jetzt möglich — vorher läuft keine Kamera.
+          if (zoomRef.current !== 1) {
+            await Promise.all([BarcodeScanner.getMinZoomRatio(), BarcodeScanner.getMaxZoomRatio()])
+              .then(([{ zoomRatio: min }, { zoomRatio: max }]) =>
+                BarcodeScanner.setZoomRatio({ zoomRatio: Math.min(max, Math.max(min, zoomRef.current)) }),
+              )
+              .catch(() => {});
+          }
           const { available } = await BarcodeScanner.isTorchAvailable().catch(() => ({ available: false }));
           if (!aus) setLicht(available ? false : null);
         } else if (!sichtbar && an) {
@@ -190,7 +265,13 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
     <div ref={feld} className="crew-kamera" role="img" aria-label="Kamerabild" data-nativ={nativ || undefined}>
       {nativ ? null : (
         <>
-          <video ref={video} className="crew-video" playsInline muted />
+          <video
+            ref={video}
+            className="crew-video"
+            playsInline
+            muted
+            style={zoom === 2 && !hardware ? { transform: "scale(2)" } : undefined}
+          />
           <canvas ref={leinwand} hidden />
         </>
       )}
@@ -207,6 +288,17 @@ export function CrewKamera({ beiCode, children }: { beiCode: (code: string) => v
           {fehler ? "Kamera erneut versuchen" : "Kamera starten"}
         </button>
       )}
+      {laeuft ? (
+        <button
+          type="button"
+          className="btn btn-secondary crew-zoom"
+          aria-pressed={zoom === 2}
+          aria-label={zoom === 2 ? "Zoom aus" : "Zoom an"}
+          onClick={zoomUmschalten}
+        >
+          {zoom}×
+        </button>
+      ) : null}
       {licht !== null ? (
         <button
           type="button"

@@ -110,6 +110,7 @@ export function EventFormular({
         stand.fastlaneKontingent.trim() === "" ? null : Number(stand.fastlaneKontingent),
       fastlane_beschreibung: stand.fastlaneBeschreibung || null,
       garderobe_aktiv: stand.garderobeAktiv,
+      garderobe_abendkasse: stand.garderobeAbendkasse,
       garderobe_preis_cent: centAus(stand.garderobePreisEuro),
       garderobe_kontingent:
         stand.garderobeKontingent.trim() === "" ? null : Number(stand.garderobeKontingent),
@@ -611,7 +612,23 @@ export function EventFormular({
               „/garderobe“. Wer nichts gebucht hat, zahlt vor Ort wie bisher.
             </span>
           </div>
-          {stand.garderobeAktiv ? (
+          <div className={`${css.feld} ${css.breit}`}>
+            <label className={css.schalter}>
+              <input
+                type="checkbox"
+                checked={stand.garderobeAbendkasse}
+                onChange={(e) => setze("garderobeAbendkasse", e.target.checked)}
+              />
+              Garderobe an der Abendkasse verkaufen
+            </label>
+            <span className={css.hinweis}>
+              Die Abendkasse der Crew-App verkauft Garderobe je Stück, mit oder ohne
+              Ticket — auch an Gäste mit Online-Ticket. Der Gast bekommt ein Zeichen
+              (Stempel, Bändchen, Marke), das System zählt nur Stück und Geld. Unten
+              braucht es dann keine eigene Kasse.
+            </span>
+          </div>
+          {stand.garderobeAktiv || stand.garderobeAbendkasse ? (
             <>
               <div className={css.feld}>
                 <label className={css.beschriftung} htmlFor="gd-preis">
@@ -626,6 +643,7 @@ export function EventFormular({
                 />
                 <span className={css.hinweis}>Mindestens 0,50 € — weniger bucht Stripe nicht ab.</span>
               </div>
+              {stand.garderobeAktiv ? (
               <div className={css.feld}>
                 <label className={css.beschriftung} htmlFor="gd-kontingent">
                   Plätze
@@ -645,6 +663,7 @@ export function EventFormular({
                     : "So viele Bügel, wie online verkauft werden dürfen. Leer = unbegrenzt."}
                 </span>
               </div>
+              ) : null}
             </>
           ) : null}
         </div>

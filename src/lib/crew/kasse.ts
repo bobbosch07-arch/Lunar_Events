@@ -13,6 +13,8 @@ export type CrewKassenDaten = {
   /** PayPal per paypal.me und Überweisung per GiroCode (0052) eingerichtet? */
   paypalDirekt: boolean;
   ueberweisung: boolean;
+  /** Garderobe an der Abendkasse (0053): Preis je Stück, null = aus. */
+  garderobeCent: number | null;
   stand: Kassenstand | null;
   phasen: KassenPhase[];
 };
@@ -62,6 +64,7 @@ export function crewVerkaufen(eingabe: {
   menge: number;
   zahlung: "bar" | "qr" | "paypal" | "ueberweisung";
   einlassen: boolean;
+  garderobe: number;
 }) {
   return schicke<TuerVerkauf>(15000, { schritt: "verkaufen", ...eingabe });
 }

@@ -210,6 +210,41 @@ try {
     pruefe(st?.paypalDirektCent === 2500 && st?.ueberweisungCent === 5000 && st?.barCent === 7500, "Kassenstand getrennt: PayPal 25 €, Überweisung 50 €, Bar 75 €", st);
   }
 
+  // --- Garderobe an der Abendkasse (0053) ---
+  console.log("\n— Garderobe an der Abendkasse —");
+  pruefe((await holen(kasse, ev.id)).daten?.garderobeCent === null, "Aus: kein Garderoben-Preis");
+  const aus = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: "", menge: 0, zahlung: "bar", einlassen: true, garderobe: 1 });
+  pruefe(aus?.ok === false && /nicht verkauft/.test(aus.fehler), "Aus: Verkauf abgelehnt", aus?.fehler);
+
+  await dienst.from("events").update({ garderobe_abendkasse: true, garderobe_preis_cent: 200 }).eq("id", ev.id);
+  pruefe((await holen(kasse, ev.id)).daten?.garderobeCent === 200, "An: 2 € je Stück");
+  const drinG = await drin();
+  const { count: markenVorher } = await dienst.from("garderobe_marken").select("*", { count: "exact", head: true }).eq("event_id", ev.id);
+
+  const nurG = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: "", menge: 0, zahlung: "bar", einlassen: true, garderobe: 2 });
+  pruefe(nurG?.ok && nurG.gesamtCent === 400 && nurG.garderobe === 2 && !nurG.eingelassen, "Nur Garderobe, 2 Stück bar: 4 €, niemand eingelassen", nurG);
+  const { count: nurGTickets } = await dienst.from("tickets").select("*", { count: "exact", head: true }).eq("bestellung_id", nurG.bestellungId);
+  pruefe(nurGTickets === 0 && (await drin()) === drinG, "… keine Tickets, drin unverändert");
+
+  const mitT = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: ph.id, menge: 1, zahlung: "bar", einlassen: true, garderobe: 1 });
+  pruefe(mitT?.ok && mitT.gesamtCent === 2700 && mitT.eingelassen, "Ticket + Garderobe bar: 27 €, eingelassen", mitT?.gesamtCent);
+  pruefe((await drin()) === drinG + 1, "… drin +1 (nur das Ticket)");
+
+  const ppG = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: "", menge: 0, zahlung: "paypal", einlassen: true, garderobe: 1 });
+  pruefe(ppG?.ok && ppG.direkt?.link?.endsWith("/2.00EUR"), "Nur Garderobe per PayPal: Link über 2 €", ppG?.direkt?.link);
+  const ppGok = await schicken(kasse, { schritt: "bestaetigen", bestellungId: ppG.bestellungId, einlassen: true });
+  pruefe(ppGok?.ok && ppGok.eingelassen === 0, "… Zahlung gesehen, niemand eingelassen", ppGok);
+
+  const { count: markenNachher } = await dienst.from("garderobe_marken").select("*", { count: "exact", head: true }).eq("event_id", ev.id);
+  pruefe(markenNachher === markenVorher, "Keine digitalen Marken entstanden (körperliches Zeichen)", { markenVorher, markenNachher });
+
+  const leer = await schicken(kasse, { schritt: "verkaufen", eventId: ev.id, phaseId: "", menge: 0, zahlung: "bar", einlassen: true, garderobe: 0 });
+  pruefe(leer?.ok === false, "Weder Ticket noch Garderobe: abgelehnt", leer?.fehler);
+
+  const stG = (await holen(kasse, ev.id)).daten?.stand;
+  pruefe(stG?.garderobe === 4, "Kassenstand: 4 Garderobe", stG?.garderobe);
+  pruefe(stG?.barCent === 7500 + 400 + 2700 && stG?.paypalDirektCent === 2500 + 200, "… Geld steckt in Bar und PayPal", stG);
+
   console.log("\n— Unsinn —");
   pruefe((await holen(kasse, "")).status === 400, "Ohne Event: 400");
   const kaputt = await fetch(`${BASIS}/api/crew/kasse`, { method: "POST", headers: { cookie: kasse }, body: "kein json" });

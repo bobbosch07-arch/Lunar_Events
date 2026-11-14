@@ -70,6 +70,8 @@ export type EventStand = {
   /** Nur zur Anzeige: schon verkaufte Fast-Lane-Plätze. */
   fastlaneVerkauft: number;
   garderobeAktiv: boolean;
+  /** An der Abendkasse verkaufen, mit körperlichem Zeichen (0053). */
+  garderobeAbendkasse: boolean;
   /** Je Stück. */
   garderobePreisEuro: string;
   /** Leer = unbegrenzt. */

@@ -57,7 +57,11 @@ export default async function CheckoutSeite({ params, searchParams }: Props) {
   const stripeAktiv = stripeEingerichtet();
   // Die Kennung ist öffentlich — sie steht ohnehin im Skript, das PayPal
   // im Browser lädt.
-  const paypalClientId = paypalEingerichtet()
+  // PayPal direkt im Checkout ist aus (14.11.): lief nicht zuverlässig. PayPal
+  // gibt es online wieder nur über Stripe. Webhook und Erstattung bleiben an —
+  // schon bezahlte Bestellungen müssen weiter laufen. Wieder an: `true`.
+  const paypalDirektImCheckout = false;
+  const paypalClientId = paypalDirektImCheckout && paypalEingerichtet()
     ? (process.env.PAYPAL_CLIENT_ID ?? null)
     : null;
   const testmodus =

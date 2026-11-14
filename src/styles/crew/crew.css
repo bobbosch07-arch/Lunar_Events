@@ -675,3 +675,23 @@ html.crew-nativ-kamera .crew-tabs { background: var(--crew-flaeche); }
 .crew-kasse-direkt dd { margin: 0; overflow-wrap: anywhere; }
 .crew-kasse-direkt-wert { font-variant-numeric: tabular-nums; font-weight: 600; user-select: all; }
 .crew-kasse-direkt-knoepfe { margin-top: auto; }
+
+/* Garderobe an der Abendkasse (0053): Zeichen ausgeben, nicht übersehen. */
+.crew-kasse-ergebnis-garderobe { display: flex; align-items: center; gap: var(--space-2); font-size: var(--crew-fs-gross); font-weight: 700; }
+.crew-kasse-ergebnis-garderobe i { font-size: 26px; }
+
+/* Zoom 1× / 2× im Kamerafeld (14.11.), gegenüber der Taschenlampe. */
+.crew-zoom {
+  position: absolute;
+  left: var(--space-3);
+  bottom: var(--space-3);
+  min-width: var(--crew-tap);
+  height: var(--crew-tap);
+  padding: 0 var(--space-3);
+  font-size: var(--crew-fs-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-radius: 999px;
+}
+.crew-zoom[aria-pressed="true"] { background: var(--crew-signal); color: var(--crew-grund); border-color: var(--crew-signal); }
+.crew-video { transition: transform 150ms ease; }

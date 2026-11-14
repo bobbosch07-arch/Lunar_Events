@@ -58,7 +58,7 @@ async function Inhalt({ slug }: { slug: string }) {
        mindestalter, kapazitaet, einlass_modus, dresscode, lineup, abendkasse, abendkasse_hinweis, featured,
        fastlane_aktiv, fastlane_preis_cent, fastlane_kontingent, fastlane_verkauft,
        fastlane_beschreibung, presale_ab, verkauf_ab,
-       garderobe_aktiv, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
+       garderobe_aktiv, garderobe_abendkasse, garderobe_preis_cent, garderobe_kontingent, garderobe_verkauft,
        streichpreis_cent, promo_stichtag,
        promoter_stufen(ab_tickets, belohnung),
        phasen(id, name, art, preis_cent, gebuehr_cent, kontingent, verkauft, ab, bis,
@@ -133,6 +133,7 @@ async function Inhalt({ slug }: { slug: string }) {
     fastlaneBeschreibung: (event.fastlane_beschreibung as string | null) ?? "",
     fastlaneVerkauft: (event.fastlane_verkauft as number) ?? 0,
     garderobeAktiv: (event.garderobe_aktiv as boolean) ?? false,
+    garderobeAbendkasse: (event.garderobe_abendkasse as boolean) ?? false,
     garderobePreisEuro: euroAus((event.garderobe_preis_cent as number) ?? 0),
     garderobeKontingent:
       event.garderobe_kontingent === null ? "" : String(event.garderobe_kontingent),
@@ -262,13 +263,17 @@ async function Inhalt({ slug }: { slug: string }) {
           ["Verkauft", `${event.fastlane_verkauft ?? 0}${event.fastlane_kontingent === null ? " (ohne Grenze)" : ` von ${event.fastlane_kontingent}`}`],
         ]
       : [["Fast Lane", "aus"]],
-    garderobe: event.garderobe_aktiv
-      ? [
-          ["Garderobe", "an"],
-          ["Preis", geld(event.garderobe_preis_cent)],
-          ["Gebucht", `${event.garderobe_verkauft ?? 0}${event.garderobe_kontingent === null ? " (ohne Grenze)" : ` von ${event.garderobe_kontingent}`}`],
-        ]
-      : [["Garderobe", "aus"]],
+    garderobe:
+      event.garderobe_aktiv || event.garderobe_abendkasse
+        ? [
+            ["Online", event.garderobe_aktiv ? "an" : "aus"],
+            ["Abendkasse", event.garderobe_abendkasse ? "an" : "aus"],
+            ["Preis", geld(event.garderobe_preis_cent)],
+            ...(event.garderobe_aktiv
+              ? [["Gebucht", `${event.garderobe_verkauft ?? 0}${event.garderobe_kontingent === null ? " (ohne Grenze)" : ` von ${event.garderobe_kontingent}`}`] as [string, string]]
+              : []),
+          ]
+        : [["Garderobe", "aus"]],
     bild: [
       ["Bild", event.bild_pfad ? "hochgeladen" : "keines, es erscheint das Poster"],
       ["Poster statt Bild", event.poster_statt_bild ? "ja" : "nein"],
